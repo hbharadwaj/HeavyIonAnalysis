@@ -4,6 +4,8 @@ from HeavyIonsAnalysis.JetAnalysis.rerecoGen_cff import *
 from HeavyIonsAnalysis.JetAnalysis.rerecoRho_cff import *
 from HeavyIonsAnalysis.JetAnalysis.rerecoJets_cff import *
 from HeavyIonsAnalysis.JetAnalysis.rerecoTracks_cff import *
+from HeavyIonsAnalysis.JetAnalysis.akSubstrPFJets_cfi import *
+from HeavyIonsAnalysis.JetAnalysis.akGenJets_cfi import *
 
 from HeavyIonsAnalysis.JetAnalysis.jets.akPu3CaloJetSequence_pponPbPb_mc_cff import *
 from HeavyIonsAnalysis.JetAnalysis.jets.ak3PFJetSequence_pponPbPb_mc_cff import *
@@ -15,65 +17,46 @@ from HeavyIonsAnalysis.JetAnalysis.jets.akPu4CaloJetSequence_pponPbPb_mc_cff imp
 from HeavyIonsAnalysis.JetAnalysis.jets.ak4PFJetSequence_pponPbPb_mc_cff import *
 from HeavyIonsAnalysis.JetAnalysis.jets.akPu4PFJetSequence_pponPbPb_mc_cff import *
 from HeavyIonsAnalysis.JetAnalysis.jets.akCs4PFJetSequence_pponPbPb_mc_cff import *
+from HeavyIonsAnalysis.JetAnalysis.jets.akCs2PFJetSequence_pponPbPb_mc_cff import *
 from HeavyIonsAnalysis.JetAnalysis.jets.akFlowPuCs4PFJetSequence_pponPbPb_mc_cff import *
-
+from HeavyIonsAnalysis.JetAnalysis.jets.akCsSoftDrop4PFJetSequence_pponPbPb_mc_cff import *
 genSignalSequence = cms.Sequence(
     genParticlesForJets +
 
     hiSignalGenParticles +
     genParticlesForJetsSignal +
 
-    ak3HiGenJets +
+    ak2HiGenJets +
     ak4HiGenJets +
-
+    
     signalPartons +
 
-    ak3HiSignalGenJets +
+    ak2HiSignalGenJets +
     ak4HiSignalGenJets +
 
-    ak3HiGenNjettiness +
+
+    ak2HiGenNjettiness +
+
     ak4HiGenNjettiness
 )
 
 genCleanedSequence = cms.Sequence(
     genParticlesForJets +
 
-    ak3HiGenJets +
+    ak2HiGenJets +
     ak4HiGenJets +
 
     myPartons +
     cleanedPartons +
 
-    ak3HiCleanedGenJets +
+    ak2HiCleanedGenJets +
     ak4HiCleanedGenJets
 )
 
 jetSequence = cms.Sequence(
     rhoSequence +
-
     highPurityTracks +
+    akCs2PFJets +
+    akCs2PFJetSequence 
 
-    akPu3CaloJets +
-    ak3PFJets +
-    akPu3PFJets +
-    akCs3PFJets +
-    akFlowPuCs3PFJets +
-
-    akPu4CaloJets +
-    ak4PFJets +
-    akPu4PFJets +
-    akCs4PFJets +
-    akFlowPuCs4PFJets +
-
-    akPu3CaloJetSequence +
-    ak3PFJetSequence +
-    akPu3PFJetSequence +
-    akCs3PFJetSequence +
-    akFlowPuCs3PFJetSequence +
-
-    akPu4CaloJetSequence +
-    ak4PFJetSequence +
-    akPu4PFJetSequence +
-    akCs4PFJetSequence +
-    akFlowPuCs4PFJetSequence
 )

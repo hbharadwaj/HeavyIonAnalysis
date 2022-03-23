@@ -474,6 +474,13 @@ class ggHiNtuplizer : public edm::EDAnalyzer {
    std::vector<float> pfpIso4subSC_;
    std::vector<float> pfpIso5subSC_;
 
+   // modified by hbharadwaj adding the footprint for Charged Hadron
+   std::vector<float> pfcIso1FPsubUE_;
+   std::vector<float> pfcIso2FPsubUE_;
+   std::vector<float> pfcIso3FPsubUE_;
+   std::vector<float> pfcIso4FPsubUE_;
+   std::vector<float> pfcIso5FPsubUE_;
+
    // photon pf isolation UE-subtracted and cone excluded
    std::vector<float> pfcIso1subUE_;
    std::vector<float> pfcIso2subUE_;
