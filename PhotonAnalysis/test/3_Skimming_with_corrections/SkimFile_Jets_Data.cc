@@ -62,8 +62,8 @@ Double_t RelativePhi(Double_t mphi,Double_t vphi) {
 
 void SkimFile_Jets_Data(){
 
-    TString type="QCDPhoton";
-    TString type_dir = "/home/llr/cms/bharikri/Projects/Photon_Analysis/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/PhotonAnalysis/test/";            
+    TString type="Data_2018";
+    TString type_dir = "/home/llr/cms/bharikri/Projects/Photon_Analysis/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/PhotonAnalysis/test/3_Skimming_with_corrections/";            
 
    gROOT->SetBatch();
    gErrorIgnoreLevel = kWarning;
@@ -365,35 +365,39 @@ void SkimFile_Jets_Data(){
    jet_tree->Branch("L1_SingleEG21_BptxAND",&train_L1_SingleEG21_BptxAND);
    jet_tree->Branch("HLT_HIGEDPhoton40_v1",&train_HLT_HIGEDPhoton40_v1);
 
-   Float_t train_jet_pt;
-   Float_t train_jet_eta;
-   Float_t train_jet_phi;
-   Float_t train_jet_sym;
-   Float_t train_jet_rg;
-   Float_t train_jet_dynkt;
-   Float_t train_jet_angu;
-   Float_t train_ref_pt;
-   Float_t train_ref_eta;
-   Float_t train_ref_phi;
-   Float_t train_ref_sym;
-   Float_t train_ref_rg;
-   Float_t train_ref_dynkt;
-   Float_t train_ref_angu;
+   Int_t train_nref = 0;
+   Int_t train_jet_index = -1;
+   Float_t train_jet_pt[500]={-1};
+   Float_t train_jet_eta[500]={-1};
+   Float_t train_jet_phi[500]={-1};
+   Float_t train_jet_sym[500]={-1};
+   Float_t train_jet_rg[500]={-1};
+   Float_t train_jet_dynkt[500]={-1};
+   Float_t train_jet_angu[500]={-1};
+   Float_t train_ref_pt[500]={-1};
+   Float_t train_ref_eta[500]={-1};
+   Float_t train_ref_phi[500]={-1};
+   Float_t train_ref_sym[500]={-1};
+   Float_t train_ref_rg[500]={-1};
+   Float_t train_ref_dynkt[500]={-1};
+   Float_t train_ref_angu[500]={-1};
 
-   jet_tree->Branch("jtpt", &train_jet_pt);
-   jet_tree->Branch("jteta", &train_jet_eta);
-   jet_tree->Branch("jtphi", &train_jet_phi);
-   jet_tree->Branch("jtsym", &train_jet_sym);
-   jet_tree->Branch("jtrg", &train_jet_rg);
-   jet_tree->Branch("jtdynkt", &train_jet_dynkt);
-   jet_tree->Branch("jtangu", &train_jet_angu);
-   jet_tree->Branch("refpt", &train_ref_pt);
-   jet_tree->Branch("refeta", &train_ref_eta);
-   jet_tree->Branch("refphi", &train_ref_phi);
-   jet_tree->Branch("refsym", &train_ref_sym);
-   jet_tree->Branch("refrg", &train_ref_rg);
-   jet_tree->Branch("refdynkt", &train_ref_dynkt);
-   jet_tree->Branch("refangu", &train_ref_angu);
+   jet_tree->Branch("nref", &train_nref);
+   jet_tree->Branch("jet_index", &train_jet_index);
+   jet_tree->Branch("jtpt", &train_jet_pt,"jtpt[nref]/F");
+   jet_tree->Branch("jteta", &train_jet_eta,"jteta[nref]/F");
+   jet_tree->Branch("jtphi", &train_jet_phi,"jtphi[nref]/F");
+   jet_tree->Branch("jtsym", &train_jet_sym,"jtsym[nref]/F");
+   jet_tree->Branch("jtrg", &train_jet_rg,"jtrg[nref]/F");
+   jet_tree->Branch("jtdynkt", &train_jet_dynkt,"jtdynkt[nref]/F");
+   jet_tree->Branch("jtangu", &train_jet_angu,"jtangu[nref]/F");
+   jet_tree->Branch("refpt", &train_ref_pt,"refpt[nref]/F");
+   jet_tree->Branch("refeta", &train_ref_eta,"refeta[nref]/F");
+   jet_tree->Branch("refphi", &train_ref_phi,"refphi[nref]/F");
+   jet_tree->Branch("refsym", &train_ref_sym,"refsym[nref]/F");
+   jet_tree->Branch("refrg", &train_ref_rg,"refrg[nref]/F");
+   jet_tree->Branch("refdynkt", &train_ref_dynkt,"refdynkt[nref]/F");
+   jet_tree->Branch("refangu", &train_ref_angu,"refangu[nref]/F");
 
    phoERegression myPhoERegr;
    myPhoERegr.initiliazeReaderEB("/home/llr/cms/bharikri/Projects/Photon_Analysis/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/PhotonAnalysis/test/2_Regression_Training/dataset/weights/tmvaTrainRegr_BDTG_pbpb18_EB.weights.xml");
@@ -422,12 +426,12 @@ void SkimFile_Jets_Data(){
       if(pprimaryVertexFilter<=0) continue;
       if(pclusterCompatibilityFilter<=0) continue;
       if(phfCoincFilter2Th4<=0) continue;
-      // if(hiBin>180) continue;
+      if(hiBin>180) continue;
 
       for(int ipho=0; ipho<phoEt->size(); ipho++){
-         // if(!(fabs(phoEta->at(ipho))<1.44)) continue; // || (fabs(phoEta->at(ipho))>1.6 && fabs(phoEta->at(ipho))<2.0)
+        if(!(fabs(phoEta->at(ipho))<2.4)) continue; // || (fabs(phoEta->at(ipho))>1.6 && fabs(phoEta->at(ipho))<2.0)
         if(phoEta->at(ipho)<-1.39 && phoPhi->at(ipho)<-0.9 && phoPhi->at(ipho)>-1.6) continue;  // HEM Failure
-        // if(phoEt->at(ipho)<30) continue;                          // Minimum ET cut
+        if(phoEt->at(ipho)<30) continue;                          // Minimum ET cut
         if(phoSigmaEtaEta_2012->at(ipho)<=0.002) continue;        // Spike Cuts   
         if(fabs(pho_seedTime->at(ipho))>=3 || pho_swissCrx->at(ipho)>=0.9) continue;
 
@@ -473,16 +477,31 @@ void SkimFile_Jets_Data(){
 
       int jet_index=-1;
       float jet_pt_max=-1;
+      train_nref = 0;
 
       for(int ijet=0; ijet<nref; ijet++){
-        if(jet_phi[ijet]>-1.6 && jet_phi[ijet]<-0.9 && jet_eta[ijet]<-1.39) continue; // HEM Failure
+         if(jet_pt[ijet]<15) continue;
+         if(jet_phi[ijet]>-1.6 && jet_phi[ijet]<-0.9 && jet_eta[ijet]<-1.39) continue; // HEM Failure
+         float dEta = jet_eta[ijet] - phoEta->at(pho_index);
+         float dPhi = RelativePhi(jet_phi[ijet],phoPhi->at(pho_index));
+         if(sqrt(dEta*dEta + dPhi*dPhi)<0.5) continue;
 
-        if((fabs(RelativePhi(phoPhi->at(pho_index),jet_phi[ijet]))>TMath::Pi()-0.6) && (fabs(RelativePhi(phoPhi->at(pho_index),jet_phi[ijet]))<TMath::Pi()+0.6)){
+         train_jet_pt[train_nref] = jet_pt[ijet];
+         train_jet_eta[train_nref] = jet_eta[ijet];
+         train_jet_phi[train_nref] = jet_phi[ijet];
+         train_jet_sym[train_nref] = jet_sym[ijet];
+         train_jet_rg[train_nref] = jet_rg[ijet];
+         train_jet_dynkt[train_nref] = jet_dynkt[ijet];
+         train_jet_angu[train_nref] = jet_angu[ijet];
+         train_nref++;
+         
+
+         if(abs(dPhi)>2*TMath::Pi()/3){
             if(jet_pt_max<jet_pt[ijet]){
                jet_pt_max = jet_pt[ijet];
                jet_index = ijet;
             }
-        }
+         }
       }
 
       train_phoSCRawE = phoSCRawE->at(pho_index);
@@ -511,20 +530,7 @@ void SkimFile_Jets_Data(){
       train_eleRej = flagEle;
       train_L1_SingleEG21_BptxAND = L1_SingleEG21_BptxAND;
       train_HLT_HIGEDPhoton40_v1 = HLT_HIGEDPhoton40_v1;
-      train_jet_pt = jet_pt[jet_index];
-      train_jet_eta = jet_eta[jet_index];
-      train_jet_phi = jet_phi[jet_index];
-      train_jet_sym = jet_sym[jet_index];
-      train_jet_rg = jet_rg[jet_index];
-      train_jet_dynkt = jet_dynkt[jet_index];
-      train_jet_angu = jet_angu[jet_index];
-      train_ref_pt = ref_pt[jet_index];
-      train_ref_eta = ref_eta[jet_index];
-      train_ref_phi = ref_phi[jet_index];
-      train_ref_sym = ref_sym[jet_index];
-      train_ref_rg = ref_rg[jet_index];
-      train_ref_dynkt = ref_dynkt[jet_index];
-      train_ref_angu = ref_angu[jet_index];
+      train_jet_index = jet_index;
       jet_tree->Fill();
 
       // cout<<"i = "<< iEntry << " hiBin = "<<hiBin <<" Genin = "<<genin<<endl;
@@ -532,7 +538,7 @@ void SkimFile_Jets_Data(){
    } // End Event loop
 
    TFile *fout;
-   fout = new TFile(type_dir + "Data_2018_jets.root", "recreate");
+   fout = new TFile(type_dir + "Data_2018_jets_2.root", "recreate");
    jet_tree->Write("",TObject::kOverwrite);
 
    fout->Close();
