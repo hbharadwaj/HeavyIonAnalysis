@@ -1,0 +1,11 @@
+*.root
+*.sh
+PhotonAnalysis/test/crabJobs/crab_projects/
+CentralityAnalysis/
+Configuration/
+EventAnalysis/
+HiEvtPlaneCalib/
+MuonAnalysis/
+TrackAnalysis/
+VNAnalysis/
+VertexAnalysis/
