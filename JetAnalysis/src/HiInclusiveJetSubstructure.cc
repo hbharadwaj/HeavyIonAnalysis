@@ -81,7 +81,8 @@ HiInclusiveJetSubstructure::HiInclusiveJetSubstructure(const edm::ParameterSet& 
   mysdcut1 = iConfig.getParameter<double>("mysdcut1");
   mysdcut2 = iConfig.getParameter<double>("mysdcut2");
   mydynktcut = iConfig.getParameter<double>("mydynktcut");
-
+  groom_type = iConfig.getParameter<double>("groom_type");
+  groom_combine = iConfig.getParameter<double>("groom_combine");
   jetAbsEtaMax_ = iConfig.getUntrackedParameter<double>("jetAbsEtaMax", 2.1);
 
   if(isMC_){
@@ -277,7 +278,7 @@ HiInclusiveJetSubstructure::analyze(const Event& iEvent,
     fastjet::PseudoJet *sub1Hyb = new fastjet::PseudoJet();
     fastjet::PseudoJet *sub2Hyb = new fastjet::PseudoJet();
    
-    IterativeDeclusteringRec(jet,sub1Hyb, sub2Hyb);
+    IterativeDeclusteringRec(groom_type, groom_combine,jet,sub1Hyb, sub2Hyb);
 
 
 
@@ -305,14 +306,14 @@ HiInclusiveJetSubstructure::analyze(const Event& iEvent,
       //cout<<"jet daughters gen"<<genjet->numberOfDaughters()<<endl;
       if(dopthatcut) if(pthat<0.35*genjet->pt()) continue;
 
-       IterativeDeclusteringGen(*genjet,sub1Gen,sub2Gen);
+      IterativeDeclusteringGen(groom_type, groom_combine,*genjet,sub1Gen,sub2Gen);
 
        if(doSubjetPurity){
 	 
 	 jets_.refsub11[jets_.nref]=sqrt(pow((sub1Gen->rap()-sub1Hyb->rap()),2)+pow((sub1Gen->phi()-sub1Hyb->phi()),2));
 	 jets_.refsub12[jets_.nref]=sqrt(pow((sub1Gen->rap()-sub2Hyb->rap()),2)+pow((sub1Gen->phi()-sub2Hyb->phi()),2));
-    jets_.refsub21[jets_.nref]=sqrt(pow((sub2Gen->rap()-sub1Hyb->rap()),2)+pow((sub2Gen->phi()-sub1Hyb->phi()),2));
-    jets_.refsub22[jets_.nref]=sqrt(pow((sub2Gen->rap()-sub2Hyb->rap()),2)+pow((sub2Gen->phi()-sub2Hyb->phi()),2));
+         jets_.refsub21[jets_.nref]=sqrt(pow((sub2Gen->rap()-sub1Hyb->rap()),2)+pow((sub2Gen->phi()-sub1Hyb->phi()),2));
+         jets_.refsub22[jets_.nref]=sqrt(pow((sub2Gen->rap()-sub2Hyb->rap()),2)+pow((sub2Gen->phi()-sub2Hyb->phi()),2));
 
        }
 
@@ -350,11 +351,14 @@ HiInclusiveJetSubstructure::analyze(const Event& iEvent,
 
 
 
-void HiInclusiveJetSubstructure::IterativeDeclusteringRec(const reco::Jet& jet,fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2)
+void HiInclusiveJetSubstructure::IterativeDeclusteringRec(double groom_type, double groom_combine,const reco::Jet& jet,fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2)
 {
         double flagSubjet=0;
         double zg=0;
         double rg=0;
+	double nsplit=0;
+        double nsel=0;
+        double nsdin=-1;
         double z=0;
         double kt1=-1;
         double angu=0;
@@ -398,21 +402,48 @@ void HiInclusiveJetSubstructure::IterativeDeclusteringRec(const reco::Jet& jet,f
                         double cut=mysdcut1*pow(delta_R/rParam,mysdcut2);
                         
                         z=j2.perp()/(j1.perp()+j2.perp());
-                        if(z > cut && flagSubjet==0){zg=z;
+                        //standard SD 
+                        if((groom_type==1) && (z > cut) && (flagSubjet==0)){
+                          zg=z;
 			  rg=delta_R;
 			  flagSubjet=1;
                           j1first =j1;
                           j2first =j2;
                           *sub1 = j1first;
-                          *sub2 = j2first; }
+                          *sub2 = j2first; 
+                          nsdin=nsplit;}
+
+			  // lateSD                                                                                                                                  
+     			  if((groom_type==0)&&(z > cut)){
+			    zg=z;
+			    rg=delta_R;
+			    j1first =j1;
+			    j2first =j2;
+			    *sub1 = j1first;
+			    *sub2 = j2first;
+			    nsdin=nsplit;}
+
+
 
                         double dyn=z*(1-z)*j2.perp()*pow(delta_R/rParam,mydynktcut);
 
-                        if(dyn>kt1)kt1=dyn;
-
-
-                        jj=j1;
+			  if(dyn>kt1){kt1=dyn;
+			    nsel=nsplit;
+			  }
+			  nsplit=nsplit+1;
+                          jj=j1;
                 }
+
+		  //latedSD&&dynkt 
+
+                   if(groom_combine==1){
+		    if(nsel!=nsdin){
+                     
+		      sub1->reset(0,0,0,0);
+		      sub2->reset(0,0,0,0);
+		      zg=0;
+		      rg=0;
+		    }}
 
               jets_.jtsym[jets_.nref] = zg;
               jets_.jtrg[jets_.nref] = rg; 
@@ -424,10 +455,13 @@ void HiInclusiveJetSubstructure::IterativeDeclusteringRec(const reco::Jet& jet,f
 
 }
 
-void HiInclusiveJetSubstructure::IterativeDeclusteringGen(const reco::GenJet& jet,fastjet::PseudoJet *sub1,fastjet::PseudoJet *sub2)
+void HiInclusiveJetSubstructure::IterativeDeclusteringGen(double groom_type, double groom_combine,const reco::GenJet& jet,fastjet::PseudoJet *sub1,fastjet::PseudoJet *sub2)
 {
         double flagSubjet=0;
         double zg=0;
+        double nsplit=0;
+        double nsel=0;
+        double nsdin=-1;
         double rg=0;
         double z=0;
         double kt1=-1;
@@ -446,9 +480,9 @@ void HiInclusiveJetSubstructure::IterativeDeclusteringGen(const reco::GenJet& je
                 
                  auto daughters = jet.getJetConstituents();
                  for(auto it = daughters.begin(); it!=daughters.end(); ++it){
-         particles.push_back(fastjet::PseudoJet((**it).px(), (**it).py(), (**it).pz(), (**it).energy()));
-         mypart.reset((**it).px(), (**it).py(), (**it).pz(), (**it).energy());
-	 angu=angu+mypart.perp()*mypart.delta_R(myjet);
+		   particles.push_back(fastjet::PseudoJet((**it).px(), (**it).py(), (**it).pz(), (**it).energy()));
+		   mypart.reset((**it).px(), (**it).py(), (**it).pz(), (**it).energy());
+		   angu=angu+mypart.perp()*mypart.delta_R(myjet);
       }
 
                 angu=angu/jet.pt();
@@ -471,20 +505,46 @@ void HiInclusiveJetSubstructure::IterativeDeclusteringGen(const reco::GenJet& je
                         double delta_R = j1.delta_R(j2);
 			double cut=mysdcut1*pow(delta_R/rParam,mysdcut2);
                         z=j2.perp()/(j1.perp()+j2.perp());
-                        if(z > cut && flagSubjet==0){zg=z;
+
+                        //standard SD
+                        if((groom_type==1)&&(z > cut) && (flagSubjet==0)){
+                          zg=z;
 			  rg=delta_R;
 			  flagSubjet=1;
                           j1first =j1;
                           j2first =j2;
                           *sub1 = j1first;
-                          *sub2 = j2first;}
+                          *sub2 = j2first;
+                          nsdin=nsplit;}
+
+                        // lateSD
+			if((groom_type==0)&&(z > cut)){
+                          zg=z;
+                          rg=delta_R;
+                          j1first =j1;
+                          j2first =j2;
+                          *sub1 = j1first;
+                          *sub2 = j2first;
+                          nsdin=nsplit;}   
+		
+
                         double dyn=z*(1-z)*j2.perp()*pow(delta_R/rParam,mydynktcut);
-
-                        if(dyn>kt1)kt1=dyn;
-
+                        if(dyn>kt1){
+                        kt1=dyn;
+                        nsel=nsplit;
+			}
+                        nsplit=nsplit+1;
 
                         jj=j1;
                 }
+		 //latedSD&&dynkt
+                 if(groom_combine==1){
+		   if(nsel!=nsdin){
+                     sub1->reset(0,0,0,0);   
+		     sub2->reset(0,0,0,0);
+                     zg=0;
+                     rg=0;
+		   }}
 		
               jets_.refsym[jets_.nref] = zg;
               jets_.refrg[jets_.nref] = rg; 

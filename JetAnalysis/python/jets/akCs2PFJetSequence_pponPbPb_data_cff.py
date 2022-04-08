@@ -5,6 +5,7 @@ from PhysicsTools.PatAlgos.recoLayer0.jetCorrFactors_cfi import patJetCorrFactor
 from PhysicsTools.PatAlgos.producersLayer1.jetProducer_cfi import patJets
 
 from HeavyIonsAnalysis.JetAnalysis.inclusiveJetAnalyzer_cff import *
+from HeavyIonsAnalysis.JetAnalysis.inclusiveJetSubstructure_cff import *
 from HeavyIonsAnalysis.JetAnalysis.bTaggers_cff import *
 
 from RecoJets.JetProducers.JetIDParams_cfi import *
@@ -237,6 +238,52 @@ akCs2PFJetAnalyzer = inclusiveJetAnalyzer.clone(
     genDroppedBranches = cms.InputTag("ak2GenJets","droppedBranches")
     )
 
+akCs2PFJetAnalyzer_substructure = inclusiveJetSubstructure.clone(
+    jetTag = cms.InputTag("akCs2PFpatJetsWithBtagging"),
+    genjetTag = 'ak2HiSignalGenJets',
+    rParam = 0.2,
+    jetPtMin=20, 
+    mysdcut1=0.2,
+    mysdcut2=0,
+    mydynktcut=1,
+    groom_type=1,
+    groom_combine=0,
+    doSubjetPurity = False,
+    dopthatcut = False,
+    matchJets = cms.untracked.bool(False),
+    matchTag = 'patJetsWithBtagging',
+    pfCandidateLabel = cms.untracked.InputTag('particleFlow'),
+    trackTag = cms.InputTag("generalTracks"),
+    fillGenJets = False,
+    isMC = False,
+    doSubEvent = False,
+    useHepMC = cms.untracked.bool(False),
+    genParticles = cms.untracked.InputTag("genParticles"),
+    eventInfoTag = cms.InputTag("generator"),
+    
+    bTagJetName = cms.untracked.string("akCs2PF"),
+    jetName = cms.untracked.string("akCs2PF"),
+    genPtMin = cms.untracked.double(5),
+    hltTrgResults = cms.untracked.string('TriggerResults::'+'HISIGNAL'),
+    doTower = cms.untracked.bool(False),
+        doSubJets = cms.untracked.bool(False),
+        doGenSubJets = cms.untracked.bool(False),
+    
+    subjetGenTag = cms.untracked.InputTag("ak2GenJets"),
+    doGenTaus = cms.untracked.bool(True),
+    genTau1 = cms.InputTag("ak2HiGenNjettiness","tau1"),
+    genTau2 = cms.InputTag("ak2HiGenNjettiness","tau2"),
+    genTau3 = cms.InputTag("ak2HiGenNjettiness","tau3"),
+    doGenSym = cms.untracked.bool(False),
+    genSym = cms.InputTag("ak2GenJets","sym"),
+    genDroppedBranches = cms.InputTag("ak2GenJets","droppedBranches")
+    )
+
+
+
+
+
+
 akCs2PFJetSequence_mc = cms.Sequence(
     # akCs2PFclean
     # *
@@ -264,7 +311,7 @@ akCs2PFJetSequence_mc = cms.Sequence(
     *
     akCs2PFpatJetsWithBtagging
     *
-    akCs2PFJetAnalyzer
+    akCs2PFJetAnalyzer_substructure
     )
 
 akCs2PFJetSequence_data = cms.Sequence(
@@ -280,7 +327,7 @@ akCs2PFJetSequence_data = cms.Sequence(
     *
     akCs2PFpatJetsWithBtagging
     *
-    akCs2PFJetAnalyzer
+    akCs2PFJetAnalyzer_substructure
     )
 
 akCs2PFJetSequence_mb = cms.Sequence(

@@ -54,8 +54,8 @@ private:
   bool doWTARecluster_ = false;
   fastjet::JetDefinition WTAjtDef = fastjet::JetDefinition(fastjet::JetAlgorithm::antikt_algorithm, 2, fastjet::WTA_pt_scheme);
   //--------------------------------------------
-  void IterativeDeclusteringRec(const reco::Jet& jet,fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2);
-  void IterativeDeclusteringGen(const reco::GenJet& jet,fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2);
+  void IterativeDeclusteringRec(double groom_type, double groom_combine,const reco::Jet& jet,fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2);
+  void IterativeDeclusteringGen(double groom_type, double groom_combine,const reco::GenJet& jet,fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2);
   
   int getPFJetMuon(const pat::Jet& pfJet, const reco::PFCandidateCollection *pfCandidateColl);
 
@@ -127,6 +127,8 @@ private:
   double mysdcut1;
   double mysdcut2;
   double mydynktcut;
+  double    groom_type;
+  double    groom_combine;
   double jetAbsEtaMax_;
   bool doGenTaus_;
   bool doGenSym_;

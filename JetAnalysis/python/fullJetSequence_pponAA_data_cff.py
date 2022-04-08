@@ -9,10 +9,10 @@ from HeavyIonsAnalysis.JetAnalysis.jets.akPu3PFJetSequence_pponPbPb_data_cff imp
 from HeavyIonsAnalysis.JetAnalysis.jets.akCs3PFJetSequence_pponPbPb_data_cff import *
 from HeavyIonsAnalysis.JetAnalysis.jets.akFlowPuCs3PFJetSequence_pponPbPb_data_cff import *
 
-from HeavyIonsAnalysis.JetAnalysis.jets.akPu4CaloJetSequence_pponPbPb_data_cff import *
-from HeavyIonsAnalysis.JetAnalysis.jets.akPu4PFJetSequence_pponPbPb_data_cff import *
-from HeavyIonsAnalysis.JetAnalysis.jets.akCs4PFJetSequence_pponPbPb_data_cff import *
-from HeavyIonsAnalysis.JetAnalysis.jets.akFlowPuCs4PFJetSequence_pponPbPb_data_cff import *
+from HeavyIonsAnalysis.JetAnalysis.jets.akPu2CaloJetSequence_pponPbPb_data_cff import *
+from HeavyIonsAnalysis.JetAnalysis.jets.akPu2PFJetSequence_pponPbPb_data_cff import *
+from HeavyIonsAnalysis.JetAnalysis.jets.akCs2PFJetSequence_pponPbPb_data_cff import *
+from HeavyIonsAnalysis.JetAnalysis.jets.akFlowPuCs2PFJetSequence_pponPbPb_data_cff import *
 
 jetSequence = cms.Sequence(
     rhoSequence +
@@ -21,10 +21,10 @@ jetSequence = cms.Sequence(
 
 
 
-    akCs3PFJets +
+    akCs2PFJets +
 
 
 
-    akCs3PFJetSequence 
+    akCs2PFJetSequence 
 
 )
