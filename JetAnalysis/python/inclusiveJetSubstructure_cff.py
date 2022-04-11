@@ -4,7 +4,7 @@ inclusiveJetSubstructure = cms.EDAnalyzer(
     "HiInclusiveJetSubstructure",
     jetTag = cms.InputTag("ak4PFJets"),
     jetPtMin = cms.double(5.0),
-    mysdcut1 = cms.double(0.1),
+    mysdcut1 = cms.double(0.2),
     mysdcut2 = cms.double(0),
     mydynktcut=cms.double(1),
     groom_type=cms.double(1),

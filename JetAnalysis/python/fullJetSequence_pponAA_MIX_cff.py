@@ -57,6 +57,9 @@ jetSequence = cms.Sequence(
     rhoSequence +
     highPurityTracks +
     akCs2PFJets +
-    akCs2PFJetSequence 
+    akCs2PFJetSequence +
+    
+    akCs3PFJets +
+    akCs3PFJetSequence 
 
 )
