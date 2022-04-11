@@ -10,14 +10,15 @@
 #include <TMath.h>          //! needed for floating values in plots for some reason
 #include <THStack.h>        // needed for THStack
 #include <TLatex.h>         // needed for TLatex
+#include <TFile.h>          // needed for TFile
 
 #include <iostream>         // needed for I/O
 
-const std::vector<int> min_cent = {0,   60,   0,  0,  40, 100};
-const std::vector<int> max_cent = {60, 180, 180, 40, 100, 180};
+const std::vector<int> min_cent = { 0,  60,   0,  0, 20,  60, 100};
+const std::vector<int> max_cent = {60, 180, 180, 20, 60, 100, 180};
 const std::size_t ncent = min_cent.size();
 TString label="";
-TString input_path = "";
+TString output_path = "./";
 
 void Plot_hist(std::vector<TH1F*>,std::vector<TString> ,TString opt="label",std::vector<TString> eopt={"end"});
 
@@ -26,7 +27,7 @@ void Plot_hist2D(std::vector<TH2F*> hist,std::vector<TString> histname,TString d
 void plot_jet(){
     gROOT->SetBatch();
     gErrorIgnoreLevel = kFatal;
-    TString DIR = input_path + "/OutputPlots_"+label+"/";
+    TString DIR = output_path + "OutputPlots_"+label+"/";
     TString makedir = "mkdir -p " + DIR;
     const char *mkDIR = makedir.Data();
     gSystem->Exec(mkDIR);
@@ -35,8 +36,22 @@ void plot_jet(){
     //Tree Variable Declaration
 
         TChain jet_tree("jet_tree");
-        jet_tree.Add(input_path+label+".root/jet_tree");
+        jet_tree.Add(label+".root/jet_tree");
 
+        Float_t weight = 0;
+        Float_t weight_pthat = 0;
+        Float_t weight_cent = 0;
+
+        Float_t mcCalIsoDR04 = 0;
+        Float_t mcE = 0;
+        Float_t mcEt = 0;
+        Float_t mcEta = 0;
+        Float_t mcPhi = 0;
+
+        Int_t   pho_genMatchedIndex = 0;
+        Int_t   mcPID = 0;
+        Int_t   mcMomPID = 0;
+        
         Float_t phoSCRawE = 0;
         Float_t phoSCEta = 0;
         Float_t phoSCPhi = 0;
@@ -119,6 +134,20 @@ void plot_jet(){
         jet_tree.SetBranchAddress("jtdynkt", &jtdynkt);
         jet_tree.SetBranchAddress("jtangu", &jtangu);
 
+        if(!label.Contains("Data")){
+            jet_tree.SetBranchAddress("weight",&weight);
+            jet_tree.SetBranchAddress("weight_pthat",&weight_pthat);
+            jet_tree.SetBranchAddress("weight_cent",&weight_cent);
+            jet_tree.SetBranchAddress("mcCalIsoDR04",&mcCalIsoDR04);
+            jet_tree.SetBranchAddress("mcE",&mcE);
+            jet_tree.SetBranchAddress("mcEt",&mcEt);
+            jet_tree.SetBranchAddress("mcEta",&mcEta);
+            jet_tree.SetBranchAddress("mcPhi",&mcPhi);
+            jet_tree.SetBranchAddress("pho_genMatchedIndex",&pho_genMatchedIndex);
+            jet_tree.SetBranchAddress("mcPID",&mcPID);
+            jet_tree.SetBranchAddress("mcMomPID",&mcMomPID);
+        }
+
     // -------- End Tree Variable Declaration
     // ----------------------------------------------------------------------------------------------------------------
     // Histograms
@@ -143,12 +172,25 @@ void plot_jet(){
         TH2F* h_ktdyn_xJ[ncent];
         // TH2F* h_lnktdyn_xJ[ncent]; ln kt for later?
 
+        TH1F* hbkg_nPhosel[ncent];
+        TH1F* hbkg_nJet[ncent];
+
+        TH1F* hbkg_xJ_all[ncent];
+        TH1F* hbkg_Rg_all[ncent];
+        TH1F* hbkg_angu_all[ncent];
+        TH1F* hbkg_ktdyn_all[ncent];
+
+        TH1F* hbkg_xJ_lead[ncent];
+        TH1F* hbkg_Rg_lead[ncent];
+        TH1F* hbkg_angu_lead[ncent];
+        TH1F* hbkg_ktdyn_lead[ncent];
+
         for (std::size_t i = 0; i < ncent; ++i) {
             hnPho[i] = new TH1F(Form("hnPho_%zu", i), Form("hnPho_%zu;nPho;Norm. Events", i), 1, 0, 1);
             hnPhosel[i] = new TH1F(Form("hnPhosel_%zu", i), Form("hnPhosel_%zu;nPho;Norm. Events", i), 1, 0, 1);
             hnJet[i] = new TH1F(Form("hnJet_%zu", i), Form("hnJet_%zu;nJet;Norm. Events", i), 1, 0, 1);
 
-            int nbins = 80;
+            int nbins = 20;
 
             hdphi_all[i] = new TH1F(Form("hdphi_all_%zu", i), Form("hdphi_all_%zu;#Delta #phi;Norm. Events", i), nbins, 0, 3.2);
             hxJ_all[i] = new TH1F(Form("hxJ_all_%zu", i), Form("hxJ_all_%zu;All Recoil Jet p_{T}/Photon E_{T};Norm. Events", i), nbins, 0, 2.0);
@@ -156,15 +198,30 @@ void plot_jet(){
             hangu_all[i] = new TH1F(Form("hangu_all_%zu", i), Form("hangu_all_%zu;Angularity;Norm. Events", i), nbins, 0, 0.12);
             hktdyn_all[i] = new TH1F(Form("hktdyn_all_%zu", i), Form("hktdyn_all_%zu;dyn k_{T};Norm. Events", i), nbins, 0, 20);
 
-            hdphi_lead[i] = new TH1F(Form("hdphi_lead_%zu", i), Form("hdphi_lead_%zu;#Delta #phi;Norm. Events", i), nbins, 0, 3.2);
-            hxJ_lead[i] = new TH1F(Form("hxJ_lead_%zu", i), Form("hxJ_lead_%zu;Lead Recoil Jet p_{T}/Photon E_{T};Norm. Events", i), nbins, 0, 2.0);
-            hRg_lead[i] = new TH1F(Form("hRg_lead_%zu", i), Form("hRg_lead_%zu;R_{g};Norm. Events", i), nbins, 0, 0.3);
-            hangu_lead[i] = new TH1F(Form("hangu_lead_%zu", i), Form("hangu_lead_%zu;Angularity;Norm. Events", i), nbins, 0, 0.12);
-            hktdyn_lead[i] = new TH1F(Form("hktdyn_lead_%zu", i), Form("hktdyn_lead_%zu;dyn k_{T};Norm. Events", i), nbins, 0, 20);
+            hdphi_lead[i] = new TH1F(Form("hdphi_lead_%zu", i), Form("hdphi_lead_%zu;#Delta #phi;Norm. per Jet", i), nbins, 0, 3.2);
+            hxJ_lead[i] = new TH1F(Form("hxJ_lead_%zu", i), Form("hxJ_lead_%zu;Lead Recoil Jet p_{T}/Photon E_{T};Norm. per Jet", i), nbins, 0, 2.0);
+            hRg_lead[i] = new TH1F(Form("hRg_lead_%zu", i), Form("hRg_lead_%zu;R_{g};Norm. per Jet", i), nbins, 0, 0.3);
+            hangu_lead[i] = new TH1F(Form("hangu_lead_%zu", i), Form("hangu_lead_%zu;Angularity;Norm. per Jet", i), nbins, 0, 0.12);
+            hktdyn_lead[i] = new TH1F(Form("hktdyn_lead_%zu", i), Form("hktdyn_lead_%zu;dyn k_{T};Norm. per Jet", i), nbins, 0, 20);
 
             h_Rg_xJ[i]=new TH2F("h_Rg_xJ","h_Rg_xJ;Rg;x_{#gamma,jet}",16,0,0.4,20,0,2.0);
             h_angu_xJ[i]=new TH2F("h_angu_xJ","h_angu_xJ;Angularity;x_{#gamma,jet}",16,0,0.16,20,0,2.0);
             h_ktdyn_xJ[i]=new TH2F("h_ktdyn_xJ","h_ktdyn_xJ;dyn k_{T};x_{#gamma,jet}",20,0,20,20,0,2.0);
+
+            // --- Bkg Histograms
+
+            hbkg_nPhosel[i] = new TH1F(Form("hbkg_nPhosel_%zu", i), Form("hbkg_nPhosel_%zu;nPho;Norm. Events", i), 1, 0, 1);
+            hbkg_nJet[i] = new TH1F(Form("hbkg_nJet_%zu", i), Form("hbkg_nJet_%zu;nJet;Norm. Events", i), 1, 0, 1);
+
+            hbkg_xJ_all[i] = new TH1F(Form("hbkg_xJ_all_%zu", i), Form("hbkg_xJ_all_%zu;All Recoil Jet p_{T}/Photon E_{T};Norm. Events", i), nbins, 0, 2.0);
+            hbkg_Rg_all[i] = new TH1F(Form("hbkg_Rg_all_%zu", i), Form("hbkg_Rg_all_%zu;R_{g};Norm. Events", i), nbins, 0, 0.3);
+            hbkg_angu_all[i] = new TH1F(Form("hbkg_angu_all_%zu", i), Form("hbkg_angu_all_%zu;Angularity;Norm. Events", i), nbins, 0, 0.12);
+            hbkg_ktdyn_all[i] = new TH1F(Form("hbkg_ktdyn_all_%zu", i), Form("hbkg_ktdyn_all_%zu;dyn k_{T};Norm. Events", i), nbins, 0, 20);
+
+            hbkg_xJ_lead[i] = new TH1F(Form("hbkg_xJ_lead_%zu", i), Form("hbkg_xJ_lead_%zu;Lead Recoil Jet p_{T}/Photon E_{T};Norm. Per Jet", i), nbins, 0, 2.0);
+            hbkg_Rg_lead[i] = new TH1F(Form("hbkg_Rg_lead_%zu", i), Form("hbkg_Rg_lead_%zu;R_{g};Norm. Per Jet", i), nbins, 0, 0.3);
+            hbkg_angu_lead[i] = new TH1F(Form("hbkg_angu_lead_%zu", i), Form("hbkg_angu_lead_%zu;Angularity;Norm. Per Jet", i), nbins, 0, 0.12);
+            hbkg_ktdyn_lead[i] = new TH1F(Form("hbkg_ktdyn_lead_%zu", i), Form("hbkg_ktdyn_lead_%zu;dyn k_{T};Norm. Per Jet", i), nbins, 0, 20);
         }
 
     // -------- End Histograms
@@ -172,34 +229,52 @@ void plot_jet(){
     // Event Loop
 
     const float min_pho_et = 100;
-    const float cut_HoverE = 0.0696672;
-    const float cut_SIEIE  = 0.00983515;
-    const float cut_SumIso = 1.33546;
+    const float cut_HoverE = 0.137168;  // 0.0696672;
+    const float cut_SIEIE  = 0.0103766; // 0.00983515;
+    const float cut_SumIso = 1.45486;   // 1.33546;
+    const float min_jet_pt = 40;
+    
+    const float purity_values[ncent] = {0.791,0.899,0.819,0.737,0.838,0.903,0.895};
 
     Int_t nEv=jet_tree.GetEntries();
     for(int iEntry=0; iEntry<nEv; iEntry++){
-        float scale =1;
         jet_tree.GetEntry(iEntry);
+        float scale =1;
+                
+        if(!label.Contains("Data")){
+            scale*=weight*weight_pthat*weight_cent;
+            if(pho_genMatchedIndex<0) continue;
+            if(abs(mcPID)!=22) continue;
+        }
+        
         for (std::size_t i = 0; i < ncent; ++i) {
             if(!(hiBin>min_cent[i] && hiBin<=max_cent[i])) continue;
             if(!(abs(phoSCEta)<1.44)) continue;
             if(!(phoEtCorrected>min_pho_et)) continue;
-            if(!L1_SingleEG21_BptxAND) continue;    // TRIGGERS FULLY EFFICIENCT
+            if(!L1_SingleEG21_BptxAND) continue;    // TRIGGERS APPLIED AT NTUPLIZER
             if(!HLT_HIGEDPhoton40_v1) continue;
 
             int flagHoverE=1;   
             int flagSigmaEtaEta=1;
             int flagIso=1;
 
+            int flagbkg=1;
+
             if(phoHoverE<=cut_HoverE) flagHoverE = 0;
             if(phoSigmaIEtaIEta_2012<=cut_SIEIE) flagSigmaEtaEta = 0;
             if(SumCalIso<=cut_SumIso) flagIso = 0;
 
-            hnPho[i]->Fill(1);
+            flagbkg = flagSigmaEtaEta;
+            hnPho[i]->Fill(1,scale);
 
-            if(flagHoverE || flagSigmaEtaEta || flagIso || eleRej) continue;
+            if(flagHoverE || flagIso || eleRej) continue;
             
-            hnPhosel[i]->Fill(1);
+            if(!flagbkg){
+                hnPhosel[i]->Fill(1,scale);
+            }
+            else{
+                hbkg_nPhosel[i]->Fill(1,scale);
+            }
 
             // -------- End Photon Selection
             // Jet Loop----------------------------------------------------------------------------------
@@ -210,7 +285,7 @@ void plot_jet(){
             float jet_xJ_max=-1;
 
             for(int ijet=0; ijet<nref;ijet++){
-                if(jtpt[ijet]<40) continue;
+                if(jtpt[ijet]<min_jet_pt) continue;
                 if(abs(jteta[ijet])>2) continue;
                 float dphi = abs(TVector2::Phi_mpi_pi(phoPhi-jtphi[ijet]));// ROOT::Math::VectorUtil::Phi_mpi_pi(phoPhi,jtphi[ijet]);
                 float xJ = jtpt[ijet]/phoEtCorrected;
@@ -223,20 +298,39 @@ void plot_jet(){
                         jet_xJ_max = xJ;
                         jet_index = ijet;
                     }
-                    hxJ_all[i]->Fill(xJ,scale);
-                    hRg_all[i]->Fill(jtrg[ijet],scale);
-                    hangu_all[i]->Fill(jtangu[ijet],scale);
-                    hktdyn_all[i]->Fill(jtdynkt[ijet],scale);
+                    if(!flagbkg){
+                        hxJ_all[i]->Fill(xJ,scale);
+                        hRg_all[i]->Fill(jtrg[ijet],scale);
+                        hangu_all[i]->Fill(jtangu[ijet],scale);
+                        hktdyn_all[i]->Fill(jtdynkt[ijet],scale);
+                    }
+                    else{
+                        hbkg_xJ_all[i]->Fill(xJ,scale);
+                        hbkg_Rg_all[i]->Fill(jtrg[ijet],scale);
+                        hbkg_angu_all[i]->Fill(jtangu[ijet],scale);
+                        hbkg_ktdyn_all[i]->Fill(jtdynkt[ijet],scale);
+                    }
                 }
             }
             if(jet_index==-1) continue;
-            hnJet[i]->Fill(1);
 
             hdphi_lead[i]->Fill(jet_dphi_max,scale);
-            hxJ_lead[i]->Fill(jet_xJ_max,scale);
-            hRg_lead[i]->Fill(jtrg[jet_index],scale);
-            hangu_lead[i]->Fill(jtangu[jet_index],scale);
-            hktdyn_lead[i]->Fill(jtdynkt[jet_index],scale);
+            if(!flagbkg){
+                hnJet[i]->Fill(1,scale);
+
+                hxJ_lead[i]->Fill(jet_xJ_max,scale);
+                hRg_lead[i]->Fill(jtrg[jet_index],scale);
+                hangu_lead[i]->Fill(jtangu[jet_index],scale);
+                hktdyn_lead[i]->Fill(jtdynkt[jet_index],scale);
+            }
+            else{
+                hbkg_nJet[i]->Fill(1,scale);
+
+                hbkg_xJ_lead[i]->Fill(jet_xJ_max,scale);
+                hbkg_Rg_lead[i]->Fill(jtrg[jet_index],scale);
+                hbkg_angu_lead[i]->Fill(jtangu[jet_index],scale);
+                hbkg_ktdyn_lead[i]->Fill(jtdynkt[jet_index],scale);
+            }
 
             h_Rg_xJ[i]->Fill(jtrg[jet_index],jet_xJ_max,scale);
             h_angu_xJ[i]->Fill(jtangu[jet_index],jet_xJ_max,scale);
@@ -244,46 +338,109 @@ void plot_jet(){
         }
     }
 
+    // ------ Normalization and Purity Subtraction 
+    for (std::size_t i = 0; i < ncent; ++i) {
+
+        // Normalize per Jet
+        hxJ_lead[i]->Scale(1.0/hnJet[i]->GetSum());
+        hRg_lead[i]->Scale(1.0/hnJet[i]->GetSum());
+        hangu_lead[i]->Scale(1.0/hnJet[i]->GetSum());
+        hktdyn_lead[i]->Scale(1.0/hnJet[i]->GetSum());
+
+        hbkg_xJ_lead[i]->Scale(1.0/hbkg_nJet[i]->GetSum());
+        hbkg_Rg_lead[i]->Scale(1.0/hbkg_nJet[i]->GetSum());
+        hbkg_angu_lead[i]->Scale(1.0/hbkg_nJet[i]->GetSum());
+        hbkg_ktdyn_lead[i]->Scale(1.0/hbkg_nJet[i]->GetSum());
+
+        // Purity
+        hxJ_lead[i]->Scale(1.0/purity_values[i]);
+        hRg_lead[i]->Scale(1.0/purity_values[i]);
+        hangu_lead[i]->Scale(1.0/purity_values[i]);
+        hktdyn_lead[i]->Scale(1.0/purity_values[i]);
+
+        hbkg_xJ_lead[i]->Scale((1-purity_values[i])/purity_values[i]);
+        hbkg_Rg_lead[i]->Scale((1-purity_values[i])/purity_values[i]);
+        hbkg_angu_lead[i]->Scale((1-purity_values[i])/purity_values[i]);
+        hbkg_ktdyn_lead[i]->Scale((1-purity_values[i])/purity_values[i]);
+
+        hxJ_lead[i]->Add(hbkg_xJ_lead[i],-1);
+        hRg_lead[i]->Add(hbkg_Rg_lead[i],-1);
+        hangu_lead[i]->Add(hbkg_angu_lead[i],-1);
+        hktdyn_lead[i]->Add(hbkg_ktdyn_lead[i],-1);
+    }
+    // -------- End Purity Subtraction
+
+    TFile *fout;
+    fout = new TFile(output_path + "/OutputPlots_"+label+"/Output_"+label+".root", "recreate");
+    for (std::size_t i = 0; i < ncent; ++i) {
+        hnPho[i]->Write("",TObject::kOverwrite);
+        hnPhosel[i]->Write("",TObject::kOverwrite);
+        hnJet[i]->Write("",TObject::kOverwrite);
+
+        hdphi_all[i]->Write("",TObject::kOverwrite);
+        hxJ_all[i]->Write("",TObject::kOverwrite);
+        hRg_all[i]->Write("",TObject::kOverwrite);
+        hangu_all[i]->Write("",TObject::kOverwrite);
+        hktdyn_all[i]->Write("",TObject::kOverwrite);
+
+        hdphi_lead[i]->Write("",TObject::kOverwrite);
+        hxJ_lead[i]->Write("",TObject::kOverwrite);
+        hRg_lead[i]->Write("",TObject::kOverwrite);
+        hangu_lead[i]->Write("",TObject::kOverwrite);
+        hktdyn_lead[i]->Write("",TObject::kOverwrite);
+
+        h_Rg_xJ[i]->Write("",TObject::kOverwrite);
+        h_angu_xJ[i]->Write("",TObject::kOverwrite);
+        h_ktdyn_xJ[i]->Write("",TObject::kOverwrite);
+    }
+    /*
     float S = hdphi_all[0]->Integral(hdphi_all[0]->FindBin(2*TMath::Pi()/3),hdphi_all[0]->GetNbinsX()+2);
     float S_B = hdphi_all[0]->Integral(hdphi_all[0]->FindBin(TMath::Pi()/3),hdphi_all[0]->FindBin(2*TMath::Pi()/3)-1);
     std::cout<<"S = "<<S<<"    |  S+B = "<<S_B<<std::endl;
     std::cout<<"S/S+B = "<<S/S_B<<std::endl;
-
+    
     for (std::size_t i = 0; i < ncent; ++i) {
         std::cout<<"Number of Photons in "<<min_cent[i]/2<<" - "<<max_cent[i]/2<<" = "<<hnPho[i]->GetSum()<<std::endl;
         std::cout<<"Number of Selected Photons in "<<min_cent[i]/2<<" - "<<max_cent[i]/2<<" = "<<hnPhosel[i]->GetSum()<<std::endl;
         std::cout<<"Number of Leading Jets for Selected Photons in "<<min_cent[i]/2<<" - "<<max_cent[i]/2<<" = "<<hnJet[i]->GetSum()<<std::endl;
-        if(i>2){
-            hdphi_all[i]->Rebin(4);
-            hxJ_all[i]->Rebin(4);
-            hRg_all[i]->Rebin(4);
-            hangu_all[i]->Rebin(4);
-            hktdyn_all[i]->Rebin(4);
-            hdphi_lead[i]->Rebin(4);
-            hxJ_lead[i]->Rebin(4);
-            hRg_lead[i]->Rebin(4);
-            hangu_lead[i]->Rebin(4);
-            hktdyn_lead[i]->Rebin(4);
-        }
-    }
+    }*/
 
-    std::vector<TString>sel = {"#gamma_{pT}>100","|#eta|<1.44",Form("H/E<%6.4f",cut_HoverE),Form("#sigma_{#eta#eta}<%6.4f",cut_SIEIE),Form("SumIso<%6.4f",cut_SumIso)};    
+    std::vector<TString>sel = {Form("#gamma p_{T}>%.0f, Jet p_{T}>%.0f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,min_jet_pt),"|#eta|<1.44",Form("H/E<%6.4f",cut_HoverE),Form("SumIso<%6.4f",cut_SumIso),Form("#sigma_{#eta#eta}<%6.4f",cut_SIEIE)};    
 
-    Plot_hist({hdphi_all[3],hdphi_all[4],hdphi_all[5]},{"Cent. 0-20%","Cent. 20-50%","Cent. 50-90%","dphi_all"},"leftlog",sel);
-    Plot_hist({hxJ_all[3],hxJ_all[4],hxJ_all[5]},{"Cent. 0-20%","Cent. 20-50%","Cent. 50-90%","xJ_all"},"right",sel);
-    Plot_hist({hRg_all[3],hRg_all[4],hRg_all[5]},{"Cent. 0-20%","Cent. 20-50%","Cent. 50-90%","Rg_all"},"right",sel);
-    Plot_hist({hangu_all[3],hangu_all[4],hangu_all[5]},{"Cent. 0-20%","Cent. 20-50%","Cent. 50-90%","angu_all"},"right",sel);
-    Plot_hist({hktdyn_all[3],hktdyn_all[4],hktdyn_all[5]},{"Cent. 0-20%","Cent. 20-50%","Cent. 50-90%","ktdyn_all"},"rightlog",sel);
+    const int ind1 = 3;
+    const int ind2 = 4;
+    const int ind3 = 1;
+    /* // All Recoil Jets
+    Plot_hist({hdphi_all[ind1],hdphi_all[ind2],hdphi_all[ind3]},{Form("Cent. %d-%d%%",min_cent[ind1]/2,max_cent[ind1]/2),Form("Cent. %d-%d%%",min_cent[ind2]/2,max_cent[ind2]/2),Form("Cent. %d-%d%%",min_cent[ind3]/2,max_cent[ind3]/2),"dphi_all"},"leftlog_norm",sel);
+    Plot_hist({hxJ_all[ind1],hxJ_all[ind2],hxJ_all[ind3]},{Form("Cent. %d-%d%%",min_cent[ind1]/2,max_cent[ind1]/2),Form("Cent. %d-%d%%",min_cent[ind2]/2,max_cent[ind2]/2),Form("Cent. %d-%d%%",min_cent[ind3]/2,max_cent[ind3]/2),"xJ_all"},"right_norm",sel);
+    Plot_hist({hRg_all[ind1],hRg_all[ind2],hRg_all[ind3]},{Form("Cent. %d-%d%%",min_cent[ind1]/2,max_cent[ind1]/2),Form("Cent. %d-%d%%",min_cent[ind2]/2,max_cent[ind2]/2),Form("Cent. %d-%d%%",min_cent[ind3]/2,max_cent[ind3]/2),"Rg_all"},"right_norm",sel);
+    Plot_hist({hangu_all[ind1],hangu_all[ind2],hangu_all[ind3]},{Form("Cent. %d-%d%%",min_cent[ind1]/2,max_cent[ind1]/2),Form("Cent. %d-%d%%",min_cent[ind2]/2,max_cent[ind2]/2),Form("Cent. %d-%d%%",min_cent[ind3]/2,max_cent[ind3]/2),"angu_all"},"right_norm",sel);
+    Plot_hist({hktdyn_all[ind1],hktdyn_all[ind2],hktdyn_all[ind3]},{Form("Cent. %d-%d%%",min_cent[ind1]/2,max_cent[ind1]/2),Form("Cent. %d-%d%%",min_cent[ind2]/2,max_cent[ind2]/2),Form("Cent. %d-%d%%",min_cent[ind3]/2,max_cent[ind3]/2),"ktdyn_all"},"rightlog_norm",sel);
+    */
 
-    Plot_hist({hdphi_lead[3],hdphi_lead[4],hdphi_lead[5]},{"Cent. 0-20%","Cent. 20-50%","Cent. 50-90%","dphi_lead"},"leftflowlog",sel);
-    Plot_hist({hxJ_lead[3],hxJ_lead[4],hxJ_lead[5]},{"Cent. 0-20%","Cent. 20-50%","Cent. 50-90%","xJ_lead"},"rightflow",sel);
-    Plot_hist({hRg_lead[3],hRg_lead[4],hRg_lead[5]},{"Cent. 0-20%","Cent. 20-50%","Cent. 50-90%","Rg_lead"},"rightflow",sel);
-    Plot_hist({hangu_lead[3],hangu_lead[4],hangu_lead[5]},{"Cent. 0-20%","Cent. 20-50%","Cent. 50-90%","angu_lead"},"rightflow",sel);
-    Plot_hist({hktdyn_lead[3],hktdyn_lead[4],hktdyn_lead[5]},{"Cent. 0-20%","Cent. 20-50%","Cent. 50-90%","ktdyn_lead"},"rightflowlog",sel);
-
+    // Signal Leading Recoil Jet
+    sel.push_back("Sig Reg - Corrected");
+    Plot_hist({hdphi_lead[ind1],hdphi_lead[ind2],hdphi_lead[ind3]},{Form("Cent. %d-%d%%",min_cent[ind1]/2,max_cent[ind1]/2),Form("Cent. %d-%d%%",min_cent[ind2]/2,max_cent[ind2]/2),Form("Cent. %d-%d%%",min_cent[ind3]/2,max_cent[ind3]/2),"dphi_lead"},"leftflowlog",sel);
+    Plot_hist({hxJ_lead[ind1],hxJ_lead[ind2],hxJ_lead[ind3]},{Form("Cent. %d-%d%%",min_cent[ind1]/2,max_cent[ind1]/2),Form("Cent. %d-%d%%",min_cent[ind2]/2,max_cent[ind2]/2),Form("Cent. %d-%d%%",min_cent[ind3]/2,max_cent[ind3]/2),"xJ_lead"},"rightflow",sel);
+    Plot_hist({hRg_lead[ind1],hRg_lead[ind2],hRg_lead[ind3]},{Form("Cent. %d-%d%%",min_cent[ind1]/2,max_cent[ind1]/2),Form("Cent. %d-%d%%",min_cent[ind2]/2,max_cent[ind2]/2),Form("Cent. %d-%d%%",min_cent[ind3]/2,max_cent[ind3]/2),"Rg_lead"},"rightflow",sel);
+    Plot_hist({hangu_lead[ind1],hangu_lead[ind2],hangu_lead[ind3]},{Form("Cent. %d-%d%%",min_cent[ind1]/2,max_cent[ind1]/2),Form("Cent. %d-%d%%",min_cent[ind2]/2,max_cent[ind2]/2),Form("Cent. %d-%d%%",min_cent[ind3]/2,max_cent[ind3]/2),"angu_lead"},"rightflow",sel);
+    Plot_hist({hktdyn_lead[ind1],hktdyn_lead[ind2],hktdyn_lead[ind3]},{Form("Cent. %d-%d%%",min_cent[ind1]/2,max_cent[ind1]/2),Form("Cent. %d-%d%%",min_cent[ind2]/2,max_cent[ind2]/2),Form("Cent. %d-%d%%",min_cent[ind3]/2,max_cent[ind3]/2),"ktdyn_lead"},"rightflowlog",sel);
+    sel.pop_back();
+    
     Plot_hist2D({h_Rg_xJ[0],h_angu_xJ[0],h_ktdyn_xJ[0]},{"Rg_xJ_0_30","Angu_xJ_0_30","Ktdyn_xJ_0_30"},"text",{"Cent. 0-30%"});
+
+    // Background Leading Recoil Jet
+    sel.pop_back();
+    sel.push_back(Form("#sigma_{#eta#eta}>=%6.4f",cut_SIEIE));
+    sel.push_back("Bkg Reg - SIEIE");
+    Plot_hist({hbkg_xJ_lead[ind1],hbkg_xJ_lead[ind2],hbkg_xJ_lead[ind3]},{Form("Cent. %d-%d%%",min_cent[ind1]/2,max_cent[ind1]/2),Form("Cent. %d-%d%%",min_cent[ind2]/2,max_cent[ind2]/2),Form("Cent. %d-%d%%",min_cent[ind3]/2,max_cent[ind3]/2),"xJ_lead_bkg"},"rightflow",sel);
+    Plot_hist({hbkg_Rg_lead[ind1],hbkg_Rg_lead[ind2],hbkg_Rg_lead[ind3]},{Form("Cent. %d-%d%%",min_cent[ind1]/2,max_cent[ind1]/2),Form("Cent. %d-%d%%",min_cent[ind2]/2,max_cent[ind2]/2),Form("Cent. %d-%d%%",min_cent[ind3]/2,max_cent[ind3]/2),"Rg_lead_bkg"},"rightflow",sel);
+    Plot_hist({hbkg_angu_lead[ind1],hbkg_angu_lead[ind2],hbkg_angu_lead[ind3]},{Form("Cent. %d-%d%%",min_cent[ind1]/2,max_cent[ind1]/2),Form("Cent. %d-%d%%",min_cent[ind2]/2,max_cent[ind2]/2),Form("Cent. %d-%d%%",min_cent[ind3]/2,max_cent[ind3]/2),"angu_lead_bkg"},"rightflow",sel);
+    Plot_hist({hbkg_ktdyn_lead[ind1],hbkg_ktdyn_lead[ind2],hbkg_ktdyn_lead[ind3]},{Form("Cent. %d-%d%%",min_cent[ind1]/2,max_cent[ind1]/2),Form("Cent. %d-%d%%",min_cent[ind2]/2,max_cent[ind2]/2),Form("Cent. %d-%d%%",min_cent[ind3]/2,max_cent[ind3]/2),"ktdyn_lead_bkg"},"rightflowlog",sel);
+
     
     printf("\n");
+    fout->Close();
 }
 
 void Plot_hist(std::vector<TH1F*> hist,std::vector<TString> histname,TString opt,std::vector<TString> eopt){
@@ -343,6 +500,8 @@ void Plot_hist(std::vector<TH1F*> hist,std::vector<TString> histname,TString opt
             hist[ihist]->SetLineColor(colarray[ihist]);
             hist[ihist]->SetMarkerColor(colarray[ihist]);
             hist[ihist]->SetMarkerStyle(markarray[ihist]);
+        }
+        if(opt.Contains("norm")){
             hist[ihist]->Scale(1.0/hist[ihist]->Integral(0,hist[ihist]->GetNbinsX()+2));
         }
         if(opt.Contains("flow"))
@@ -373,7 +532,7 @@ void Plot_hist(std::vector<TH1F*> hist,std::vector<TString> histname,TString opt
         latex.DrawLatexNDC(0.78,0.92,eopt[0]);
     }
     else if(eopt.size()>=2){
-        latex.DrawLatexNDC(0.5,0.92,eopt[0]);
+        latex.DrawLatexNDC(0.4,0.92,eopt[0]);
         latex.DrawLatexNDC(0.78,0.92,eopt[1]);
     }    
     latex.SetTextSize(0.025);
@@ -390,7 +549,7 @@ void Plot_hist(std::vector<TH1F*> hist,std::vector<TString> histname,TString opt
         }
     }
     gPad->Update();
-    c.SaveAs(input_path + "/OutputPlots_"+label+"/"+histname.back()+".png");
+    c.SaveAs(output_path + "/OutputPlots_"+label+"/"+histname.back()+".png");
     std::cout<<histname.back()<<" has been saved"<<std::endl;
     delete l;
     if(opt.Contains("log")) gStyle->SetOptLogy(0);
@@ -469,7 +628,7 @@ void Plot_hist2D(std::vector<TH2F*> hist,std::vector<TString> histname,TString d
             }
         }
         gPad->Update();
-        c.SaveAs(input_path + "/OutputPlots_"+label+"/"+histname[ihist]+".png");
+        c.SaveAs(output_path + "/OutputPlots_"+label+"/"+histname[ihist]+".png");
         std::cout<<histname[ihist]<<" has been saved"<<std::endl;
     }
     /*
@@ -483,7 +642,7 @@ int main(int argc, char* argv[]){
     // printf("argc = %d\n",argc);
     // printf("argv = %s\n",argv[0]);
     if(argc==3){
-        input_path = argv[1];
+        output_path = argv[1];
         label = argv[2];
         plot_jet();
     }
