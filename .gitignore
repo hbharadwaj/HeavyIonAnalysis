@@ -1,5 +1,6 @@
 *.root
 *.sh
+*.pyc
 PhotonAnalysis/test/crabJobs/crab_projects/
 CentralityAnalysis/
 Configuration/
