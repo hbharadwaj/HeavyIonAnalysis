@@ -239,7 +239,7 @@ akCs3PFJetAnalyzer = inclusiveJetAnalyzer.clone(
     )
 
 akCs3PFJetAnalyzer_substructure = inclusiveJetSubstructure.clone(
-    jetTag = cms.InputTag("akCsePFpatJetsWithBtagging"),
+    jetTag = cms.InputTag("akCs3PFpatJetsWithBtagging"),
     genjetTag = 'ak3HiSignalGenJets',
     rParam = 0.3,
     #jetPtMin=50, 

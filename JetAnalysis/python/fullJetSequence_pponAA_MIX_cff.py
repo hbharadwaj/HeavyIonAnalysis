@@ -27,16 +27,18 @@ genSignalSequence = cms.Sequence(
     genParticlesForJetsSignal +
 
     ak2HiGenJets +
+    ak3HiGenJets +
     ak4HiGenJets +
     
     signalPartons +
 
     ak2HiSignalGenJets +
+    ak3HiSignalGenJets +
     ak4HiSignalGenJets +
 
 
     ak2HiGenNjettiness +
-
+    ak3HiGenNjettiness +
     ak4HiGenNjettiness
 )
 
@@ -44,12 +46,14 @@ genCleanedSequence = cms.Sequence(
     genParticlesForJets +
 
     ak2HiGenJets +
+    ak3HiGenJets +
     ak4HiGenJets +
 
     myPartons +
     cleanedPartons +
 
     ak2HiCleanedGenJets +
+    ak3HiCleanedGenJets +
     ak4HiCleanedGenJets
 )
 
