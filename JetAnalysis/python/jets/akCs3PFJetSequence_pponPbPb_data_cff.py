@@ -238,7 +238,6 @@ akCs3PFJetAnalyzer = inclusiveJetAnalyzer.clone(
     genDroppedBranches = cms.InputTag("ak3GenJets","droppedBranches")
     )
 
-
 akCs3PFJetAnalyzer_substructure = inclusiveJetSubstructure.clone(
     jetTag = cms.InputTag("akCs3PFpatJetsWithBtagging"),
     genjetTag = 'ak3HiSignalGenJets',
@@ -247,6 +246,8 @@ akCs3PFJetAnalyzer_substructure = inclusiveJetSubstructure.clone(
     #mysdcut1=0.2,
     #mysdcut2=0,
     #mydynktcut=1,
+    #groom_type=1,
+    #groom_combine=0,
     doSubjetPurity = False,
     dopthatcut = True,
     matchJets = cms.untracked.bool(False),

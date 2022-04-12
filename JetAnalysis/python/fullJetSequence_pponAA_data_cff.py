@@ -31,6 +31,12 @@ jetSequence = cms.Sequence(
 
 
 
-    akCs3PFJetSequence 
+    akCs3PFJetSequence +
+
+    akCs4PFJets +
+
+
+
+    akCs4PFJetSequence 
 
 )

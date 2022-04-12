@@ -238,15 +238,16 @@ akCs4PFJetAnalyzer = inclusiveJetAnalyzer.clone(
     genDroppedBranches = cms.InputTag("ak4GenJets","droppedBranches")
     )
 
-
 akCs4PFJetAnalyzer_substructure = inclusiveJetSubstructure.clone(
     jetTag = cms.InputTag("akCs4PFpatJetsWithBtagging"),
     genjetTag = 'ak4HiSignalGenJets',
     rParam = 0.4,
-    jetPtMin=50, 
-    mysdcut1=0.2,
-    mysdcut2=0,
-    mydynktcut=1,
+    #jetPtMin=50, 
+    #mysdcut1=0.2,
+    #mysdcut2=0,
+    #mydynktcut=1,
+    #groom_type=1,
+    #groom_combine=0,
     doSubjetPurity = False,
     dopthatcut = True,
     matchJets = cms.untracked.bool(False),
@@ -307,7 +308,7 @@ akCs4PFJetSequence_mc = cms.Sequence(
     *
     akCs4PFpatJetsWithBtagging
     *
-    akCs4PFJetAnalyzer
+    akCs4PFJetAnalyzer_substructure
     )
 
 akCs4PFJetSequence_data = cms.Sequence(

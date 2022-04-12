@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 inclusiveJetSubstructure = cms.EDAnalyzer(
     "HiInclusiveJetSubstructure",
     jetTag = cms.InputTag("ak4PFJets"),
-    jetPtMin = cms.double(5.0),
+    jetPtMin = cms.double(10.0),
     mysdcut1 = cms.double(0.2),
     mysdcut2 = cms.double(0),
     mydynktcut=cms.double(1),

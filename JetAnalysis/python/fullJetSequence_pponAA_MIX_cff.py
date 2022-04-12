@@ -60,6 +60,9 @@ jetSequence = cms.Sequence(
     akCs2PFJetSequence +
     
     akCs3PFJets +
-    akCs3PFJetSequence 
+    akCs3PFJetSequence +
+
+    akCs4PFJets +
+    akCs4PFJetSequence  
 
 )
