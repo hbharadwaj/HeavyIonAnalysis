@@ -192,11 +192,11 @@ void plot_jet(){
 
             int nbins = 20;
 
-            hdphi_all[i] = new TH1F(Form("hdphi_all_%zu", i), Form("hdphi_all_%zu;#Delta #phi;Norm. Events", i), nbins, 0, 3.2);
-            hxJ_all[i] = new TH1F(Form("hxJ_all_%zu", i), Form("hxJ_all_%zu;All Recoil Jet p_{T}/Photon E_{T};Norm. Events", i), nbins, 0, 2.0);
-            hRg_all[i] = new TH1F(Form("hRg_all_%zu", i), Form("hRg_all_%zu;R_{g};Norm. Events", i), nbins, 0, 0.3);
-            hangu_all[i] = new TH1F(Form("hangu_all_%zu", i), Form("hangu_all_%zu;Angularity;Norm. Events", i), nbins, 0, 0.12);
-            hktdyn_all[i] = new TH1F(Form("hktdyn_all_%zu", i), Form("hktdyn_all_%zu;dyn k_{T};Norm. Events", i), nbins, 0, 20);
+            hdphi_all[i] = new TH1F(Form("hdphi_all_%zu", i), Form("hdphi_all_%zu;#Delta #phi;Events", i), nbins, 0, 3.2);
+            hxJ_all[i] = new TH1F(Form("hxJ_all_%zu", i), Form("hxJ_all_%zu;All Recoil Jet p_{T}/Photon E_{T};Events", i), nbins, 0, 2.0);
+            hRg_all[i] = new TH1F(Form("hRg_all_%zu", i), Form("hRg_all_%zu;R_{g};Events", i), nbins, 0, 0.3);
+            hangu_all[i] = new TH1F(Form("hangu_all_%zu", i), Form("hangu_all_%zu;Angularity;Events", i), nbins, 0, 0.12);
+            hktdyn_all[i] = new TH1F(Form("hktdyn_all_%zu", i), Form("hktdyn_all_%zu;dyn k_{T};Events", i), nbins, 0, 20);
 
             hdphi_lead[i] = new TH1F(Form("hdphi_lead_%zu", i), Form("hdphi_lead_%zu;#Delta #phi;Norm. per Jet", i), nbins, 0, 3.2);
             hxJ_lead[i] = new TH1F(Form("hxJ_lead_%zu", i), Form("hxJ_lead_%zu;Lead Recoil Jet p_{T}/Photon E_{T};Norm. per Jet", i), nbins, 0, 2.0);
@@ -213,10 +213,10 @@ void plot_jet(){
             hbkg_nPhosel[i] = new TH1F(Form("hbkg_nPhosel_%zu", i), Form("hbkg_nPhosel_%zu;nPho;Norm. Events", i), 1, 0, 1);
             hbkg_nJet[i] = new TH1F(Form("hbkg_nJet_%zu", i), Form("hbkg_nJet_%zu;nJet;Norm. Events", i), 1, 0, 1);
 
-            hbkg_xJ_all[i] = new TH1F(Form("hbkg_xJ_all_%zu", i), Form("hbkg_xJ_all_%zu;All Recoil Jet p_{T}/Photon E_{T};Norm. Events", i), nbins, 0, 2.0);
-            hbkg_Rg_all[i] = new TH1F(Form("hbkg_Rg_all_%zu", i), Form("hbkg_Rg_all_%zu;R_{g};Norm. Events", i), nbins, 0, 0.3);
-            hbkg_angu_all[i] = new TH1F(Form("hbkg_angu_all_%zu", i), Form("hbkg_angu_all_%zu;Angularity;Norm. Events", i), nbins, 0, 0.12);
-            hbkg_ktdyn_all[i] = new TH1F(Form("hbkg_ktdyn_all_%zu", i), Form("hbkg_ktdyn_all_%zu;dyn k_{T};Norm. Events", i), nbins, 0, 20);
+            hbkg_xJ_all[i] = new TH1F(Form("hbkg_xJ_all_%zu", i), Form("hbkg_xJ_all_%zu;All Recoil Jet p_{T}/Photon E_{T};Events", i), nbins, 0, 2.0);
+            hbkg_Rg_all[i] = new TH1F(Form("hbkg_Rg_all_%zu", i), Form("hbkg_Rg_all_%zu;R_{g};Events", i), nbins, 0, 0.3);
+            hbkg_angu_all[i] = new TH1F(Form("hbkg_angu_all_%zu", i), Form("hbkg_angu_all_%zu;Angularity;Events", i), nbins, 0, 0.12);
+            hbkg_ktdyn_all[i] = new TH1F(Form("hbkg_ktdyn_all_%zu", i), Form("hbkg_ktdyn_all_%zu;dyn k_{T};Events", i), nbins, 0, 20);
 
             hbkg_xJ_lead[i] = new TH1F(Form("hbkg_xJ_lead_%zu", i), Form("hbkg_xJ_lead_%zu;Lead Recoil Jet p_{T}/Photon E_{T};Norm. per Jet", i), nbins, 0, 2.0);
             hbkg_Rg_lead[i] = new TH1F(Form("hbkg_Rg_lead_%zu", i), Form("hbkg_Rg_lead_%zu;R_{g};Norm. per Jet", i), nbins, 0, 0.3);

@@ -110,11 +110,15 @@ void overlay_stack(std::vector<TH1F*> hist,std::vector<TString> histname,TString
     rp1->Draw();
     rp1->GetLowerRefYaxis()->SetNdivisions(10);
     rp1->GetLowerRefYaxis()->SetLabelSize(0.03);
-    rp1->GetLowerRefGraph()->SetMaximum(1.5);
-    rp1->GetLowerRefGraph()->SetMinimum(0.5);
+    if(!opt.Contains("log")){
+        rp1->GetLowerRefGraph()->SetMaximum(1.5);
+        rp1->GetLowerRefGraph()->SetMinimum(0.5);
+    }
     rp1->GetLowerRefYaxis()->SetTitle("Ratio");
     if(!opt.Contains("log"))
         hs->SetMaximum(ymax*1.1);
+    else
+        hs->SetMaximum(ymax*2);
     if(opt.Contains("label")){
         // rp1->GetLowerRefXaxis()->SetTitle(histname.at(histname.size()-2));
         rp1->GetUpperRefYaxis()->SetTitle(histname.at(histname.size()-1));
@@ -239,6 +243,8 @@ void overlay(std::vector<TH1F*> hist,std::vector<TString> histname,TString opt,s
     }
     if(!opt.Contains("log"))
         hist[0]->SetMaximum(ymax*1.1);
+    else
+        hist[0]->SetMaximum(ymax*2);
         
     // lower plot will be in pad
     c.cd();          // Go back to the main canvas before defining pad2
@@ -252,15 +258,17 @@ void overlay(std::vector<TH1F*> hist,std::vector<TString> histname,TString opt,s
     pad2->cd();       // pad2 becomes the current pad
 
     // Define the ratio plot
-    TH1F *hratio;
+    TH1F *hratio = (TH1F*)hist[0]->Clone(histname[0]);
     for(std::size_t ihist=1; ihist<hist.size();ihist++){
         hratio = (TH1F*)hist[ihist]->Clone(histname[ihist]);
         hratio->SetLineColor(colarray[ihist]);
         hratio->SetMarkerColor(colarray[ihist]);
         hratio->SetMarkerStyle(markarray[ihist]);   
 
-        hratio->SetMinimum(0.5);  // Define Y ..
-        hratio->SetMaximum(1.5); // .. range
+        if(!opt.Contains("log")){
+            hratio->SetMinimum(0.5);  // Define Y ..
+            hratio->SetMaximum(1.5); // .. range
+        }
 
         hratio->Sumw2();
         hratio->Divide(hist[0]);
@@ -531,13 +539,14 @@ int main(int argc, char* argv[]){
 
     gROOT->SetBatch();
     gErrorIgnoreLevel = kFatal;
-    
-    if(argc%2!=0 && argc>=7){  // last entry is the histogram label string
-        TString DIR = output_path + "OverlayPlots";
-        TString makedir = "mkdir -p " + DIR;
-        const char *mkDIR = makedir.Data();
-        gSystem->Exec(mkDIR);
+    TString DIR = output_path + "OverlayPlots";
+    TString makedir = "mkdir -p " + DIR;
+    const char *mkDIR = makedir.Data();
+    gSystem->Exec(mkDIR);
 
+    TString temphistname = (TString)argv[argc-2];
+    
+    if(argc%2!=0 && argc>=7 && !temphistname.EndsWith(".root")){  // last entry is the histogram label string
         std::vector<TH1F*> h;
         std::vector<TString>hname;
         centstring = argv[argc-1]; 
@@ -556,11 +565,12 @@ int main(int argc, char* argv[]){
             } 
             f = TFile::Open(temppath);
             TH1F* htemp = (TH1F*)f->Get(hlabel);
-            h.push_back(htemp);
+            h.push_back((TH1F*)htemp->Clone());
             hname.push_back(templabel);
             std::cout<<"Argument "<<i<<" = "<<temppath<<std::endl;
             std::cout<<"Argument "<<i+1<<" = "<<templabel<<std::endl;
         }
+        std::cout<<std::endl;
         hname.push_back(label);
         // Signal Selection
         std::vector<TString>sel = {"#gamma p_{T}>100, Jet p_{T}>40, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",Form("|#eta|<1.44,%d-%d%%",min_cent[icent]/2,max_cent[icent]/2),"H/E<0.1372"};
@@ -572,8 +582,81 @@ int main(int argc, char* argv[]){
         // sel.push_back("Sig Reg - Corrected");
         overlay(h,hname,"rightflow",sel);
     }
-    else if(argc%2==0){ // Loop over all histograms in the root file
-        printf("To be implemented");
+    else if(argc%2==0 || temphistname.EndsWith(".root")){ // Loop over all histograms in the root file of specified centrality
+        std::vector<TH1F*> h_file;
+        std::vector<std::vector<TH1F*>> h_all_file;
+        std::vector<TString>hname;
+        std::vector<TString>labelname;
+        centstring = argv[argc-1]; 
+        Int_t icent = centstring.Atoi();
+
+        for(int i=1; i<argc-2;i+=2){
+            TFile *f;
+            TString temppath = (TString)argv[i];
+            TString templabel = (TString)argv[i+1];
+            if(!temppath.EndsWith(".root")){
+                printf("\n<file> Not a Root file\n");
+                printf("Run with \n ./overlay <file1> <label1> <file2> <label2> <histname> <centrality_index>\n");
+                return -1;
+            } 
+            f = TFile::Open(temppath);
+            hname.push_back(templabel);
+            TList *list = f->GetListOfKeys();
+            TObject *obj = list->First(); //! does this skip the first entry? 
+            while ((obj = list->After(obj))){
+                TString hlabel = obj->GetName();
+                if(!hlabel.Contains(centstring)) continue;
+                if(i==1)
+                    labelname.push_back(TString(hlabel(0,hlabel.Length()-2)));
+                TH1F* htemp = (TH1F*)f->Get(hlabel);
+                // htemp->SetDirectory(0);  //! Is this needed when opening multiple files?
+                h_file.push_back((TH1F*)htemp->Clone());                
+            }
+            h_all_file.push_back(h_file);
+            h_file.clear();   //! This could possibly deallocate the memory depending on the compiler - VERIFY!!!!
+            std::cout<<"Argument "<<i<<" = "<<temppath<<std::endl;
+            std::cout<<"Argument "<<i+1<<" = "<<templabel<<std::endl;
+        }
+        std::cout<<std::endl;
+        
+        std::vector<TH1F*> h;
+        // Selection String
+        std::vector<TString>sel;
+        std::vector<TString>headsel = {"#gamma p_{T}>100, Jet p_{T}>40, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",Form("|#eta|<1.44,%d-%d%%",min_cent[icent]/2,max_cent[icent]/2),"H/E<0.1372"};
+        std::vector<TString>sigsel ={"SumIso<1.4549","#sigma_{#eta#eta}<0.0104"};      
+        std::vector<TString>bkg1_sel = {"SumIso<1.4549","#sigma_{#eta#eta}>=0.0104"}; 
+        std::vector<TString>bkg2_sel = {"10<SumIso<=20","#sigma_{#eta#eta}<0.0104"};  
+        TString drawopt = "flow";
+
+        for(int ilabel = 0; ilabel<labelname.size(); ilabel++){
+            drawopt = "flow";
+            h.clear();
+            sel.clear();
+            if(labelname[ilabel].Contains("bkg")){
+                sel.insert(std::end(sel),std::begin(headsel),std::end(headsel));  
+                // sel.insert(std::end(sel),std::begin(bkg1_sel),std::end(bkg1_sel));  
+                drawopt+="norm";
+            }
+            else{
+                sel.insert(std::end(sel),std::begin(headsel),std::end(headsel));  
+                sel.insert(std::end(sel),std::begin(sigsel),std::end(sigsel));  
+            }
+            if(labelname[ilabel].Contains("ktdyn")){
+                drawopt+="log";
+            }
+            if(labelname[ilabel].Contains("dphi")){
+                drawopt+="logleft";
+            }
+                
+            label = labelname[ilabel];
+            hname.push_back(labelname[ilabel]);
+            for(int ifile = 0; ifile<h_all_file.size(); ifile++){
+                h.push_back(h_all_file[ifile][ilabel]);
+            }
+            overlay(h,hname,drawopt,sel);
+            hname.pop_back();
+        }
+        
     }
     else{
         printf("Run with \n ./overlay <file1> <label1> <file2> <label2> <histname> <centrality_index>\n");

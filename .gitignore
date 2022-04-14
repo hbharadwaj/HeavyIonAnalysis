@@ -1,6 +1,8 @@
 *.root
 *.sh
 *.pyc
+JetAnalysis/test/plot_jet
+etAnalysis/test/overlay
 PhotonAnalysis/test/crabJobs/crab_projects/
 CentralityAnalysis/
 Configuration/
