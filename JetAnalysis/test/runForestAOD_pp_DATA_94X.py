@@ -26,13 +26,13 @@ process.HiForest.HiForestVersion = cms.string(version)
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        'file:/afs/cern.ch/work/r/rbi/public/forest/HighEGJet_Run2017G_17Nov2017-v2_AOD_large.root'
+        "file:/data_CMS/cms/bharikri/AODFiles/pp_Data/2017_no_UL/00062D8C-8E22-E811-850B-0CC47A6C0758.root"
     )
 )
 
 # Number of events we want to process, -1 = all events
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(8))
+    input = cms.untracked.int32(100))
 
 #####################################################################################
 # Load Global Tag, Geometry, etc.
@@ -150,9 +150,9 @@ process.ana_step = cms.Path(
     # process.egmGsfElectronIDSequence +
     process.ggHiNtuplizer +
     process.ggHiNtuplizerGED +
-    process.pfcandAnalyzer +
-    process.HiForest +
-    process.trackSequencesPP
+    #process.pfcandAnalyzer +
+    process.HiForest
+    #process.trackSequencesPP
 )
 
 #####################################################################################
