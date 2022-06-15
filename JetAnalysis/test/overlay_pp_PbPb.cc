@@ -37,6 +37,7 @@ void overlay_stack(std::vector<TH1F*> hist,std::vector<TString> histname,TString
     // "left","right", "bcenter" = Legend location 
     // "label" = 2 before the last entries of histname is the X and Y label otherwise use the default 
     // "log" = Set log scale
+    // "width" = Divide by Bin Width
     // "OBJ" = optional stuff for later? 
 
     if(hist.size()<2){
@@ -61,7 +62,6 @@ void overlay_stack(std::vector<TH1F*> hist,std::vector<TString> histname,TString
                                         20, 25, 22, 32, 29, 28, 39, 40,
                                         24, 21, 26, 23, 30, 34, 37, 41};
 
-    
     TCanvas c;
     TLegend *l;
     float leg_x1 = 0.7;
@@ -95,7 +95,10 @@ void overlay_stack(std::vector<TH1F*> hist,std::vector<TString> histname,TString
         hist[ihist]->SetMarkerColor(colarray[ihist]);
         hist[ihist]->SetMarkerStyle(markarray[ihist]);        
         if(opt.Contains("norm")){
-            hist[ihist]->Scale(1.0/hist[ihist]->Integral(0,hist[ihist]->GetNbinsX()+2),"width");
+            hist[ihist]->Scale(1.0/hist[ihist]->Integral(0,hist[ihist]->GetNbinsX()+2));
+        }
+        if(opt.Contains("width")){
+            hist[ihist]->Scale(1.0,"width");
         }
         if(opt.Contains("flow"))
             hist[ihist]->GetXaxis()->SetRange(0,hist[ihist]->GetNbinsX()+2);   
@@ -117,6 +120,9 @@ void overlay_stack(std::vector<TH1F*> hist,std::vector<TString> histname,TString
     rp1->Draw();
     rp1->GetLowerRefYaxis()->SetNdivisions(10);
     rp1->GetLowerRefYaxis()->SetLabelSize(0.03);
+    rp1->GetCalculationOutputGraph()->SetLineColor(colarray[1]);
+    rp1->GetCalculationOutputGraph()->SetMarkerColor(colarray[1]);
+    rp1->GetCalculationOutputGraph()->SetMarkerStyle(markarray[1]);
     if(!opt.Contains("log")){
         rp1->GetLowerRefGraph()->SetMaximum(1.5);
         rp1->GetLowerRefGraph()->SetMinimum(0.5);
@@ -163,7 +169,7 @@ void overlay_stack(std::vector<TH1F*> hist,std::vector<TString> histname,TString
         }
     }
     gPad->Update();
-    c.SaveAs(output_path + "/OverlayPlots/"+histname.back()+"_"+centstring+".png");
+    c.SaveAs(output_path + "/OverlayPlots_ppPbPb/"+histname.back()+"_"+centstring+".png");
     std::cout<<histname.back()<<"_"<<centstring<<" has been saved"<<std::endl;
     delete l;
     if(opt.Contains("log")) gStyle->SetOptLogy(0);
@@ -178,6 +184,7 @@ void overlay(std::vector<TH1F*> hist,std::vector<TString> histname,TString opt,s
     // "left","right", "bcenter" = Legend location 
     // "label" = 2 before the last entries of histname is the X and Y label otherwise use the default 
     // "log" = Set log scale
+    // "width" = Divide by Bin Width
     // "OBJ" = optional stuff for later? 
 
     if(hist.size()<2){
@@ -243,7 +250,10 @@ void overlay(std::vector<TH1F*> hist,std::vector<TString> histname,TString opt,s
         hist[ihist]->SetMarkerColor(colarray[ihist]);
         hist[ihist]->SetMarkerStyle(markarray[ihist]);        
         if(opt.Contains("norm")){
-            hist[ihist]->Scale(1.0/hist[ihist]->Integral(0,hist[ihist]->GetNbinsX()+2),"width");
+            hist[ihist]->Scale(1.0/hist[ihist]->Integral(0,hist[ihist]->GetNbinsX()+2));
+        }
+        if(opt.Contains("width")){
+            hist[ihist]->Scale(1.0,"width");
         }
         if(opt.Contains("flow"))
             hist[ihist]->GetXaxis()->SetRange(0,hist[ihist]->GetNbinsX()+2);   
@@ -346,17 +356,98 @@ void overlay(std::vector<TH1F*> hist,std::vector<TString> histname,TString opt,s
         }
     }
     gPad->Update();
-    c.SaveAs(output_path + "/OverlayPlots/"+histname.back()+"_"+centstring+".png");
+    c.SaveAs(output_path + "/OverlayPlots_ppPbPb/"+histname.back()+"_"+centstring+".png");
+    c.Write(histname.back());
     std::cout<<histname.back()<<"_"<<centstring<<" has been saved"<<std::endl;
     delete l;
     if(opt.Contains("log")) gStyle->SetOptLogy(0);
+}
+
+
+int overlay_pp_PbPb(TString in_file1, TString in_label1, TString in_file2, TString in_label2, TString in_histname,TString in_xlabel="",TString in_ylabel="", TString in_cent = "0"){
+
+    // gROOT->SetBatch();
+    gErrorIgnoreLevel = kFatal;
+    TString DIR = output_path + "OverlayPlots_ppPbPb";
+    TString makedir = "mkdir -p " + DIR;
+    const char *mkDIR = makedir.Data();
+    gSystem->Exec(mkDIR);
+
+    TString temphistname = in_histname;//(TString)argv[argc-2];
+    
+    if(!temphistname.EndsWith(".root")){  // last entry is the histogram label string argc%2!=0 && argc>=7 && 
+        std::vector<TH1F*> h;
+        std::vector<TString>hname;
+        centstring = in_cent;// argv[argc-1]; 
+        Int_t icent = centstring.Atoi();
+        label = in_histname;// (TString)argv[argc-2];
+        TString hlabel = label; //+"_"+centstring;
+
+        // for(int i=1; i<argc-2;i+=2){
+            TFile *f;
+            TString temppath = in_file1;// (TString)argv[i];
+            TString templabel = in_label1;//(TString)argv[i+1];
+            if(!temppath.EndsWith(".root")){
+                printf("\n<file> Not a Root file\n");
+                printf("Run with \n root -l \n .L overlay_pp_PbPb.cc \n overlay_pp_PbPb(<file1> <label1> <file2> <label2> <histname> <<xlabel>> <<ylabel>> <<centrality_index>>)\n");
+                return -1;
+            } 
+            f = TFile::Open(temppath);
+            // TCanvas* ctemp = (TCanvas*)f->Get(hlabel);
+            // TList* listtemp = (TList*)ctemp->GetListOfPrimitives();
+            // THStack* stacktemp = (THStack*)listtemp->At(1);
+            // TList* listtemp_hist = (TList*)stacktemp->GetHists();
+            TH1F* htemp = (TH1F*)f->Get(hlabel);
+            h.push_back((TH1F*)htemp->Clone());
+            hname.push_back(templabel);
+            std::cout<<"Argument 1 = "<<temppath<<std::endl;
+            std::cout<<"Argument 2 = "<<templabel<<std::endl;
+            // f->Close();
+
+            TFile *f2;
+            temppath = in_file2;// (TString)argv[i];
+            templabel = in_label2;//(TString)argv[i+1];
+            if(!temppath.EndsWith(".root")){
+                printf("\n<file> Not a Root file\n");
+                printf("Run with \n root -l \n .L overlay_pp_PbPb.cc \n overlay_pp_PbPb(<file1> <label1> <file2> <label2> <histname> <<xlabel>> <<ylabel>> <<centrality_index>>)\n");
+                return -1;
+            } 
+            f2 = TFile::Open(temppath);
+            // TCanvas* ctemp = (TCanvas*)f->Get(hlabel);
+            // TList* listtemp = (TList*)ctemp->GetListOfPrimitives();
+            // THStack* stacktemp = (THStack*)listtemp->At(1);
+            // TList* listtemp_hist = (TList*)stacktemp->GetHists();
+            TH1F* htemp2 = (TH1F*)f2->Get(hlabel);
+            h.push_back((TH1F*)htemp2->Clone());
+            hname.push_back(templabel);
+            std::cout<<"Argument 3 = "<<temppath<<std::endl;
+            std::cout<<"Argument 4 = "<<templabel<<std::endl;
+            std::cout<<"Argument 5 = "<<hlabel<<std::endl;
+        // }
+        std::cout<<std::endl;
+        // hname.push_back(htemp->GetTitle());
+        // hname.push_back("NORM");    //#frac{1}{N^{jet}}#frac{dN^{2}}{dx_{J}dR_{g}}
+        hname.push_back(label);
+        // Signal Selection
+        std::vector<TString>sel = {"#gamma p_{T}>100, Jet p_{T}>40, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi","PbPb Cent. 0-30%","0<xJ<0.6"};
+
+        // sel.insert(std::end(sel),std::begin(sigsel),std::end(sigsel));  
+        // sel.push_back("Sig Reg - Corrected");
+        overlay(h,hname,"right",sel);
+        // c.Draw();
+    }
+    else{
+        printf("Run with \n ./overlay_pp_PbPb <file1> <label1> <file2> <label2> <histname> <<xlabel>> <<ylabel>> <<centrality_index>>\n");
+    }
+
+    return 0;
 }
 
 int main(int argc, char* argv[]){
 
     // gROOT->SetBatch();
     gErrorIgnoreLevel = kFatal;
-    TString DIR = output_path + "OverlayPlots";
+    TString DIR = output_path + "OverlayPlots_ppPbPb";
     TString makedir = "mkdir -p " + DIR;
     const char *mkDIR = makedir.Data();
     gSystem->Exec(mkDIR);
@@ -369,7 +460,7 @@ int main(int argc, char* argv[]){
         centstring = argv[argc-1]; 
         Int_t icent = centstring.Atoi();
         label = (TString)argv[argc-2];
-        TString hlabel = label +"_"+centstring;
+        TString hlabel = label; //+"_"+centstring;
 
         for(int i=1; i<argc-2;i+=2){
             TFile *f;
@@ -377,10 +468,14 @@ int main(int argc, char* argv[]){
             TString templabel = (TString)argv[i+1];
             if(!temppath.EndsWith(".root")){
                 printf("\n<file> Not a Root file\n");
-                printf("Run with \n ./overlay <file1> <label1> <file2> <label2> <histname> <centrality_index>\n");
+                printf("Run with \n ./overlay_pp_PbPb <file1> <label1> <file2> <label2> <histname> <centrality_index>\n");
                 return -1;
             } 
             f = TFile::Open(temppath);
+            // TCanvas* ctemp = (TCanvas*)f->Get(hlabel);
+            // TList* listtemp = (TList*)ctemp->GetListOfPrimitives();
+            // THStack* stacktemp = (THStack*)listtemp->At(1);
+            // TList* listtemp_hist = (TList*)stacktemp->GetHists();
             TH1F* htemp = (TH1F*)f->Get(hlabel);
             h.push_back((TH1F*)htemp->Clone());
             hname.push_back(templabel);
@@ -388,98 +483,103 @@ int main(int argc, char* argv[]){
             std::cout<<"Argument "<<i+1<<" = "<<templabel<<std::endl;
         }
         std::cout<<std::endl;
+        hname.push_back("R_{g}");
+        hname.push_back("#frac{1}{N^{#gamma}}#frac{d^{2}N}{dx_{J}dR_{g}}");    //
         hname.push_back(label);
         // Signal Selection
-        std::vector<TString>sel = {"#gamma p_{T}>100, Jet p_{T}>40, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",Form("|#eta|<1.44,%d-%d%%",min_cent[icent]/2,max_cent[icent]/2),Form("H/E<%6.4f",cut_HoverE)};
-        std::vector<TString>sigsel ={Form("SumIso<%6.4f",cut_SumIso),Form("#sigma_{#eta#eta}<%6.4f",cut_SIEIE)};      
-        std::vector<TString>bkg1_sel = {Form("SumIso<%6.4f",cut_SumIso),Form("#sigma_{#eta#eta}>=%6.4f",cut_SIEIE)}; 
-        std::vector<TString>bkg2_sel = {"10<SumIso<=20",Form("#sigma_{#eta#eta}<%6.4f",cut_SIEIE)};  
+        std::vector<TString>sel = {"#gamma p_{T}>100, Jet p_{T}>40, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi","PbPb Cent. 0-30%",
+        "Anti-#it{k}_{T} #it{R}=0.2","z_{cut}=0.2","0.6<xJ<1.6"};//
 
-        sel.insert(std::end(sel),std::begin(sigsel),std::end(sigsel));  
+        TFile *fout;
+        fout = new TFile(DIR+"/Output_"+label+".root", "recreate");
+        fout->cd();
+
+        // sel.insert(std::end(sel),std::begin(sigsel),std::end(sigsel));  
         // sel.push_back("Sig Reg - Corrected");
-        overlay(h,hname,"rightflow",sel);
+        overlay(h,hname,"right_label",sel);
+        fout->Close();
     }
-    else if(argc%2==0 || temphistname.EndsWith(".root")){ // Loop over all histograms in the root file of specified centrality
-        std::vector<TH1F*> h_file;
-        std::vector<std::vector<TH1F*>> h_all_file;
-        std::vector<TString>hname;
-        std::vector<TString>labelname;
-        centstring = argv[argc-1]; 
-        Int_t icent = centstring.Atoi();
+    // else if(argc%2==0 || temphistname.EndsWith(".root")){ // Loop over all histograms in the root file of specified centrality
+    //     std::vector<TH1F*> h_file;
+    //     std::vector<std::vector<TH1F*>> h_all_file;
+    //     std::vector<TString>hname;
+    //     std::vector<TString>labelname;
+    //     centstring = argv[argc-1]; 
+    //     Int_t icent = centstring.Atoi();
 
-        for(int i=1; i<argc-2;i+=2){
-            TFile *f;
-            TString temppath = (TString)argv[i];
-            TString templabel = (TString)argv[i+1];
-            if(!temppath.EndsWith(".root")){
-                printf("\n<file> Not a Root file\n");
-                printf("Run with \n ./overlay <file1> <label1> <file2> <label2> <histname> <centrality_index>\n");
-                return -1;
-            } 
-            f = TFile::Open(temppath);
-            hname.push_back(templabel);
-            TList *list = f->GetListOfKeys();
-            TObject *obj = list->First(); //! does this skip the first entry? 
-            while ((obj = list->After(obj))){
-                TString hlabel = obj->GetName();
-                if(!hlabel.Contains(centstring)) continue;
-                if(i==1)
-                    labelname.push_back(TString(hlabel(0,hlabel.Length()-2)));
-                TH1F* htemp = (TH1F*)f->Get(hlabel);
-                // htemp->SetDirectory(0);  //! Is this needed when opening multiple files?
-                h_file.push_back((TH1F*)htemp->Clone());                
-            }
-            h_all_file.push_back(h_file);
-            h_file.clear();   //! This could possibly deallocate the memory depending on the compiler - VERIFY!!!!
-            std::cout<<"Argument "<<i<<" = "<<temppath<<std::endl;
-            std::cout<<"Argument "<<i+1<<" = "<<templabel<<std::endl;
-        }
-        std::cout<<std::endl;
+    //     for(int i=1; i<argc-2;i+=2){
+    //         TFile *f;
+    //         TString temppath = (TString)argv[i];
+    //         TString templabel = (TString)argv[i+1];
+    //         if(!temppath.EndsWith(".root")){
+    //             printf("\n<file> Not a Root file\n");
+    //             printf("Run with \n ./overlay <file1> <label1> <file2> <label2> <histname> <centrality_index>\n");
+    //             return -1;
+    //         } 
+    //         f = TFile::Open(temppath);
+    //         hname.push_back(templabel);
+    //         TList *list = f->GetListOfKeys();
+    //         TObject *obj = list->First(); //! does this skip the first entry? 
+    //         while ((obj = list->After(obj))){
+    //             TString hlabel = obj->GetName();
+    //             if(!hlabel.Contains(centstring)) continue;
+    //             if(i==1)
+    //                 labelname.push_back(TString(hlabel(0,hlabel.Length()-2)));
+    //             TH1F* htemp = (TH1F*)f->Get(hlabel);
+    //             // htemp->SetDirectory(0);  //! Is this needed when opening multiple files?
+    //             h_file.push_back((TH1F*)htemp->Clone());                
+    //         }
+    //         h_all_file.push_back(h_file);
+    //         h_file.clear();   //! This could possibly deallocate the memory depending on the compiler - VERIFY!!!!
+    //         std::cout<<"Argument "<<i<<" = "<<temppath<<std::endl;
+    //         std::cout<<"Argument "<<i+1<<" = "<<templabel<<std::endl;
+    //     }
+    //     std::cout<<std::endl;
         
-        std::vector<TH1F*> h;
-        // Selection String
-        std::vector<TString>sel;
-        std::vector<TString>headsel = {"#gamma p_{T}>100, Jet p_{T}>40, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",Form("|#eta|<1.44,%d-%d%%",min_cent[icent]/2,max_cent[icent]/2),Form("H/E<%6.4f",cut_HoverE)};
-        std::vector<TString>sigsel ={Form("SumIso<%6.4f",cut_SumIso),Form("#sigma_{#eta#eta}<%6.4f",cut_SIEIE)};      
-        std::vector<TString>bkg1_sel = {Form("SumIso<%6.4f",cut_SumIso),Form("#sigma_{#eta#eta}>=%6.4f",cut_SIEIE)}; 
-        std::vector<TString>bkg2_sel = {"10<SumIso<=20",Form("#sigma_{#eta#eta}<%6.4f",cut_SIEIE)};  
-        TString drawopt = "flow";
+    //     std::vector<TH1F*> h;
+    //     // Selection String
+    //     std::vector<TString>sel;
+    //     std::vector<TString>headsel = {"#gamma p_{T}>100, Jet p_{T}>40, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",Form("|#eta|<1.44,%d-%d%%",min_cent[icent]/2,max_cent[icent]/2),Form("H/E<%6.4f",cut_HoverE)};
+    //     std::vector<TString>sigsel ={Form("SumIso<%6.4f",cut_SumIso),Form("#sigma_{#eta#eta}<%6.4f",cut_SIEIE)};      
+    //     std::vector<TString>bkg1_sel = {Form("SumIso<%6.4f",cut_SumIso),Form("#sigma_{#eta#eta}>=%6.4f",cut_SIEIE)}; 
+    //     std::vector<TString>bkg2_sel = {"10<SumIso<=20",Form("#sigma_{#eta#eta}<%6.4f",cut_SIEIE)};  
+    //     TString drawopt = "flow";
 
-        for(int ilabel = 0; ilabel<labelname.size(); ilabel++){
-            drawopt = "flow";
-            h.clear();
-            sel.clear();
-            if(labelname[ilabel].Contains("bkg")){
-                sel.insert(std::end(sel),std::begin(headsel),std::end(headsel));  
-                sel.insert(std::end(sel),std::begin(bkg2_sel),std::end(bkg2_sel));  
-                drawopt+="norm";
-            }
-            else{
-                sel.insert(std::end(sel),std::begin(headsel),std::end(headsel));  
-                sel.insert(std::end(sel),std::begin(sigsel),std::end(sigsel));  
-            }
-            if(labelname[ilabel].Contains("ktdyn")){
-                drawopt+="log";
-            }
-            if(labelname[ilabel].Contains("dphi")){
-                drawopt+="logleft";
-            }
-            if(labelname[ilabel].Contains("det")){
-                drawopt+="norm";
-            }
+    //     for(int ilabel = 0; ilabel<labelname.size(); ilabel++){
+    //         drawopt = "flow";
+    //         h.clear();
+    //         sel.clear();
+    //         if(labelname[ilabel].Contains("bkg")){
+    //             sel.insert(std::end(sel),std::begin(headsel),std::end(headsel));  
+    //             sel.insert(std::end(sel),std::begin(bkg2_sel),std::end(bkg2_sel));  
+    //             drawopt+="norm";
+    //         }
+    //         else{
+    //             sel.insert(std::end(sel),std::begin(headsel),std::end(headsel));  
+    //             sel.insert(std::end(sel),std::begin(sigsel),std::end(sigsel));  
+    //         }
+    //         if(labelname[ilabel].Contains("ktdyn")){
+    //             drawopt+="log";
+    //         }
+    //         if(labelname[ilabel].Contains("dphi")){
+    //             drawopt+="logleft";
+    //         }
+    //         if(labelname[ilabel].Contains("det")){
+    //             drawopt+="norm";
+    //         }
                 
-            label = labelname[ilabel];
-            hname.push_back(labelname[ilabel]);
-            for(int ifile = 0; ifile<h_all_file.size(); ifile++){
-                h.push_back(h_all_file[ifile][ilabel]);
-            }
-            overlay(h,hname,drawopt,sel);
-            hname.pop_back();
-        }
+    //         label = labelname[ilabel];
+    //         hname.push_back(labelname[ilabel]);
+    //         for(int ifile = 0; ifile<h_all_file.size(); ifile++){
+    //             h.push_back(h_all_file[ifile][ilabel]);
+    //         }
+    //         overlay(h,hname,drawopt,sel);
+    //         hname.pop_back();
+    //     }
         
-    }
+    // }
     else{
-        printf("Run with \n ./overlay <file1> <label1> <file2> <label2> <histname> <centrality_index>\n");
+        printf("Run with \n ./overlay_pp_PbPb <file1> <label1> <file2> <label2> <histname> <centrality_index>\n");
     }
 
     return 0;

@@ -28,7 +28,7 @@ void Plot_hist2D(std::vector<TH2D*> hist,std::vector<TString> histname,TString d
 
 void overlay(std::vector<TH1D*>,std::vector<TString> ,TString opt="label",std::vector<TString> eopt={"end"});
 
-void plot_unfolded(TString file, TString fileother, int flagdummy=1){
+void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrueY_max = 1){
     // Unfolding input contains - flag 0-19 for data, flag>=20 for different MC
     // fileother is used for 2nd MC to calculate priors - otherwise pass same input to both
     // flagdummy == 0 -> Data Corrected
@@ -36,17 +36,16 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1){
     // flagdummy == 2 -> MC True at Det level
     // Range [1,-1] -> All Bins other than Underflow and Overflow
 
-    const int bintrueY_min = 1;     
-    const int bintrueY_max = 2;
-    const int bintrueX_min = 1;
-    const int bintrueX_max = 7;
+    const int bintrueY_min = 2;    
+    int bintrueX_min = x_label.Contains("dyn")?2:1;
+    int bintrueX_max = 5;
     const int iter_ref = 5;    
 
     // inputs for Unfolding 
         const int bin_true_xj=3;
         const int bin_true_Rg=5;
         const int bin_true_angu=5;
-        const int bin_true_dynkt=7;
+        const int bin_true_dynkt=5;
 
         Double_t xjmin_true=0;
         Double_t xjmax_true=2;
@@ -56,13 +55,13 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1){
         Double_t angumax_true=0.1;
         Double_t angumin_true=0.;
 
-        Double_t dynktmax_true=12.0;
+        Double_t dynktmax_true=50.0;
         Double_t dynktmin_true=0.;
 
         Double_t xJ_true_edges[bin_true_xj+1] = {xjmin_true, 0.6, 1.6, xjmax_true};
         Double_t Rg_true_edges[bin_true_Rg+1] = {-0.05, 0, 0.05, 0.1, 0.2, Rgmax_true};
         Double_t angu_true_edges[bin_true_angu+1] = {angumin_true, 0.02, 0.04, 0.06, 0.08, angumax_true};
-        Double_t dynkt_true_edges[bin_true_dynkt+1] = {dynktmin_true, 1.0,2.0,3.0,4.0,5.0,8.0,dynktmax_true};
+        Double_t dynkt_true_edges[bin_true_dynkt+1] = {dynktmin_true, 1.5,2.5,4.0,10.0,dynktmax_true};
         Double_t xlabel_min,xlabel_max,ylabel_min,ylabel_max;
 
         if(x_label.Contains("dyn")){
@@ -112,6 +111,11 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1){
         TH1D* unfold_Y[20];     //  Unfolded - Y in specified X range
         TH1D* fold_Y[20];       //  Refolded - Y in specified X range
 
+        TH1D* nPho_data;        //  Number of Selected Photons in data
+        TH1D* nJet_data;        //  Number of Selected Jets in data
+        TH1D* nPho_mc;          //  Number of Selected Photons in MC
+        TH1D* nJet_mc;          //  Number of Selected Jets in MC
+
     // -------- End Histograms
     // ----------------------------------------------------------------------------------------------------------------
     // Read histograms 
@@ -125,24 +129,29 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1){
         if(flagdummy==2) htrue=(TH2D*)f->Get("true");
         htrue_ineff=(TH2D*)f->Get("true");
         
-        raw_X=(TH1D*)raw->ProjectionX("raw_X",1,-1);        
+        raw_X=(TH1D*)raw->ProjectionX("raw_X",0,-1);        
         htrue_X=(TH1D*)htrue->ProjectionX("true_X",bintrueY_min,bintrueY_max);
         eff_X=htrue_ineff->ProjectionX("eff_X",bintrueY_min,bintrueY_max);
         eff_X->Divide(htrue_X);
 
-        raw_Y=(TH1D*)raw->ProjectionY("raw_Y",1,-1);
+        raw_Y=(TH1D*)raw->ProjectionY("raw_Y",0,-1);
         htrue_Y=(TH1D*)htrue->ProjectionY("true_Y",bintrueX_min,bintrueX_max);
         eff_Y=htrue_ineff->ProjectionY("eff_Y",bintrueX_min,bintrueX_max);
         eff_Y->Divide(htrue_Y);
+
+        nPho_data=(TH1D*)f->Get("nPho_data");
+        nJet_data=(TH1D*)f->Get("nJet_data");
+        nPho_mc=(TH1D*)f->Get("nPho_mc");
+        nJet_mc=(TH1D*)f->Get("nJet_mc");
         
     // -------- End Read Histograms
     // ----------------------------------------------------------------------------------------------------------------
     // Iteration Loop
 
-    htrue_X->Scale(1./htrue_X->Integral(1,-1));                       
+    htrue_X->Scale(1.0/nPho_mc->Integral());
     htrue_X->Scale(1,"width");
 
-    htrue_Y->Scale(1./htrue_Y->Integral(1,-1));                       
+    htrue_Y->Scale(1.0/nPho_mc->Integral());
     htrue_Y->Scale(1,"width");
 
     for(Int_t j=0;j<15;j++){
@@ -151,19 +160,19 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1){
 
         unfold_X[j]=(TH1D*)unfold2d_iter->ProjectionX(Form("unfold_X%d",j),bintrueY_min,bintrueY_max,"");
         unfold_X[j]->Divide(eff_X); 
-        unfold_X[j]->Scale(1./unfold_X[j]->Integral(1,-1));
+        unfold_X[j]->Scale(1.0/nPho_data->Integral());
         unfold_X[j]->Scale(1,"width");
 
-        fold_X[j]=(TH1D*)fold2d_iter->ProjectionX(Form("fold_X%d",j),1,-1,"");
+        fold_X[j]=(TH1D*)fold2d_iter->ProjectionX(Form("fold_X%d",j),0,-1,"");
         fold_X[j]->Divide(raw_X);     
         
         //* Y unfold 
         unfold_Y[j]=(TH1D*)unfold2d_iter->ProjectionY(Form("unfold_Y%d",j),bintrueX_min,bintrueX_max,"");
         unfold_Y[j]->Divide(eff_Y); 
-        unfold_Y[j]->Scale(1./unfold_Y[j]->Integral(1,-1));
+        unfold_Y[j]->Scale(1.0/nPho_data->Integral());
         unfold_Y[j]->Scale(1,"width");
 
-        fold_Y[j]=(TH1D*)fold2d_iter->ProjectionY(Form("fold_Y%d",j),1,-1,"");
+        fold_Y[j]=(TH1D*)fold2d_iter->ProjectionY(Form("fold_Y%d",j),0,-1,"");
         fold_Y[j]->Divide(raw_Y); 
     }
    
@@ -219,6 +228,11 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1){
     // ------ Plotting Histograms
     TFile *fout;
     fout = new TFile(output_path + "/OutputUnfolded_"+label+"/OutputUnfolded_"+label+".root", "recreate");
+
+    unfold_X[iter_ref]->Write("",TObject::kOverwrite);
+    unfold_Y[iter_ref]->Write("",TObject::kOverwrite);
+    htrue_X->Write("",TObject::kOverwrite);
+    htrue_Y->Write("",TObject::kOverwrite);
 
     std::vector<TString>sel = {Form("#gamma p_{T}>%.0f, Jet p_{T}>%.0f, Anti-#it{k}_{T} #it{R}=0.2",100.0,40.0),"Cent. 0-30%","Bayes Unfolded","z_{cut}=0.2",y_label+" vs "+x_label};    
     std::vector<TH1D*> hist_input;
@@ -281,9 +295,9 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1){
     sel = {Form("#gamma p_{T}>%.0f, Jet p_{T}>%.0f, Anti-#it{k}_{T} #it{R}=0.2",100.0,40.0),"Cent. 0-30%"}; 
     Plot_hist({eff_X},{Form("Efficiency for true %3.2f<%s<%3.2f",ylabel_min,y_label.Data(),ylabel_max),x_label,"Efficiency","Kineff_X"},"bcenter_label",sel);
     Plot_hist({eff_Y},{Form("Efficiency for true %3.2f<%s<%3.2f",xlabel_min,x_label.Data(),xlabel_max),y_label,"Efficiency","Kineff_Y"},"bcenter_label",sel);
-    sel = {Form("#gamma p_{T}>%.0f, Jet p_{T}>%.0f, Anti-#it{k}_{T} #it{R}=0.2",100.0,40.0),"Cent. 0-30%","Bayes Unfolded","z_{cut}=0.2",Form("%3.2f<%s<%3.2f",ylabel_min,y_label.Data(),ylabel_max)};   
-    overlay({unfold_X[iter_ref],htrue_X},{"data unfolded","pythia true",x_label,flagdummy==0?"Unfolded":"True MC","X_unfolded_overlay"},"rightlog_label",sel);
-    Plot_hist({unfold_X[iter_ref],htrue_X},{"data unfolded","pythia true",x_label,flagdummy==0?"Unfolded":"True MC","X_unfolded"},"rightlog_label",sel);
+    sel = {Form("#gamma p_{T}>%.0f, Jet p_{T}>%.0f, Anti-#it{k}_{T} #it{R}=0.2",100.0,40.0),"Cent. 0-30%","Bayes Unfolded","z_{cut}=0.2",Form("%3.2f<%s<%3.2f",ylabel_min,y_label.Data(),ylabel_max)};  
+    overlay({unfold_X[iter_ref],htrue_X},{"data unfolded","pythia true",x_label,flagdummy==0?"Unfolded":"True MC","X_unfolded_overlay"},x_label.Contains("dyn")?"rightlog_label":"right_label",sel);
+    Plot_hist({unfold_X[iter_ref],htrue_X},{"data unfolded","pythia true",x_label,flagdummy==0?"Unfolded":"True MC","X_unfolded"},x_label.Contains("dyn")?"rightlog_label":"right_label",sel);
     sel = {Form("#gamma p_{T}>%.0f, Jet p_{T}>%.0f, Anti-#it{k}_{T} #it{R}=0.2",100.0,40.0),"Cent. 0-30%","Bayes Unfolded","z_{cut}=0.2",Form("%3.2f<%s<%3.2f",xlabel_min,x_label.Data(),xlabel_max)};   
     overlay({unfold_Y[iter_ref],htrue_Y},{"data unfolded","pythia true",y_label,flagdummy==0?"Unfolded":"True MC","Y_unfolded_overlay"},"right_label",sel);
     Plot_hist({unfold_Y[iter_ref],htrue_Y},{"data unfolded","pythia true",y_label,flagdummy==0?"Unfolded":"True MC","Y_unfolded"},"right_label",sel);
@@ -299,6 +313,7 @@ void Plot_hist(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt
     // "left","right", "bcenter" = Legend location 
     // "label" = 2 before the last entries of histname is the X and Y label otherwise use the default 
     // "log" = Set log scale
+    // "width" = Divide by Bin Width
     // "opt" = drawopt is last element of eopt
 
     gStyle->SetOptStat(0);      // No Stat Box
@@ -362,6 +377,9 @@ void Plot_hist(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt
         }
         if(opt.Contains("norm")){
             hist[ihist]->Scale(1.0/hist[ihist]->Integral(0,hist[ihist]->GetNbinsX()+2));
+        }
+        if(opt.Contains("width")){
+            hist[ihist]->Scale(1.0,"width");
         }
         if(opt.Contains("flow"))
             hist[ihist]->GetXaxis()->SetRange(0,hist[ihist]->GetNbinsX()+2);
@@ -505,6 +523,7 @@ void overlay(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt,s
     // "left","right", "bcenter" = Legend location 
     // "label" = 2 before the last entries of histname is the X and Y label otherwise use the default 
     // "log" = Set log scale
+    // "width" = Divide by Bin Width
     // "opt" = drawopt is last element of eopt
 
     if(hist.size()<2){
@@ -573,6 +592,9 @@ void overlay(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt,s
         hist[ihist]->SetMarkerStyle(markarray[ihist]);        
         if(opt.Contains("norm")){
             hist[ihist]->Scale(1.0/hist[ihist]->Integral(0,hist[ihist]->GetNbinsX()+2));
+        }
+        if(opt.Contains("width")){
+            hist[ihist]->Scale(1.0,"width");
         }
         if(opt.Contains("flow"))
             hist[ihist]->GetXaxis()->SetRange(0,hist[ihist]->GetNbinsX()+2);   
@@ -688,19 +710,19 @@ int main(int argc, char* argv[]){
 
     // printf("argc = %d\n",argc);
     // printf("argv = %s\n",argv[0]);
-    if(argc==6){
+    if(argc==7){
         output_path = argv[1];
         label = argv[2];
-        plot_unfolded(argv[3],argv[4],atoi(argv[5]));
+        plot_unfolded(argv[3],argv[4],atoi(argv[5]),atoi(argv[6]));
     }
-    else if(argc==7){
+    else if(argc==8){
         output_path = argv[1];
         label = argv[2];
-        x_label = argv[6];
-        plot_unfolded(argv[3],argv[4],atoi(argv[5]));
+        x_label = argv[7];
+        plot_unfolded(argv[3],argv[4],atoi(argv[5]),atoi(argv[6]));
     }
     else{
-        printf("Run with \n ./plot_unfolded <output dir> <label> <file1> <file2> <flag>\n");
+        printf("Run with \n ./plot_unfolded <output dir> <label> <file1> <file2> <flag> <xJ bin> <<x label>>\n");
     }
 
     return 0;

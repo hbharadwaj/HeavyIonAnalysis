@@ -253,12 +253,12 @@ void plot_jet(){
         TH2F* h_angu_angu[ncent];
         TH2F* h_ktdyn_ktdyn[ncent];
 
-        TH2F* h_xJ_l0p4_Rg_Rg[ncent];
-        TH2F* h_xJ_l0p4_angu_angu[ncent];
-        TH2F* h_xJ_l0p4_dynkt_dynkt[ncent];
-        TH2F* h_xJ_g0p4_Rg_Rg[ncent];
-        TH2F* h_xJ_g0p4_angu_angu[ncent];
-        TH2F* h_xJ_g0p4_dynkt_dynkt[ncent];
+        TH2F* h_xJ_l0p6_Rg_Rg[ncent];
+        TH2F* h_xJ_l0p6_angu_angu[ncent];
+        TH2F* h_xJ_l0p6_dynkt_dynkt[ncent];
+        TH2F* h_xJ_g0p6_Rg_Rg[ncent];
+        TH2F* h_xJ_g0p6_angu_angu[ncent];
+        TH2F* h_xJ_g0p6_dynkt_dynkt[ncent];
 
         TH1F* hbkg_nPhosel[ncent];
         TH1F* hbkg_nJet[ncent];
@@ -300,8 +300,8 @@ void plot_jet(){
             const int bin_true_Rg=5;
             const int bin_det_angu=4;
             const int bin_true_angu=5;
-            const int bin_det_dynkt=6;
-            const int bin_true_dynkt=7;
+            const int bin_det_dynkt=3;
+            const int bin_true_dynkt=5;
 
             Double_t xjmin_det=0.;
             Double_t xjmin_true=0;
@@ -321,10 +321,10 @@ void plot_jet(){
             Double_t angumin_det=0.;
             Double_t angumin_true=0.;
 
-            Double_t dynktmax_det=8.0;
-            Double_t dynktmax_true=12.0;
+            Double_t dynktmax_det=10.0;
+            Double_t dynktmax_true=50.0;
             
-            Double_t dynktmin_det=0.;
+            Double_t dynktmin_det=1.5;
             Double_t dynktmin_true=0.;
 
             Double_t xJ_det_edges[bin_det_xj+1] = {xjmin_det, 0.6, xjmax_det};
@@ -333,16 +333,16 @@ void plot_jet(){
             Double_t Rg_true_edges[bin_true_Rg+1] = {-0.05, 0, 0.05, 0.1, 0.2, Rgmax_true};
             Double_t angu_det_edges[bin_det_angu+1] = {angumin_det, 0.02, 0.04, 0.06, angumax_det};
             Double_t angu_true_edges[bin_true_angu+1] = {angumin_true, 0.02, 0.04, 0.06, 0.08, angumax_true};
-            Double_t dynkt_det_edges[bin_det_dynkt+1] = {dynktmin_det, 1.0,2.0,3.0,4.0,5.0,dynktmax_det};
-            Double_t dynkt_true_edges[bin_true_dynkt+1] = {dynktmin_true, 1.0,2.0,3.0,4.0,5.0,8.0,dynktmax_true};
+            Double_t dynkt_det_edges[bin_det_dynkt+1] = {dynktmin_det, 2.5,4.0,dynktmax_det};
+            Double_t dynkt_true_edges[bin_true_dynkt+1] = {dynktmin_true, 1.5,2.5,4.0,10.0,dynktmax_true};
         
         const Int_t nkt_bins = 8;
         Double_t kt_edges[nkt_bins+1] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 8.0, 12.0, 20.0};
 
         for (std::size_t i = 0; i < ncent; ++i) {
-            hnPho[i] = new TH1F(Form("hnPho_%zu", i), Form("hnPho_%zu;nPho;Norm. Events", i), 1, 0, 1);
-            hnPhosel[i] = new TH1F(Form("hnPhosel_%zu", i), Form("hnPhosel_%zu;nPho;Norm. Events", i), 1, 0, 1);
-            hnJet[i] = new TH1F(Form("hnJet_%zu", i), Form("hnJet_%zu;nJet;Norm. Events", i), 1, 0, 1);
+            hnPho[i] = new TH1F(Form("hnPho_%zu", i), Form("hnPho_%zu;nPho;Norm. Events", i), 1, 0, 2);
+            hnPhosel[i] = new TH1F(Form("hnPhosel_%zu", i), Form("hnPhosel_%zu;nPho;Norm. Events", i), 1, 0, 2);
+            hnJet[i] = new TH1F(Form("hnJet_%zu", i), Form("hnJet_%zu;nJet;Norm. Events", i), 1, 0, 2);
 
             hres_jetpt[i] = new TH1F(Form("hres_jetpt_%zu", i), Form("hres_jetpt_%zu;(Jet Reco p_{T} - True p_{T})/True p_{T};Events", i), 64, -1, 1);
 
@@ -369,13 +369,13 @@ void plot_jet(){
             h_angu_angu[i]=new TH2F(Form("h_angu_angu_%zu",i),Form("h_angu_angu_%zu;Angularity Reco;Angularity True",i),16,0,0.12,16,0,0.12);
             h_ktdyn_ktdyn[i]=new TH2F(Form("h_ktdyn_ktdyn_%zu",i),Form("h_ktdyn_ktdyn_%zu;dyn k_{T} Reco;dyn k_{T} True",i),20,0,20,20,0,20);
 
-            h_xJ_l0p4_Rg_Rg[i]=new TH2F(Form("h_xJ_l0p4_Rg_Rg_%zu",i),Form("h_xJ_l0p4_Rg_Rg_%zu;R_{g} Reco;R_{g} True",i),16,0,0.25,16,0,0.25);
-            h_xJ_l0p4_angu_angu[i]=new TH2F(Form("h_xJ_l0p4_angu_angu_%zu",i),Form("h_xJ_l0p4_angu_angu_%zu;Angularity Reco;Angularity True",i),16,0,0.12,16,0,0.12);
-            h_xJ_l0p4_dynkt_dynkt[i]=new TH2F(Form("h_xJ_l0p4_dynkt_dynkt_%zu",i),Form("h_xJ_l0p4_dynkt_dynkt_%zu;dyn k_{T} Reco;dyn k_{T} True",i),20,0,20,20,0,20);
+            h_xJ_l0p6_Rg_Rg[i]=new TH2F(Form("h_xJ_l0p6_Rg_Rg_%zu",i),Form("h_xJ_l0p6_Rg_Rg_%zu;R_{g} Reco;R_{g} True",i),bin_det_Rg,Rg_det_edges,bin_true_Rg,Rg_true_edges);
+            h_xJ_l0p6_angu_angu[i]=new TH2F(Form("h_xJ_l0p6_angu_angu_%zu",i),Form("h_xJ_l0p6_angu_angu_%zu;Angularity Reco;Angularity True",i),bin_det_angu,angu_det_edges,bin_true_angu,angu_true_edges);
+            h_xJ_l0p6_dynkt_dynkt[i]=new TH2F(Form("h_xJ_l0p6_dynkt_dynkt_%zu",i),Form("h_xJ_l0p6_dynkt_dynkt_%zu;dyn k_{T} Reco;dyn k_{T} True",i),bin_det_dynkt,dynkt_det_edges,bin_true_dynkt,dynkt_true_edges);
 
-            h_xJ_g0p4_Rg_Rg[i]=new TH2F(Form("h_xJ_g0p4_Rg_Rg_%zu",i),Form("h_xJ_g0p4_Rg_Rg_%zu;R_{g} Reco;R_{g} True",i),16,0,0.25,16,0,0.25);
-            h_xJ_g0p4_angu_angu[i]=new TH2F(Form("h_xJ_g0p4_angu_angu_%zu",i),Form("h_xJ_g0p4_angu_angu_%zu;Angularity Reco;Angularity True",i),16,0,0.12,16,0,0.12);
-            h_xJ_g0p4_dynkt_dynkt[i]=new TH2F(Form("h_xJ_g0p4_dynkt_dynkt_%zu",i),Form("h_xJ_g0p4_dynkt_dynkt_%zu;dyn k_{T} Reco;dyn k_{T} True",i),20,0,20,20,0,20);
+            h_xJ_g0p6_Rg_Rg[i]=new TH2F(Form("h_xJ_g0p6_Rg_Rg_%zu",i),Form("h_xJ_g0p6_Rg_Rg_%zu;R_{g} Reco;R_{g} True",i),bin_det_Rg,Rg_det_edges,bin_true_Rg,Rg_true_edges);
+            h_xJ_g0p6_angu_angu[i]=new TH2F(Form("h_xJ_g0p6_angu_angu_%zu",i),Form("h_xJ_g0p6_angu_angu_%zu;Angularity Reco;Angularity True",i),bin_det_angu,angu_det_edges,bin_true_angu,angu_true_edges);
+            h_xJ_g0p6_dynkt_dynkt[i]=new TH2F(Form("h_xJ_g0p6_dynkt_dynkt_%zu",i),Form("h_xJ_g0p6_dynkt_dynkt_%zu;dyn k_{T} Reco;dyn k_{T} True",i),bin_det_dynkt,dynkt_det_edges,bin_true_dynkt,dynkt_true_edges);
 
             // --- Bkg Histograms
 
@@ -656,15 +656,15 @@ void plot_jet(){
                 h_angu_angu[i]->Fill(jtangu[jet_index],refangu[jet_index],scale);
                 h_ktdyn_ktdyn[i]->Fill(jtdynkt[jet_index],refdynkt[jet_index],scale);
 
-                if(jet_true_xJ_max>0.4){
-                    h_xJ_g0p4_Rg_Rg[i]->Fill(jet_Rg_max,jet_true_Rg_max,scale);
-                    h_xJ_g0p4_angu_angu[i]->Fill(jtangu[jet_index],refangu[jet_index],scale);
-                    h_xJ_g0p4_dynkt_dynkt[i]->Fill(jtdynkt[jet_index],refdynkt[jet_index],scale);
+                if(jet_true_xJ_max>0.6){
+                    h_xJ_g0p6_Rg_Rg[i]->Fill(jet_Rg_max,jet_true_Rg_max,scale);
+                    h_xJ_g0p6_angu_angu[i]->Fill(jtangu[jet_index],refangu[jet_index],scale);
+                    h_xJ_g0p6_dynkt_dynkt[i]->Fill(jtdynkt[jet_index],refdynkt[jet_index],scale);
                 }
                 else if(jet_true_xJ_max>=0){
-                    h_xJ_l0p4_Rg_Rg[i]->Fill(jet_Rg_max,jet_true_Rg_max,scale);
-                    h_xJ_l0p4_angu_angu[i]->Fill(jtangu[jet_index],refangu[jet_index],scale);
-                    h_xJ_l0p4_dynkt_dynkt[i]->Fill(jtdynkt[jet_index],refdynkt[jet_index],scale);
+                    h_xJ_l0p6_Rg_Rg[i]->Fill(jet_Rg_max,jet_true_Rg_max,scale);
+                    h_xJ_l0p6_angu_angu[i]->Fill(jtangu[jet_index],refangu[jet_index],scale);
+                    h_xJ_l0p6_dynkt_dynkt[i]->Fill(jtdynkt[jet_index],refdynkt[jet_index],scale);
                 }
             }
         }
@@ -679,16 +679,10 @@ void plot_jet(){
         hangu_lead[i]->Scale(1.0/hnJet[i]->GetSum());
         hktdyn_lead[i]->Scale(1.0/hnJet[i]->GetSum());
 
-        // h_Rg_xJ_det[i]->Scale(1.0/hnJet[i]->GetSum());
-        // h_Rg_xJ_mc_true[i]->Scale(1.0/hnJet[i]->GetSum());
-        // h_Rg_xJ_mc_truef[i]->Scale(1.0/hnJet[i]->GetSum());
-
         hbkg_xJ_lead[i]->Scale(1.0/hbkg_nJet[i]->GetSum());
         hbkg_Rg_lead[i]->Scale(1.0/hbkg_nJet[i]->GetSum());
         hbkg_angu_lead[i]->Scale(1.0/hbkg_nJet[i]->GetSum());
         hbkg_ktdyn_lead[i]->Scale(1.0/hbkg_nJet[i]->GetSum());
-        
-        // hbkg_Rg_xJ_det[i]->Scale(1.0/hbkg_nJet[i]->GetSum());
 
         // Purity
         if(label.Contains("Data")){
@@ -760,12 +754,12 @@ void plot_jet(){
         h_angu_angu[i]->Write("",TObject::kOverwrite);
         h_ktdyn_ktdyn[i]->Write("",TObject::kOverwrite);
 
-        h_xJ_l0p4_Rg_Rg[i]->Write("",TObject::kOverwrite);
-        h_xJ_l0p4_angu_angu[i]->Write("",TObject::kOverwrite);
-        h_xJ_l0p4_dynkt_dynkt[i]->Write("",TObject::kOverwrite);
-        h_xJ_g0p4_Rg_Rg[i]->Write("",TObject::kOverwrite);
-        h_xJ_g0p4_angu_angu[i]->Write("",TObject::kOverwrite);
-        h_xJ_g0p4_dynkt_dynkt[i]->Write("",TObject::kOverwrite);
+        h_xJ_l0p6_Rg_Rg[i]->Write("",TObject::kOverwrite);
+        h_xJ_l0p6_angu_angu[i]->Write("",TObject::kOverwrite);
+        h_xJ_l0p6_dynkt_dynkt[i]->Write("",TObject::kOverwrite);
+        h_xJ_g0p6_Rg_Rg[i]->Write("",TObject::kOverwrite);
+        h_xJ_g0p6_angu_angu[i]->Write("",TObject::kOverwrite);
+        h_xJ_g0p6_dynkt_dynkt[i]->Write("",TObject::kOverwrite);
 
         hbkg_nPhosel[i]->Write("",TObject::kOverwrite);
         hbkg_nJet[i]->Write("",TObject::kOverwrite);
@@ -781,18 +775,22 @@ void plot_jet(){
         hbkg_ktdyn_lead[i]->Write("",TObject::kOverwrite);
 
         h_Rg_xJ_det[i]->Write("",TObject::kOverwrite);
+        h_Rg_xJ_det[i]->ProjectionY(Form("h_xJ_det_%zu",i))->Write("",TObject::kOverwrite);
+        h_Rg_xJ_det[i]->ProjectionX(Form("h_Rg_det_%zu",i),1,1)->Write("",TObject::kOverwrite);
         h_Rg_xJ_mc_true[i]->Write("",TObject::kOverwrite);
         h_Rg_xJ_mc_truef[i]->Write("",TObject::kOverwrite);
 
         hbkg_Rg_xJ_det[i]->Write("",TObject::kOverwrite);
 
         h_angu_xJ_det[i]->Write("",TObject::kOverwrite);
+        h_angu_xJ_det[i]->ProjectionX(Form("h_angu_det_%zu",i),1,1)->Write("",TObject::kOverwrite);
         h_angu_xJ_mc_true[i]->Write("",TObject::kOverwrite);
         h_angu_xJ_mc_truef[i]->Write("",TObject::kOverwrite);
 
         hbkg_angu_xJ_det[i]->Write("",TObject::kOverwrite);
 
         h_dynkt_xJ_det[i]->Write("",TObject::kOverwrite);
+        h_dynkt_xJ_det[i]->ProjectionX(Form("h_dynkt_det_%zu",i),1,1)->Write("",TObject::kOverwrite);
         h_dynkt_xJ_mc_true[i]->Write("",TObject::kOverwrite);
         h_dynkt_xJ_mc_truef[i]->Write("",TObject::kOverwrite);
 
@@ -822,8 +820,10 @@ void plot_jet(){
         
         if(!label.Contains("Data")){
             // Plot_hist2D({h_xJ_xJ[0],h_Rg_Rg[0],h_angu_angu[0],h_ktdyn_ktdyn[0]},{"xJ_xJ_0_30","Rg_Rg_0_30","Angu_Angu_0_30","Ktdyn_Ktdyn_0_30"},"colz",{Form("#gamma p_{T}>%.0f, Jet p_{T}>%.0f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,min_jet_pt),"|#eta|<1.44, Cent. 0-30%","endlog"});
-            // Plot_hist2D({h_xJ_g0p4_Rg_Rg[0],h_xJ_g0p4_angu_angu[0],h_xJ_g0p4_dynkt_dynkt[0]},{"xJ_g0p4_Rg_Rg_0_30","xJ_g0p4_Angu_Angu_0_30","xJ_g0p4_Ktdyn_Ktdyn_0_30"},"colz",{"x_{J}>0.4","|#eta|<1.44, Cent. 0-30%","endlog"});
-            // Plot_hist2D({h_xJ_l0p4_Rg_Rg[0],h_xJ_l0p4_angu_angu[0],h_xJ_l0p4_dynkt_dynkt[0]},{"xJ_l0p4_Rg_Rg_0_30","xJ_l0p4_Angu_Angu_0_30","xJ_l0p4_Ktdyn_Ktdyn_0_30"},"colz",{"x_{J}<=0.4","|#eta|<1.44, Cent. 0-30%","endlog"});      
+            Plot_hist2D({h_xJ_g0p6_Rg_Rg[0],h_xJ_g0p6_angu_angu[0],h_xJ_g0p6_dynkt_dynkt[0]},{"xJ_g0p6_Rg_Rg_0_30","xJ_g0p6_Angu_Angu_0_30","xJ_g0p6_Ktdyn_Ktdyn_0_30"},"colztext",{"x_{J}>0.6","|#eta|<1.44, Cent. 0-30%","end"});
+            Plot_hist2D({h_xJ_l0p6_Rg_Rg[0],h_xJ_l0p6_angu_angu[0],h_xJ_l0p6_dynkt_dynkt[0]},{"xJ_l0p6_Rg_Rg_0_30","xJ_l0p6_Angu_Angu_0_30","xJ_l0p6_Ktdyn_Ktdyn_0_30"},"colztext",{"x_{J}<=0.6","|#eta|<1.44, Cent. 0-30%","end"});      
+            Plot_hist2D({h_xJ_g0p6_Rg_Rg[1],h_xJ_g0p6_angu_angu[1],h_xJ_g0p6_dynkt_dynkt[1]},{"xJ_g0p6_Rg_Rg_30_90","xJ_g0p6_Angu_Angu_30_90","xJ_g0p6_Ktdyn_Ktdyn_30_90"},"colztext",{"x_{J}>0.6","|#eta|<1.44, Cent. 30-90%","end"});
+            Plot_hist2D({h_xJ_l0p6_Rg_Rg[1],h_xJ_l0p6_angu_angu[1],h_xJ_l0p6_dynkt_dynkt[1]},{"xJ_l0p6_Rg_Rg_30_90","xJ_l0p6_Angu_Angu_30_90","xJ_l0p6_Ktdyn_Ktdyn_30_90"},"colztext",{"x_{J}<=0.6","|#eta|<1.44, Cent. 30-90%","end"});        
             
             Plot_hist2D({h_Rg_xJ_mc_true[0],h_Rg_xJ_det[0],h_Rg_xJ_mc_truef[0]},{"Rg_xJ_mc_true_0_30","Rg_xJ_det_0_30","Rg_xJ_mc_truef_0_30"},"text",{"|#eta|<1.44, Cent. 0-30%"});      
             sel.pop_back();
@@ -880,6 +880,7 @@ void Plot_hist(std::vector<TH1F*> hist,std::vector<TString> histname,TString opt
     // "left","right", "bcenter" = Legend location 
     // "label" = 2 before the last entries of histname is the X and Y label otherwise use the default 
     // "log" = Set log scale
+    // "width" = Divide by Bin Width
     // "OBJ" = optional stuff for later? 
 
     gStyle->SetOptStat(0);      // No Stat Box
@@ -936,6 +937,9 @@ void Plot_hist(std::vector<TH1F*> hist,std::vector<TString> histname,TString opt
         }
         if(opt.Contains("norm")){
             hist[ihist]->Scale(1.0/hist[ihist]->Integral(0,hist[ihist]->GetNbinsX()+2));
+        }
+        if(opt.Contains("width")){
+            hist[ihist]->Scale(1.0,"width");
         }
         if(opt.Contains("flow"))
             hist[ihist]->GetXaxis()->SetRange(0,hist[ihist]->GetNbinsX()+2);
@@ -1076,6 +1080,7 @@ void overlay(std::vector<TH1F*> hist,std::vector<TString> histname,TString opt,s
     // "left","right", "bcenter" = Legend location 
     // "label" = 2 before the last entries of histname is the X and Y label otherwise use the default 
     // "log" = Set log scale
+    // "width" = Divide by Bin Width
     // "OBJ" = optional stuff for later? 
 
     if(hist.size()<2){
@@ -1137,6 +1142,9 @@ void overlay(std::vector<TH1F*> hist,std::vector<TString> histname,TString opt,s
         hist[ihist]->SetMarkerStyle(markarray[ihist]);        
         if(opt.Contains("norm")){
             hist[ihist]->Scale(1.0/hist[ihist]->Integral(0,hist[ihist]->GetNbinsX()+2));
+        }
+        if(opt.Contains("width")){
+            hist[ihist]->Scale(1.0,"width");
         }
         if(opt.Contains("flow"))
             hist[ihist]->GetXaxis()->SetRange(0,hist[ihist]->GetNbinsX()+2);   
