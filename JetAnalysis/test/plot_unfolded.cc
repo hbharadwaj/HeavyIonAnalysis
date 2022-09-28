@@ -36,13 +36,13 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrue
     // flagdummy == 2 -> MC True at Det level
     // Range [1,-1] -> All Bins other than Underflow and Overflow
 
-    const int bintrueY_min = 2;    
+    const int bintrueY_min = 1;    
     int bintrueX_min = x_label.Contains("dyn")?2:1;
     int bintrueX_max = 5;
-    const int iter_ref = 5;    
+    const int iter_ref = 7;    
 
     // inputs for Unfolding 
-        const int bin_true_xj=3;
+        const int bin_true_xj=2;
         const int bin_true_Rg=5;
         const int bin_true_angu=5;
         const int bin_true_dynkt=5;
@@ -58,7 +58,7 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrue
         Double_t dynktmax_true=50.0;
         Double_t dynktmin_true=0.;
 
-        Double_t xJ_true_edges[bin_true_xj+1] = {xjmin_true, 0.6, 1.6, xjmax_true};
+        Double_t xJ_true_edges[bin_true_xj+1] = {xjmin_true, 1.6, xjmax_true};
         Double_t Rg_true_edges[bin_true_Rg+1] = {-0.05, 0, 0.05, 0.1, 0.2, Rgmax_true};
         Double_t angu_true_edges[bin_true_angu+1] = {angumin_true, 0.02, 0.04, 0.06, 0.08, angumax_true};
         Double_t dynkt_true_edges[bin_true_dynkt+1] = {dynktmin_true, 1.5,2.5,4.0,10.0,dynktmax_true};
@@ -89,6 +89,8 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrue
 
     // ----------------------------------------------------------------------------------------------------------------
     // Histograms
+        TH1::SetDefaultSumw2();
+        TH2::SetDefaultSumw2();
 
         TH2D* raw;              //  Detector smeared - 0->Data : else ->MC
         TH2D* htrue;            //  MC - Gen level Cuts : 2-> Det level Cuts
@@ -129,29 +131,31 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrue
         if(flagdummy==2) htrue=(TH2D*)f->Get("true");
         htrue_ineff=(TH2D*)f->Get("true");
         
-        raw_X=(TH1D*)raw->ProjectionX("raw_X",0,-1);        
+        raw_X=(TH1D*)raw->ProjectionX("raw_X",0,-1);  
+        raw_X->Scale(1.0/raw_X->Integral(0,-1),"width");      
         htrue_X=(TH1D*)htrue->ProjectionX("true_X",bintrueY_min,bintrueY_max);
         eff_X=htrue_ineff->ProjectionX("eff_X",bintrueY_min,bintrueY_max);
         eff_X->Divide(htrue_X);
 
         raw_Y=(TH1D*)raw->ProjectionY("raw_Y",0,-1);
+        raw_Y->Scale(1.0/raw_Y->Integral(0,-1),"width");
         htrue_Y=(TH1D*)htrue->ProjectionY("true_Y",bintrueX_min,bintrueX_max);
         eff_Y=htrue_ineff->ProjectionY("eff_Y",bintrueX_min,bintrueX_max);
         eff_Y->Divide(htrue_Y);
 
-        nPho_data=(TH1D*)f->Get("nPho_data");
-        nJet_data=(TH1D*)f->Get("nJet_data");
-        nPho_mc=(TH1D*)f->Get("nPho_mc");
-        nJet_mc=(TH1D*)f->Get("nJet_mc");
+        // nPho_data=(TH1D*)f->Get("nPho_data");
+        // nJet_data=(TH1D*)f->Get("nJet_data");
+        // nPho_mc=(TH1D*)f->Get("nPho_mc");
+        // nJet_mc=(TH1D*)f->Get("nJet_mc");
         
     // -------- End Read Histograms
     // ----------------------------------------------------------------------------------------------------------------
     // Iteration Loop
 
-    htrue_X->Scale(1.0/nPho_mc->Integral());
+    htrue_X->Scale(1.0/htrue_X->Integral(0,-1));
     htrue_X->Scale(1,"width");
 
-    htrue_Y->Scale(1.0/nPho_mc->Integral());
+    htrue_Y->Scale(1.0/htrue_Y->Integral(0,-1));
     htrue_Y->Scale(1,"width");
 
     for(Int_t j=0;j<15;j++){
@@ -160,19 +164,21 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrue
 
         unfold_X[j]=(TH1D*)unfold2d_iter->ProjectionX(Form("unfold_X%d",j),bintrueY_min,bintrueY_max,"");
         unfold_X[j]->Divide(eff_X); 
-        unfold_X[j]->Scale(1.0/nPho_data->Integral());
+        unfold_X[j]->Scale(1.0/unfold_X[j]->Integral(0,-1));
         unfold_X[j]->Scale(1,"width");
 
         fold_X[j]=(TH1D*)fold2d_iter->ProjectionX(Form("fold_X%d",j),0,-1,"");
+        fold_X[j]->Scale(1.0/fold_X[j]->Integral(0,-1),"width");
         fold_X[j]->Divide(raw_X);     
         
         //* Y unfold 
         unfold_Y[j]=(TH1D*)unfold2d_iter->ProjectionY(Form("unfold_Y%d",j),bintrueX_min,bintrueX_max,"");
         unfold_Y[j]->Divide(eff_Y); 
-        unfold_Y[j]->Scale(1.0/nPho_data->Integral());
+        unfold_Y[j]->Scale(1.0/unfold_Y[j]->Integral());
         unfold_Y[j]->Scale(1,"width");
 
         fold_Y[j]=(TH1D*)fold2d_iter->ProjectionY(Form("fold_Y%d",j),0,-1,"");
+        fold_Y[j]->Scale(1.0/fold_Y[j]->Integral(0,-1),"width");
         fold_Y[j]->Divide(raw_Y); 
     }
    
@@ -229,8 +235,10 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrue
     TFile *fout;
     fout = new TFile(output_path + "/OutputUnfolded_"+label+"/OutputUnfolded_"+label+".root", "recreate");
 
-    unfold_X[iter_ref]->Write("",TObject::kOverwrite);
-    unfold_Y[iter_ref]->Write("",TObject::kOverwrite);
+    for(Int_t iter=0;iter<iter_ref+3;iter++){
+        unfold_X[iter]->Write("",TObject::kOverwrite);
+        unfold_Y[iter]->Write("",TObject::kOverwrite);
+    }
     htrue_X->Write("",TObject::kOverwrite);
     htrue_Y->Write("",TObject::kOverwrite);
 
@@ -367,7 +375,7 @@ void Plot_hist(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt
             hist[ihist+1]->SetLineColor(colarray[ihist]);
             hist[ihist+1]->SetMarkerColor(colarray[ihist]);
             hist[ihist+1]->SetMarkerStyle(markarray[ihist]);
-            hist[ihist+1]->Divide(hist[ihist+1],hist[0],1,1,"B");
+            hist[ihist+1]->Divide(hist[ihist+1],hist[0],1,1);
             ihist++;
         }
         else{
@@ -520,11 +528,12 @@ void overlay(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt,s
     // Based on the old Ratio Plot script from https://root.cern/doc/master/ratioplotOld_8C.html
 
     // opt contains options
+    // "eff" = Efficiency Plot. Divide by 0th index
     // "left","right", "bcenter" = Legend location 
     // "label" = 2 before the last entries of histname is the X and Y label otherwise use the default 
     // "log" = Set log scale
     // "width" = Divide by Bin Width
-    // "opt" = drawopt is last element of eopt
+    // "OBJ" = optional stuff for later? 
 
     if(hist.size()<2){
         std::cout<<"Not Enough Histograms"<<std::endl;
@@ -539,9 +548,7 @@ void overlay(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt,s
     if(opt.Contains("log")) gStyle->SetOptLogy(1);
     
     TString drawopt = "E][P0"; 
-    if(opt.Contains("opt"))
-        drawopt = eopt.back();
-    const std::vector<int> colarray  = {1,632,600,616,419,800,425,898,
+    const std::vector<int> colarray  = { 1,632,600,616,419,800,425,898,
                                        922,910,851,877,811,804,434,606,
                                        1,632,600,616,419,800,425,898,
                                        922,910,851,877,811,804,434,606};// { 1, 2, 4, 6, 8,20,28};
@@ -550,22 +557,22 @@ void overlay(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt,s
                                         20, 25, 22, 32, 29, 28, 39, 40,
                                         24, 21, 26, 23, 30, 34, 37, 41};
 
-    TCanvas *c= new TCanvas();
-    c->cd();
+    
+    TCanvas c;
     TLegend *l;
     float leg_x1 = 0.7;
-    float leg_y1 = 0.7;
+    float leg_y1 = 0.6;
     float leg_x2 = 0.8;
     float leg_y2 = 0.85;
     if(opt.Contains("bcenter")){
         leg_x1 = 0.45;
-        leg_y1 = 0.15;
+        leg_y1 = 0.2;
         leg_x2 = 0.55;
-        leg_y2 = 0.3;
+        leg_y2 = 0.45;
     }
     else if(opt.Contains("left")){
         leg_x1 = 0.15;
-        leg_y1 = 0.7;
+        leg_y1 = 0.6;
         leg_x2 = 0.25;
         leg_y2 = 0.85;
     }
@@ -573,7 +580,7 @@ void overlay(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt,s
     l->SetFillStyle(0);
     l->SetFillColor(0);
     l->SetLineColor(0);
-    l->SetTextSize(0.025);
+    l->SetTextSize(0.035);
     l->SetTextFont(42);
         
     // Upper plot will be in pad1
@@ -610,9 +617,36 @@ void overlay(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt,s
         hist[0]->SetMaximum(ymax*1.1);
     else
         hist[0]->SetMaximum(ymax*2);
+
+    l->Draw();
+
+    TLatex latex;
+    latex.SetTextSize(0.045);
+    latex.DrawLatexNDC(0.12,0.9,"CMS #it{#bf{Internal}}");
+
+    if(eopt[0].Contains("Cent")){
+        latex.DrawLatexNDC(0.78,0.9,eopt[0]);
+    }
+    else if(eopt.size()>=2){
+        latex.DrawLatexNDC(0.4,0.9,eopt[0]);
+        latex.DrawLatexNDC(0.78,0.9,eopt[1]);
+    }    
+    latex.SetTextSize(0.035);
+    if(eopt.size()>2){
+        for(std::size_t ind=2;ind<eopt.size() && !eopt[ind].Contains("end"); ind++){
+            if(opt.Contains("bcenter")){
+                leg_y2+=0.08;
+                latex.DrawLatexNDC(leg_x1,leg_y2,eopt[ind]);
+            }
+            else{
+                leg_y1-=0.08;
+                latex.DrawLatexNDC(leg_x1,leg_y1,eopt[ind]);
+            }
+        }
+    }
         
     // lower plot will be in pad
-    c->cd();          // Go back to the main canvas before defining pad2
+    c.cd();          // Go back to the main canvas before defining pad2
     TPad *pad2 = new TPad("pad2", "pad2", 0, 0, 1, 0.3);
     pad2->SetTopMargin(0.05);
     pad2->SetRightMargin(0.05); 
@@ -623,9 +657,9 @@ void overlay(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt,s
     pad2->cd();       // pad2 becomes the current pad
 
     // Define the ratio plot
-    TH1D *hratio = (TH1D*)hist[0]->Clone(histname[0]);
+    TH1F *hratio = (TH1F*)hist[0]->Clone(histname[0]);
     for(std::size_t ihist=1; ihist<hist.size();ihist++){
-        hratio = (TH1D*)hist[ihist]->Clone(histname[ihist]);
+        hratio = (TH1F*)hist[ihist]->Clone(histname[ihist]);
         hratio->SetLineColor(colarray[ihist]);
         hratio->SetMarkerColor(colarray[ihist]);
         hratio->SetMarkerStyle(markarray[ihist]);   
@@ -653,7 +687,7 @@ void overlay(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt,s
         hratio->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
         hratio->GetXaxis()->SetLabelSize(15);
     }
-    c->cd();  
+    c.cd();  
 
     if(opt.Contains("label")){
         hratio->GetXaxis()->SetTitle(histname.at(histname.size()-3));
@@ -670,37 +704,9 @@ void overlay(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt,s
         hist[0]->GetYaxis()->SetTitleOffset(1.5);
         hist[0]->GetYaxis()->SetLabelSize(0.05);
 
-    l->Draw();
-
-    TLatex latex;
-    latex.SetTextSize(0.035);
-    if(label.Contains("Data"))
-        latex.DrawLatexNDC(0.12,0.92,"CMS #it{#bf{Internal}} PbPb 2018");
-    else
-        latex.DrawLatexNDC(0.12,0.92,"CMS #it{#bf{Internal Simulation}}");
-
-    if(eopt[0].Contains("Cent")){
-        latex.DrawLatexNDC(0.78,0.92,eopt[0]);
-    }
-    else if(eopt.size()>=2){
-        latex.DrawLatexNDC(0.4,0.92,eopt[0]);
-        latex.DrawLatexNDC(0.78,0.92,eopt[1]);
-    }    
-    latex.SetTextSize(0.025);
-    if(eopt.size()>2){
-        for(std::size_t ind=2;ind<eopt.size() && !eopt[ind].Contains("end"); ind++){
-            if(opt.Contains("bcenter")){
-                leg_y2+=0.05;
-                latex.DrawLatexNDC(leg_x1,leg_y2,eopt[ind]);
-            }
-            else{
-                leg_y1-=0.05;
-                latex.DrawLatexNDC(leg_x1,leg_y1,eopt[ind]);
-            }
-        }
-    }
     gPad->Update();
-    c->SaveAs(output_path + "/OutputUnfolded_"+label+"/"+histname.back()+".png");
+    c.SaveAs(output_path + "/OutputUnfolded_"+label+"/"+histname.back()+".png");
+    c.Write("",TObject::kOverwrite);
     std::cout<<histname.back()<<" has been saved"<<std::endl;
     delete l;
     if(opt.Contains("log")) gStyle->SetOptLogy(0);

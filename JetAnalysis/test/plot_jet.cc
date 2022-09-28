@@ -16,9 +16,9 @@
 
 const std::vector<int> min_cent = { 0,  60,   0,  0, 20,  60, 100};
 const std::vector<int> max_cent = {60, 180, 180, 20, 60, 100, 180};
-const std::size_t ncent = min_cent.size();
-TString label="";
-TString output_path = "./";
+const std::size_t ncent = 7;//min_cent.size();
+TString label="Data_2018_jets";//"QCDPhoton_jets"; // "Data_2018_jets";//
+TString output_path = "./"; // Uncertainty/
 
 void Plot_hist(std::vector<TH1F*>,std::vector<TString> ,TString opt="label",std::vector<TString> eopt={"end"});
 
@@ -169,6 +169,8 @@ void plot_jet(){
     // -------- End Tree Variable Declaration
     // ----------------------------------------------------------------------------------------------------------------
     // Histograms
+        TH1::SetDefaultSumw2();
+        TH2::SetDefaultSumw2();
         TTree *tree_xj_Rg,*tree_xj_angu,*tree_xj_dynkt;
         tree_xj_Rg = new TTree("tree_xj_Rg","tree_xj_Rg");
         Float_t var_xJ_det = 0;
@@ -225,6 +227,7 @@ void plot_jet(){
         tree_xj_dynkt->Branch("phoEtCorrected", &var_phoEtCorrected);
         tree_xj_dynkt->Branch("weightFinal", &var_weightFinal);
 
+        TH1F* hweight[ncent];
         TH1F* hnPho[ncent];
         TH1F* hnPhosel[ncent];
         TH1F* hnJet[ncent];
@@ -295,7 +298,7 @@ void plot_jet(){
 
         // inputs for Unfolding 
             const int bin_det_xj=2;
-            const int bin_true_xj=3;
+            const int bin_true_xj=2;
             const int bin_det_Rg=4;
             const int bin_true_Rg=5;
             const int bin_det_angu=4;
@@ -328,7 +331,7 @@ void plot_jet(){
             Double_t dynktmin_true=0.;
 
             Double_t xJ_det_edges[bin_det_xj+1] = {xjmin_det, 0.6, xjmax_det};
-            Double_t xJ_true_edges[bin_true_xj+1] = {xjmin_true, 0.6, 1.6, xjmax_true};
+            Double_t xJ_true_edges[bin_true_xj+1] = {xjmin_true, 1.6, xjmax_true};
             Double_t Rg_det_edges[bin_det_Rg+1] = {-0.05, 0, 0.05, 0.1, Rgmax_det};
             Double_t Rg_true_edges[bin_true_Rg+1] = {-0.05, 0, 0.05, 0.1, 0.2, Rgmax_true};
             Double_t angu_det_edges[bin_det_angu+1] = {angumin_det, 0.02, 0.04, 0.06, angumax_det};
@@ -340,6 +343,8 @@ void plot_jet(){
         Double_t kt_edges[nkt_bins+1] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 8.0, 12.0, 20.0};
 
         for (std::size_t i = 0; i < ncent; ++i) {
+            hweight[i] = new TH1F(Form("hweight_%zu", i), Form("hweight_%zu;hweight;Norm. Events", i), 1, 0, 99999);
+
             hnPho[i] = new TH1F(Form("hnPho_%zu", i), Form("hnPho_%zu;nPho;Norm. Events", i), 1, 0, 2);
             hnPhosel[i] = new TH1F(Form("hnPhosel_%zu", i), Form("hnPhosel_%zu;nPho;Norm. Events", i), 1, 0, 2);
             hnJet[i] = new TH1F(Form("hnJet_%zu", i), Form("hnJet_%zu;nJet;Norm. Events", i), 1, 0, 2);
@@ -422,7 +427,18 @@ void plot_jet(){
     const float cut_SIEIE  = 0.0103766; // 0.00983515;
     const float cut_SumIso = 1.45486;   // 1.33546;
     const float min_jet_pt = 40;
-    const float purity_values[ncent] = {0.791,0.899,0.819,0.737,0.838,0.903,0.895};
+    const float purity_values[ncent] = {0.791,0.899,0.819,0.737,0.838,0.903,0.895}; // ABCD Purity - {0.892,0.789,0.816,0.740,0.833,0.900,0.863};
+    
+    JetCorrectionUncertainty *jecUnc ;
+    if(!label.Contains("Data")){
+        jecUnc = new JetCorrectionUncertainty("/grid_mnt/vol_home/llr/cms/bharikri/Projects/Photon_Analysis/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/JetAnalysis/test/Uncertainty/JEC/Autumn18_HI_V6_MC_Uncertainty_AK2PF.txt");
+    }
+    
+    JME::JetResolution resolution ; //this is for the case where the det-level jet is not matched to a truth-level jet
+    resolution = JME::JetResolution("/grid_mnt/vol_home/llr/cms/bharikri/Projects/Photon_Analysis/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/JetAnalysis/test/Uncertainty/JER/Autumn18_RunABC_V7b_MC_PtResolution_AK4PF.txt");
+    
+    JME::JetResolutionScaleFactor resolution_sf ; //this is for the case where the det-level jet is matched to a truth-level jet
+    resolution_sf = JME::JetResolutionScaleFactor("/grid_mnt/vol_home/llr/cms/bharikri/Projects/Photon_Analysis/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/JetAnalysis/test/Uncertainty/JER/Autumn18_RunABC_V7b_MC_SF_AK4PF.txt");
 
     Int_t nEv=jet_tree.GetEntries();
     for(int iEntry=0; iEntry<nEv; iEntry++){
@@ -484,19 +500,43 @@ void plot_jet(){
             float jet_true_Rg_max=-1;
 
             for(int ijet=0; ijet<nref;ijet++){
-                if(jtpt[ijet]<min_jet_pt) continue;
+                float jetPtCorrected = jtpt[ijet];
+
+                if(!label.Contains("Data")){
+                double jtpt_unc = 0;               
+                jecUnc->setJetEta(jteta[ijet]);
+                jecUnc->setJetPt(jtpt[ijet]);
+                jtpt_unc = jecUnc->getUncertainty(true);
+                double jtpt_corr = 1+(0*jtpt_unc);
+                jetPtCorrected = jtpt[ijet]*jtpt_corr;
+
+                JME::JetParameters parameters_1;
+                parameters_1.setJetPt(refpt[ijet]);
+                parameters_1.setJetEta(jteta[ijet]);
+                parameters_1.setRho(rho);
+                // float sim_resolution = resolution.getResolution(parameters_1);
+                float sf = resolution_sf.getScaleFactor(parameters_1); // This is nominal,  Variation::UP DOWN
+                float corr_sf = 1+gRandom->Gaus(0,std::sqrt(0.06*0.06 + (0.8*0.8/refpt[ijet])))*std::sqrt(sf*sf-1); // std::sqrt(0.06*0.06 + (0.8*0.8/jetPtCorrected))
+                jetPtCorrected*=corr_sf;
+                }
+
+                // std::cout<<"i = "<<iEntry<<"   pT:"<<jetPtCorrected<<"   Resolution: "<<sim_resolution<<"   SF:"<<sf<<std::endl;
+               
                 if(abs(jteta[ijet])>2) continue;
+                if(refpt[ijet]>=100 && refpt[ijet]<200)
+                    hres_jetpt[i]->Fill((jetPtCorrected-refpt[ijet])/refpt[ijet],scale);
+                if(jetPtCorrected<min_jet_pt) continue; 
                 float dphi = abs(TVector2::Phi_mpi_pi(phoPhi-jtphi[ijet]));// ROOT::Math::VectorUtil::Phi_mpi_pi(phoPhi,jtphi[ijet]);
-                float xJ = jtpt[ijet]/phoEtCorrected;
+                float xJ = jetPtCorrected/phoEtCorrected;
                 float true_xJ = -1;
                 if(!label.Contains("Data"))
                     true_xJ = refpt[ijet]/mcEt;
                 hdphi_all[i]->Fill(dphi,scale);
-                hres_jetpt[i]->Fill((jtpt[ijet]-refpt[ijet])/refpt[ijet],scale);
+                
 
                 if(dphi>2*TMath::Pi()/3){
-                    if(jet_pt_max<jtpt[ijet]){
-                        jet_pt_max = jtpt[ijet];
+                    if(jet_pt_max<jetPtCorrected){
+                        jet_pt_max = jetPtCorrected;
                         jet_dphi_max = dphi;
                         jet_xJ_max = xJ;
                         jet_true_xJ_max = true_xJ;
@@ -520,6 +560,7 @@ void plot_jet(){
             }
             if(jet_index==-1) continue;
 
+            hweight[i]->Fill(1,scale);
             hdphi_lead[i]->Fill(jet_dphi_max,scale);
             if(flagsig){
                 hnJet[i]->Fill(1,scale);
@@ -674,6 +715,7 @@ void plot_jet(){
     for (std::size_t i = 0; i < ncent; ++i) {
 
         // Normalize per Jet
+        
         hxJ_lead[i]->Scale(1.0/hnJet[i]->GetSum());
         hRg_lead[i]->Scale(1.0/hnJet[i]->GetSum());
         hangu_lead[i]->Scale(1.0/hnJet[i]->GetSum());
@@ -727,6 +769,8 @@ void plot_jet(){
     tree_xj_dynkt->Write("",TObject::kOverwrite);
     for (std::size_t i = 0; i < ncent; ++i) {
 
+        hweight[i]->Write("",TObject::kOverwrite);
+
         hnPho[i]->Write("",TObject::kOverwrite);
         hnPhosel[i]->Write("",TObject::kOverwrite);
         hnJet[i]->Write("",TObject::kOverwrite);
@@ -779,6 +823,8 @@ void plot_jet(){
         h_Rg_xJ_det[i]->ProjectionX(Form("h_Rg_det_%zu",i),1,1)->Write("",TObject::kOverwrite);
         h_Rg_xJ_mc_true[i]->Write("",TObject::kOverwrite);
         h_Rg_xJ_mc_truef[i]->Write("",TObject::kOverwrite);
+        h_Rg_xJ_mc_truef[i]->ProjectionX(Form("h_Rg_truef_%zu",i),1,1)->Write("",TObject::kOverwrite);
+        
 
         hbkg_Rg_xJ_det[i]->Write("",TObject::kOverwrite);
 
@@ -786,6 +832,7 @@ void plot_jet(){
         h_angu_xJ_det[i]->ProjectionX(Form("h_angu_det_%zu",i),1,1)->Write("",TObject::kOverwrite);
         h_angu_xJ_mc_true[i]->Write("",TObject::kOverwrite);
         h_angu_xJ_mc_truef[i]->Write("",TObject::kOverwrite);
+        h_angu_xJ_mc_truef[i]->ProjectionX(Form("h_angu_truef_%zu",i),1,1)->Write("",TObject::kOverwrite);
 
         hbkg_angu_xJ_det[i]->Write("",TObject::kOverwrite);
 
@@ -831,6 +878,7 @@ void plot_jet(){
             sel.pop_back();
             sel.pop_back();
             Plot_hist({hres_jetpt[ind1],hres_jetpt[ind2],hres_jetpt[ind3]},{Form("Cent. %d-%d%% #sigma = %4.2f",min_cent[ind1]/2,max_cent[ind1]/2,hres_jetpt[ind1]->GetRMS()),Form("Cent. %d-%d%% #sigma = %4.2f",min_cent[ind2]/2,max_cent[ind2]/2,hres_jetpt[ind2]->GetRMS()),Form("Cent. %d-%d%% #sigma = %4.2f",min_cent[ind3]/2,max_cent[ind3]/2,hres_jetpt[ind3]->GetRMS()),"jet_res"},"normflow",sel);
+            Plot_hist({hres_jetpt[0]},{Form("Cent. %d-%d%% #sigma = %4.2f, #mu = %4.2f",min_cent[0]/2,max_cent[0]/2,hres_jetpt[0]->GetRMS(),hres_jetpt[0]->GetMean()),"Jet Reco p_{T}-True p_{T}","Events","jet_diff_0_30"},"flowlabel",sel);
         }
         sel = {Form("#gamma p_{T}>%.0f, Jet p_{T}>%.0f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,min_jet_pt),"|#eta|<1.44",Form("H/E<%6.4f",cut_HoverE),Form("SumIso<%6.4f",cut_SumIso),Form("#sigma_{#eta#eta}<%6.4f",cut_SIEIE)};    
         /* // All Recoil Jets
@@ -846,6 +894,9 @@ void plot_jet(){
         overlay({hRg_all[2],hRg_lead[2]},{"All Recoil Jets","Leading Recoil Jet","R_{g}","Norm. Events","Rg_all_lead"},"right_norm_label",sel);
         overlay({hangu_all[2],hangu_lead[2]},{"All Recoil Jets","Leading Recoil Jet","Angularity","Norm. Events","angu_all_lead"},"right_norm_label",sel);
         overlay({hktdyn_all[2],hktdyn_lead[2]},{"All Recoil Jets","Leading Recoil Jet","dyn k_{T}","Norm. Events","ktdyn_all_lead"},"rightlog_norm_label",sel);
+
+        sel = {Form("#gamma p_{T}>%.0f, Jet p_{T}>%.0f",min_pho_et,min_jet_pt),"|#eta|<1.44"};
+        Plot_hist({hdphi_all[0],hdphi_all[1]},{Form("Cent. %d-%d%%",min_cent[0]/2,max_cent[0]/2),Form("Cent. %d-%d%%",min_cent[1]/2,max_cent[1]/2),"dphi_all_cent"},"leftflowlognorm",sel);
 
         // Signal Leading Recoil Jet
         sel = {Form("#gamma p_{T}>%.0f, Jet p_{T}>%.0f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,min_jet_pt),"|#eta|<1.44",Form("H/E<%6.4f",cut_HoverE),Form("SumIso<%6.4f",cut_SumIso),Form("#sigma_{#eta#eta}<%6.4f",cut_SIEIE)};
@@ -871,7 +922,7 @@ void plot_jet(){
 
         printf("\n");
         fout->Close();
-    // ------ Plotting Histograms
+    // ------ End Plotting Histograms
 }
 
 void Plot_hist(std::vector<TH1F*> hist,std::vector<TString> histname,TString opt,std::vector<TString> eopt){
@@ -922,12 +973,13 @@ void Plot_hist(std::vector<TH1F*> hist,std::vector<TString> histname,TString opt
 
     THStack hs("hs","hs");
 
-    for(std::size_t ihist=0; ihist<hist.size();ihist++){
+    for(std::size_t ihist=0; ihist<hist.size();){
         if(opt.Contains("eff")){
+            if((ihist+1)>=hist.size()) break;
             hist[ihist+1]->SetLineColor(colarray[ihist]);
             hist[ihist+1]->SetMarkerColor(colarray[ihist]);
             hist[ihist+1]->SetMarkerStyle(markarray[ihist]);
-            hist[ihist+1]->Divide(hist[ihist+1],hist[0],1,1,"B");
+            hist[ihist+1]->Divide(hist[ihist+1],hist[0],1,1);
             ihist++;
         }
         else{
@@ -945,6 +997,7 @@ void Plot_hist(std::vector<TH1F*> hist,std::vector<TString> histname,TString opt
             hist[ihist]->GetXaxis()->SetRange(0,hist[ihist]->GetNbinsX()+2);
         hs.Add(hist[ihist]);      
         l->AddEntry(hist[ihist], histname[ihist], "lep");
+        if(!opt.Contains("eff")) ihist++;
     }
     hs.Draw(drawopt);
     if(opt.Contains("label")){
@@ -1164,6 +1217,7 @@ void overlay(std::vector<TH1F*> hist,std::vector<TString> histname,TString opt,s
     // lower plot will be in pad
     c.cd();          // Go back to the main canvas before defining pad2
     TPad *pad2 = new TPad("pad2", "pad2", 0, 0, 1, 0.3);
+    pad2->SetFillStyle(4000);
     pad2->SetTopMargin(0.05);
     pad2->SetRightMargin(0.05); 
     pad2->SetLeftMargin(0.12); 
