@@ -1,8 +1,8 @@
 
 /*
-  Based on the jet response analyzer
-  Modified by Matt Nguyen, November 2010
-  Modified by Leticia Cunqueiro, September 2021
+Based on the jet response analyzer
+Modified by Matt Nguyen, November 2010
+Modified by Leticia Cunqueiro, September 2021
 */
 
 #include "HeavyIonsAnalysis/JetAnalysis/interface/HiInclusiveJetSubstructure.h"
@@ -40,7 +40,7 @@ HiInclusiveJetSubstructure::HiInclusiveJetSubstructure(const edm::ParameterSet& 
   doMatch_ = iConfig.getUntrackedParameter<bool>("matchJets",false);
   jetTag_ = consumes<pat::JetCollection> (iConfig.getParameter<InputTag>("jetTag"));
   matchTag_ = consumes<pat::JetCollection> (iConfig.getUntrackedParameter<InputTag>("matchTag"));
-  
+
   vtxTag_ = consumes<vector<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("vtxTag"));
   trackTag_ = consumes<reco::TrackCollection> (iConfig.getParameter<InputTag>("trackTag"));
   useQuality_ = iConfig.getUntrackedParameter<bool>("useQuality",1);
@@ -106,12 +106,12 @@ HiInclusiveJetSubstructure::HiInclusiveJetSubstructure(const edm::ParameterSet& 
   if(doTower){
     TowerSrc_ = consumes<CaloTowerCollection>(iConfig.getParameter<edm::InputTag>("towersSrc"));
   }
-  
+
   doExtraCTagging_ = iConfig.getUntrackedParameter<bool>("doExtraCTagging",false);
 
   genParticleSrc_ = consumes<reco::GenParticleCollection>(iConfig.getUntrackedParameter<edm::InputTag>("genParticles"));
 
-  
+
 
   doSubEvent_ = 0;
 
@@ -125,12 +125,9 @@ HiInclusiveJetSubstructure::HiInclusiveJetSubstructure(const edm::ParameterSet& 
 
 HiInclusiveJetSubstructure::~HiInclusiveJetSubstructure() { }
 
-void
-HiInclusiveJetSubstructure::beginRun(const edm::Run& run,
-				 const edm::EventSetup & es) {}
+void HiInclusiveJetSubstructure::beginRun(const edm::Run& run,const edm::EventSetup & es) {}
 
-void
-HiInclusiveJetSubstructure::beginJob() {
+void HiInclusiveJetSubstructure::beginJob() {
 
   string jetTagTitle = jetTagLabel_.label()+" Jet Analysis Tree";
   t = fs1->make<TTree>("t",jetTagTitle.c_str());
@@ -150,19 +147,14 @@ HiInclusiveJetSubstructure::beginJob() {
   t->Branch("jtphi",jets_.jtphi,"jtphi[nref]/F");
   t->Branch("jtsym",jets_.jtsym,"jtsym[nref]/F");
   t->Branch("jtrg",jets_.jtrg,"jtrg[nref]/F");
-   t->Branch("jtdynkt",jets_.jtdynkt,"jtdynkt[nref]/F");
-    t->Branch("jtangu",jets_.jtangu,"jtangu[nref]/F");
-
-  
-
+  t->Branch("jtdynkt",jets_.jtdynkt,"jtdynkt[nref]/F");
+  t->Branch("jtangu",jets_.jtangu,"jtangu[nref]/F");
 
   if(isMC_){
     if (useHepMC_) {
-      t->Branch("beamId1",&jets_.beamId1,"beamId1/I");
-      t->Branch("beamId2",&jets_.beamId2,"beamId2/I");
+    t->Branch("beamId1",&jets_.beamId1,"beamId1/I");
+    t->Branch("beamId2",&jets_.beamId2,"beamId2/I");
     }
-
-    
 
     // Only matched gen jets
     t->Branch("refpt",jets_.refpt,"refpt[nref]/F");
@@ -173,33 +165,22 @@ HiInclusiveJetSubstructure::beginJob() {
     t->Branch("refdynkt",jets_.refdynkt,"dynkt[nref]/F");
     t->Branch("refangu",jets_.refangu,"angu[nref]/F");
     if(doSubjetPurity){
-      t->Branch("refsub11",jets_.refsub11,"sub11[nref]/F");
-       t->Branch("refsub12",jets_.refsub12,"sub12[nref]/F");
-       t->Branch("refsub21",jets_.refsub21,"sub21[nref]/F");
-       t->Branch("refsub22",jets_.refsub22,"sub22[nref]/F");
+    t->Branch("refsub11",jets_.refsub11,"sub11[nref]/F");
+    t->Branch("refsub12",jets_.refsub12,"sub12[nref]/F");
+    t->Branch("refsub21",jets_.refsub21,"sub21[nref]/F");
+    t->Branch("refsub22",jets_.refsub22,"sub22[nref]/F");
     }
+    t->Branch("refparton_pt",jets_.refparton_pt,"refparton_pt[nref]/F");
+    t->Branch("refparton_flavor",jets_.refparton_flavor,"refparton_flavor[nref]/I");
   }
 
-   
-    
-
-    if(doSubEvent_){
-      t->Branch("subid",jets_.subid,"subid[nref]/I");
-    }
-
-   
-
-   
+  if(doSubEvent_){
+  t->Branch("subid",jets_.subid,"subid[nref]/I");
+  }
 
 }
 
-  
-
-
-
-void
-HiInclusiveJetSubstructure::analyze(const Event& iEvent,
-				const EventSetup& iSetup) {
+void HiInclusiveJetSubstructure::analyze(const Event& iEvent,const EventSetup& iSetup) {
   int event = iEvent.id().event();
   int run = iEvent.id().run();
   int lumi = iEvent.id().luminosityBlock();
@@ -242,31 +223,27 @@ HiInclusiveJetSubstructure::analyze(const Event& iEvent,
 
   edm::Handle<CaloTowerCollection> towers;
   if(doTower){
-    iEvent.getByToken(TowerSrc_,towers);
+  iEvent.getByToken(TowerSrc_,towers);
   }
   double pthat=0;
   if(isMC_){
-   edm::Handle<GenEventInfoProduct> hEventInfo;
-   iEvent.getByToken(eventGenInfoTag_,hEventInfo);
-   pthat = hEventInfo->qScale();}
+    edm::Handle<GenEventInfoProduct> hEventInfo;
+    iEvent.getByToken(eventGenInfoTag_,hEventInfo);
+    pthat = hEventInfo->qScale();
+  }
 
   jets_.nref = 0;
- 
-    for(unsigned int j = 0; j < jets->size(); ++j){
+
+  for(unsigned int j = 0; j < jets->size(); ++j){
     const pat::Jet& jet = (*jets)[j];
-    
+
     auto pt = useRawPt_ ? jet.correctedJet("Uncorrected").pt() : jet.pt();
     if(pt < jetPtMin_) continue;
     if(std::abs(jet.eta()) > jetAbsEtaMax_-rParam) continue;
 
-   
-   
-   
-
-    
     jets_.jtpt[jets_.nref] = jet.pt();
     jets_.jteta[jets_.nref] = jet.eta();
-			   jets_.jtphi[jets_.nref]=jet.phi();
+    jets_.jtphi[jets_.nref]=jet.phi();
     jets_.jtsym[jets_.nref] = 0;
     jets_.jtrg[jets_.nref] = 0;
     jets_.jtdynkt[jets_.nref] = 0;
@@ -277,14 +254,12 @@ HiInclusiveJetSubstructure::analyze(const Event& iEvent,
     fastjet::PseudoJet *sub2Gen =new fastjet::PseudoJet();
     fastjet::PseudoJet *sub1Hyb = new fastjet::PseudoJet();
     fastjet::PseudoJet *sub2Hyb = new fastjet::PseudoJet();
-   
+
     IterativeDeclusteringRec(groom_type, groom_combine,jet,sub1Hyb, sub2Hyb);
 
-
-
     jets_.refpt[jets_.nref] = 0;
-			   jets_.refeta[jets_.nref] = 0;
-			   jets_.refphi[jets_.nref] = 0;
+    jets_.refeta[jets_.nref] = 0;
+    jets_.refphi[jets_.nref] = 0;
 
     jets_.refsym[jets_.nref] = 0.;
     jets_.refrg[jets_.nref] = 0;
@@ -296,10 +271,22 @@ HiInclusiveJetSubstructure::analyze(const Event& iEvent,
     jets_.refsub22[jets_.nref]=0;
 
     if(isMC_){
-    const reco::GenJet * genjet = jet.genJet();
- 
-    if(!genjet) continue;
- 
+      const reco::GenJet * genjet = jet.genJet();
+
+      if(jet.genParton()){
+        // matched partons
+        const reco::GenParticle & parton = *jet.genParton();
+
+        jets_.refparton_pt[jets_.nref] = parton.pt();
+        jets_.refparton_flavor[jets_.nref] = parton.pdgId();
+      }
+      else {
+        jets_.refparton_pt[jets_.nref] = -999;
+        jets_.refparton_flavor[jets_.nref] = -999;
+      }
+
+      if(!genjet) continue;
+
       jets_.refpt[jets_.nref] = genjet->pt();
       jets_.refeta[jets_.nref]=genjet->eta();
       jets_.refphi[jets_.nref]=genjet->phi();
@@ -308,259 +295,235 @@ HiInclusiveJetSubstructure::analyze(const Event& iEvent,
 
       IterativeDeclusteringGen(groom_type, groom_combine,*genjet,sub1Gen,sub2Gen);
 
-       if(doSubjetPurity){
-	 
-	 jets_.refsub11[jets_.nref]=sqrt(pow((sub1Gen->rap()-sub1Hyb->rap()),2)+pow((sub1Gen->phi()-sub1Hyb->phi()),2));
-	 jets_.refsub12[jets_.nref]=sqrt(pow((sub1Gen->rap()-sub2Hyb->rap()),2)+pow((sub1Gen->phi()-sub2Hyb->phi()),2));
-         jets_.refsub21[jets_.nref]=sqrt(pow((sub2Gen->rap()-sub1Hyb->rap()),2)+pow((sub2Gen->phi()-sub1Hyb->phi()),2));
-         jets_.refsub22[jets_.nref]=sqrt(pow((sub2Gen->rap()-sub2Hyb->rap()),2)+pow((sub2Gen->phi()-sub2Hyb->phi()),2));
+      if(doSubjetPurity){
 
-       }
-
-
-    }
-    
-
-       
-
-      delete sub1Gen;
-  delete sub2Gen;
-  delete sub1Hyb;
-  delete sub2Hyb;
-
-
-
-
-       
-     jets_.nref++;
+        jets_.refsub11[jets_.nref]=sqrt(pow((sub1Gen->rap()-sub1Hyb->rap()),2)+pow((sub1Gen->phi()-sub1Hyb->phi()),2));
+        jets_.refsub12[jets_.nref]=sqrt(pow((sub1Gen->rap()-sub2Hyb->rap()),2)+pow((sub1Gen->phi()-sub2Hyb->phi()),2));
+        jets_.refsub21[jets_.nref]=sqrt(pow((sub2Gen->rap()-sub1Hyb->rap()),2)+pow((sub2Gen->phi()-sub1Hyb->phi()),2));
+        jets_.refsub22[jets_.nref]=sqrt(pow((sub2Gen->rap()-sub2Hyb->rap()),2)+pow((sub2Gen->phi()-sub2Hyb->phi()),2));
+      }
     }
 
+    delete sub1Gen;
+    delete sub2Gen;
+    delete sub1Hyb;
+    delete sub2Hyb;
 
-    
-    
-
-
-
+    jets_.nref++;
+  }
 
   t->Fill();
-
 
   memset(&jets_,0,sizeof jets_);
 }
 
-
-
-
 void HiInclusiveJetSubstructure::IterativeDeclusteringRec(double groom_type, double groom_combine,const reco::Jet& jet,fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2)
 {
-        double flagSubjet=0;
-        double zg=0;
-        double rg=0;
-	double nsplit=0;
-        double nsel=0;
-        double nsdin=-1;
-        double z=0;
-        double kt1=-1;
-        double angu=0;
-        double jet_radius_ca = 1.0;
-        fastjet::JetDefinition jet_def(fastjet::genkt_algorithm,jet_radius_ca,0,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best);
-         fastjet::PseudoJet mypart;
-	fastjet::PseudoJet myjet;
-        myjet.reset(jet.p4().px(),jet.p4().py(),jet.p4().pz(),jet.p4().e());
-        // Reclustering jet constituents with new algorithm                                                                                          
-                                                                                                                                                      
-        try
-        {
-	  std::vector<fastjet::PseudoJet> particles;
-         
-                
-                 auto daughters = jet.getJetConstituents();
-                 for(auto it = daughters.begin(); it!=daughters.end(); ++it){
-		 particles.push_back(fastjet::PseudoJet((**it).px(), (**it).py(), (**it).pz(), (**it).energy()));
-                 mypart.reset((**it).px(), (**it).py(), (**it).pz(), (**it).energy());
-	         angu=angu+mypart.perp()*mypart.delta_R(myjet);
-                 
-		 }
-                 angu=angu/jet.pt();
-                fastjet::ClusterSequence csiter(particles, jet_def);
-                std::vector<fastjet::PseudoJet> output_jets = csiter.inclusive_jets(0);
-                output_jets = sorted_by_pt(output_jets);
-
-                                                                                                                 
-                fastjet::PseudoJet jj = output_jets[0];
-                fastjet::PseudoJet j1;
-                fastjet::PseudoJet j2;                                                                                                               
-		fastjet::PseudoJet j1first;
-		fastjet::PseudoJet j2first;
-
-                 while(jj.has_parents(j1,j2))
-                {
-
-                        if(j1.perp() < j2.perp()) std::swap(j1,j2);
-
-                        double delta_R = j1.delta_R(j2);
-                        double cut=mysdcut1*pow(delta_R/rParam,mysdcut2);
-                        
-                        z=j2.perp()/(j1.perp()+j2.perp());
-                        //standard SD 
-                        if((groom_type==1) && (z > cut) && (flagSubjet==0)){
-                          zg=z;
-			  rg=delta_R;
-			  flagSubjet=1;
-                          j1first =j1;
-                          j2first =j2;
-                          *sub1 = j1first;
-                          *sub2 = j2first; 
-                          nsdin=nsplit;}
-
-			  // lateSD                                                                                                                                  
-     			  if((groom_type==0)&&(z > cut)){
-			    zg=z;
-			    rg=delta_R;
-			    j1first =j1;
-			    j2first =j2;
-			    *sub1 = j1first;
-			    *sub2 = j2first;
-			    nsdin=nsplit;}
+  double flagSubjet=0;
+  double zg=0;
+  double rg=0;
+  double nsplit=0;
+  double nsel=0;
+  double nsdin=-1;
+  double z=0;
+  double kt1=-1;
+  double angu=0;
+  double jet_radius_ca = 1.0;
+  fastjet::JetDefinition jet_def(fastjet::genkt_algorithm,jet_radius_ca,0,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best);
+  fastjet::PseudoJet mypart;
+  fastjet::PseudoJet myjet;
+  myjet.reset(jet.p4().px(),jet.p4().py(),jet.p4().pz(),jet.p4().e());
+  // Reclustering jet constituents with new algorithm                                                                                          
+                                                                                                                                      
+  try
+  {
+    std::vector<fastjet::PseudoJet> particles;
 
 
+    auto daughters = jet.getJetConstituents();
+    for(auto it = daughters.begin(); it!=daughters.end(); ++it)
+    {
+      particles.push_back(fastjet::PseudoJet((**it).px(), (**it).py(), (**it).pz(), (**it).energy()));
+      mypart.reset((**it).px(), (**it).py(), (**it).pz(), (**it).energy());
+      angu=angu+mypart.perp()*mypart.delta_R(myjet);
+    }
+    angu=angu/jet.pt();
+    fastjet::ClusterSequence csiter(particles, jet_def);
+    std::vector<fastjet::PseudoJet> output_jets = csiter.inclusive_jets(0);
+    output_jets = sorted_by_pt(output_jets);
 
-                        double dyn=z*(1-z)*j2.perp()*pow(delta_R/rParam,mydynktcut);
+                                                                                                    
+    fastjet::PseudoJet jj = output_jets[0];
+    fastjet::PseudoJet j1;
+    fastjet::PseudoJet j2;                                                                                                               
+    fastjet::PseudoJet j1first;
+    fastjet::PseudoJet j2first;
 
-			  if(dyn>kt1){kt1=dyn;
-			    nsel=nsplit;
-			  }
-			  nsplit=nsplit+1;
-                          jj=j1;
-                }
+    while(jj.has_parents(j1,j2))
+    {
 
-		  //latedSD&&dynkt 
+      if(j1.perp() < j2.perp()) std::swap(j1,j2);
 
-                   if(groom_combine==1){
-		    if(nsel!=nsdin){
-                     
-		      sub1->reset(0,0,0,0);
-		      sub2->reset(0,0,0,0);
-		      zg=0;
-		      rg=0;
-		    }}
+      double delta_R = j1.delta_R(j2);
+      double cut=mysdcut1*pow(delta_R/rParam,mysdcut2);
 
-              jets_.jtsym[jets_.nref] = zg;
-              jets_.jtrg[jets_.nref] = rg; 
-              jets_.jtdynkt[jets_.nref]=kt1;
-              jets_.jtangu[jets_.nref]=angu;
+      z=j2.perp()/(j1.perp()+j2.perp());
+      //standard SD 
+      if((groom_type==1) && (z > cut) && (flagSubjet==0)){
+        zg=z;
+        rg=delta_R;
+        flagSubjet=1;
+        j1first =j1;
+        j2first =j2;
+        *sub1 = j1first;
+        *sub2 = j2first; 
+        nsdin=nsplit;
+      }
 
-        } catch (fastjet::Error) { /*return -1;*/ }
+      // lateSD                                                                                                                                  
+      if((groom_type==0)&&(z > cut)){
+        zg=z;
+        rg=delta_R;
+        j1first =j1;
+        j2first =j2;
+        *sub1 = j1first;
+        *sub2 = j2first;
+        nsdin=nsplit;
+      }
+
+      double dyn=z*(1-z)*j2.perp()*pow(delta_R/rParam,mydynktcut);
+
+      if(dyn>kt1){
+        kt1=dyn;
+        nsel=nsplit;
+      }
+      nsplit=nsplit+1;
+      jj=j1;
+    }
+
+    //latedSD&&dynkt 
+
+    if(groom_combine==1){
+      if(nsel!=nsdin){
+          
+      sub1->reset(0,0,0,0);
+      sub2->reset(0,0,0,0);
+      zg=0;
+      rg=0;
+      }
+    }
+
+    jets_.jtsym[jets_.nref] = zg;
+    jets_.jtrg[jets_.nref] = rg; 
+    jets_.jtdynkt[jets_.nref]=kt1;
+    jets_.jtangu[jets_.nref]=angu;
+
+  } catch (fastjet::Error) { /*return -1;*/ }
 
 
 }
 
 void HiInclusiveJetSubstructure::IterativeDeclusteringGen(double groom_type, double groom_combine,const reco::GenJet& jet,fastjet::PseudoJet *sub1,fastjet::PseudoJet *sub2)
 {
-        double flagSubjet=0;
-        double zg=0;
-        double nsplit=0;
-        double nsel=0;
-        double nsdin=-1;
-        double rg=0;
-        double z=0;
-        double kt1=-1;
-        double angu=0;
-        double jet_radius_ca = 1.0;
-        fastjet::JetDefinition jet_def(fastjet::genkt_algorithm,jet_radius_ca,0,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best);
-        fastjet::PseudoJet mypart;
-	fastjet::PseudoJet myjet;
-        myjet.reset(jet.p4().px(),jet.p4().py(),jet.p4().pz(),jet.p4().e());
-        // Reclustering jet constituents with new algorithm                                                                                          
-                                                                                                                                                      
-        try
-        {
-	  std::vector<fastjet::PseudoJet> particles;
-         
-                
-                 auto daughters = jet.getJetConstituents();
-                 for(auto it = daughters.begin(); it!=daughters.end(); ++it){
-		   particles.push_back(fastjet::PseudoJet((**it).px(), (**it).py(), (**it).pz(), (**it).energy()));
-		   mypart.reset((**it).px(), (**it).py(), (**it).pz(), (**it).energy());
-		   angu=angu+mypart.perp()*mypart.delta_R(myjet);
+  double flagSubjet=0;
+  double zg=0;
+  double nsplit=0;
+  double nsel=0;
+  double nsdin=-1;
+  double rg=0;
+  double z=0;
+  double kt1=-1;
+  double angu=0;
+  double jet_radius_ca = 1.0;
+  fastjet::JetDefinition jet_def(fastjet::genkt_algorithm,jet_radius_ca,0,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best);
+  fastjet::PseudoJet mypart;
+  fastjet::PseudoJet myjet;
+  myjet.reset(jet.p4().px(),jet.p4().py(),jet.p4().pz(),jet.p4().e());
+  // Reclustering jet constituents with new algorithm                                                                                          
+                                                                                                                      
+  try
+  {
+    std::vector<fastjet::PseudoJet> particles;
+
+    auto daughters = jet.getJetConstituents();
+    for(auto it = daughters.begin(); it!=daughters.end(); ++it){
+      particles.push_back(fastjet::PseudoJet((**it).px(), (**it).py(), (**it).pz(), (**it).energy()));
+      mypart.reset((**it).px(), (**it).py(), (**it).pz(), (**it).energy());
+      angu=angu+mypart.perp()*mypart.delta_R(myjet);
+    }
+
+    angu=angu/jet.pt();
+    fastjet::ClusterSequence csiter(particles, jet_def);
+    std::vector<fastjet::PseudoJet> output_jets = csiter.inclusive_jets(0);
+    output_jets = sorted_by_pt(output_jets);
+
+                                                                                    
+    fastjet::PseudoJet jj = output_jets[0];
+    fastjet::PseudoJet j1;
+    fastjet::PseudoJet j2;                                                                                                               
+    fastjet::PseudoJet j1first;
+    fastjet::PseudoJet j2first;
+
+    while(jj.has_parents(j1,j2))
+    {
+      if(j1.perp() < j2.perp()) std::swap(j1,j2);
+
+      double delta_R = j1.delta_R(j2);
+      double cut=mysdcut1*pow(delta_R/rParam,mysdcut2);
+      z=j2.perp()/(j1.perp()+j2.perp());
+
+      //standard SD
+      if((groom_type==1)&&(z > cut) && (flagSubjet==0)){
+        zg=z;
+        rg=delta_R;
+        flagSubjet=1;
+        j1first =j1;
+        j2first =j2;
+        *sub1 = j1first;
+        *sub2 = j2first;
+        nsdin=nsplit;
       }
 
-                angu=angu/jet.pt();
-                fastjet::ClusterSequence csiter(particles, jet_def);
-                std::vector<fastjet::PseudoJet> output_jets = csiter.inclusive_jets(0);
-                output_jets = sorted_by_pt(output_jets);
+      // lateSD
+      if((groom_type==0)&&(z > cut)){
+        zg=z;
+        rg=delta_R;
+        j1first =j1;
+        j2first =j2;
+        *sub1 = j1first;
+        *sub2 = j2first;
+        nsdin=nsplit;
+      }   
 
-                                                                                                                 
-                fastjet::PseudoJet jj = output_jets[0];
-                fastjet::PseudoJet j1;
-                fastjet::PseudoJet j2;                                                                                                               
-		fastjet::PseudoJet j1first;
-		fastjet::PseudoJet j2first;
+      double dyn=z*(1-z)*j2.perp()*pow(delta_R/rParam,mydynktcut);
+      if(dyn>kt1){
+      kt1=dyn;
+      nsel=nsplit;
+      }
+      nsplit=nsplit+1;
 
-                 while(jj.has_parents(j1,j2))
-                {
+      jj=j1;
+    }
+    //latedSD&&dynkt
+    if(groom_combine==1){
+      if(nsel!=nsdin){
+      sub1->reset(0,0,0,0);   
+      sub2->reset(0,0,0,0);
+      zg=0;
+      rg=0;
+      }
+    }
 
-                        if(j1.perp() < j2.perp()) std::swap(j1,j2);
-
-                        double delta_R = j1.delta_R(j2);
-			double cut=mysdcut1*pow(delta_R/rParam,mysdcut2);
-                        z=j2.perp()/(j1.perp()+j2.perp());
-
-                        //standard SD
-                        if((groom_type==1)&&(z > cut) && (flagSubjet==0)){
-                          zg=z;
-			  rg=delta_R;
-			  flagSubjet=1;
-                          j1first =j1;
-                          j2first =j2;
-                          *sub1 = j1first;
-                          *sub2 = j2first;
-                          nsdin=nsplit;}
-
-                        // lateSD
-			if((groom_type==0)&&(z > cut)){
-                          zg=z;
-                          rg=delta_R;
-                          j1first =j1;
-                          j2first =j2;
-                          *sub1 = j1first;
-                          *sub2 = j2first;
-                          nsdin=nsplit;}   
-		
-
-                        double dyn=z*(1-z)*j2.perp()*pow(delta_R/rParam,mydynktcut);
-                        if(dyn>kt1){
-                        kt1=dyn;
-                        nsel=nsplit;
-			}
-                        nsplit=nsplit+1;
-
-                        jj=j1;
-                }
-		 //latedSD&&dynkt
-                 if(groom_combine==1){
-		   if(nsel!=nsdin){
-                     sub1->reset(0,0,0,0);   
-		     sub2->reset(0,0,0,0);
-                     zg=0;
-                     rg=0;
-		   }}
-		
-              jets_.refsym[jets_.nref] = zg;
-              jets_.refrg[jets_.nref] = rg; 
-              jets_.refdynkt[jets_.nref]=kt1;
-              jets_.refangu[jets_.nref]=angu; 
-        } catch (fastjet::Error) { /*return -1;*/ }
+    jets_.refsym[jets_.nref] = zg;
+    jets_.refrg[jets_.nref] = rg; 
+    jets_.refdynkt[jets_.nref]=kt1;
+    jets_.refangu[jets_.nref]=angu; 
+  } catch (fastjet::Error) { /*return -1;*/ }
 
 
 }
 
-
-
-
-
-int
-HiInclusiveJetSubstructure::getPFJetMuon(const pat::Jet& pfJet, const reco::PFCandidateCollection *pfCandidateColl)
+int HiInclusiveJetSubstructure::getPFJetMuon(const pat::Jet& pfJet, const reco::PFCandidateCollection *pfCandidateColl)
 {
 
   int pfMuonIndex = -1;
@@ -587,8 +550,7 @@ HiInclusiveJetSubstructure::getPFJetMuon(const pat::Jet& pfJet, const reco::PFCa
 }
 
 
-double
-HiInclusiveJetSubstructure::getPtRel(const reco::PFCandidate& lep, const pat::Jet& jet )
+double HiInclusiveJetSubstructure::getPtRel(const reco::PFCandidate& lep, const pat::Jet& jet )
 {
 
   float lj_x = jet.p4().px();
@@ -612,8 +574,7 @@ HiInclusiveJetSubstructure::getPtRel(const reco::PFCandidate& lep, const pat::Je
 }
 
 // Recursive function, but this version gets called only the first time
-void
-HiInclusiveJetSubstructure::saveDaughters(const reco::GenParticle &gen){
+void HiInclusiveJetSubstructure::saveDaughters(const reco::GenParticle &gen){
 
   for(unsigned i=0;i<gen.numberOfDaughters();i++){
     const reco::Candidate & daughter = *gen.daughter(i);
@@ -629,7 +590,7 @@ HiInclusiveJetSubstructure::saveDaughters(const reco::GenParticle &gen){
     // cheesy way of finding strings which were already used
     if(daughter.pdgId()==92){
       for(unsigned ist=0;ist<usedStringPts.size();ist++){
-	if(fabs(daughter.pt() - usedStringPts[ist]) < 0.0001) return;
+      if(fabs(daughter.pt() - usedStringPts[ist]) < 0.0001) return;
       }
       usedStringPts.push_back(daughter.pt());
     }
@@ -649,8 +610,7 @@ HiInclusiveJetSubstructure::saveDaughters(const reco::GenParticle &gen){
 }
 
 // This version called for all subsequent calls
-void
-HiInclusiveJetSubstructure::saveDaughters(const reco::Candidate &gen){
+void HiInclusiveJetSubstructure::saveDaughters(const reco::Candidate &gen){
 
   for(unsigned i=0;i<gen.numberOfDaughters();i++){
     const reco::Candidate & daughter = *gen.daughter(i);
@@ -666,7 +626,7 @@ HiInclusiveJetSubstructure::saveDaughters(const reco::Candidate &gen){
     // cheesy way of finding strings which were already used
     if(daughter.pdgId()==92){
       for(unsigned ist=0;ist<usedStringPts.size();ist++){
-	if(fabs(daughter.pt() - usedStringPts[ist]) < 0.0001) return;
+      if(fabs(daughter.pt() - usedStringPts[ist]) < 0.0001) return;
       }
       usedStringPts.push_back(daughter.pt());
     }
@@ -711,7 +671,7 @@ void HiInclusiveJetSubstructure::analyzeSubjets(const reco::Jet& jet) {
   jets_.jtSubJetEta.push_back(sjeta);
   jets_.jtSubJetPhi.push_back(sjphi);
   jets_.jtSubJetM.push_back(sjm);
-  
+
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -724,8 +684,8 @@ int HiInclusiveJetSubstructure::getGroomedGenJetIndex(const reco::GenJet& jet) c
 
     double dr = deltaR(jet,mjet);
     if(dr < drMin){
-      imatch = i;
-      drMin = dr;
+    imatch = i;
+    drMin = dr;
     }
   }
   return imatch;
@@ -744,46 +704,46 @@ void HiInclusiveJetSubstructure::analyzeGenSubjets(const reco::GenJet& jet) {
   //Find closest soft-dropped gen jet
   int imatch = getGroomedGenJetIndex(jet);
   double dr = 999.;
- 
+
 }
 
 //--------------------------------------------------------------------------------------------------
 float HiInclusiveJetSubstructure::getAboveCharmThresh(TrackRefVector& selTracks, const TrackIPTagInfo& ipData, int sigOrVal)
 {
 
-	const double pdgCharmMass = 1.290;
-	btag::SortCriteria sc;
-	switch(sigOrVal){
-		case 1: //2d significance 
-			sc = reco::btag::IP2DSig;
-		case 2: //3d significance
-			sc = reco::btag::IP3DSig;
-		case 3:
-			sc = reco::btag::IP2DSig;  //values are not sortable!
-		case 4:
-			sc = reco::btag::IP3DSig;
-	}
-	std::vector<std::size_t> indices = ipData.sortedIndexes(sc);
-	reco::TrackKinematics kin;
-	for(unsigned int i=0; i<indices.size(); i++){
-		size_t idx = indices[i];
-		const Track track = *(selTracks[idx]);
-		const btag::TrackIPData &data = ipData.impactParameterData()[idx];
-		kin.add(track);
-		if(kin.vectorSum().M() > pdgCharmMass){
-			switch(sigOrVal){
-				case 1:
-					return data.ip2d.significance();
-				case 2:
-					return data.ip3d.significance();
-				case 3:
-					return data.ip2d.value();
-				case 4:
-					return data.ip3d.value();
-			}
-		}
-	}
-	return 0;
+  const double pdgCharmMass = 1.290;
+  btag::SortCriteria sc;
+  switch(sigOrVal){
+    case 1: //2d significance 
+    sc = reco::btag::IP2DSig;
+    case 2: //3d significance
+    sc = reco::btag::IP3DSig;
+    case 3:
+    sc = reco::btag::IP2DSig;  //values are not sortable!
+    case 4:
+    sc = reco::btag::IP3DSig;
+  }
+  std::vector<std::size_t> indices = ipData.sortedIndexes(sc);
+  reco::TrackKinematics kin;
+  for(unsigned int i=0; i<indices.size(); i++){
+    size_t idx = indices[i];
+    const Track track = *(selTracks[idx]);
+    const btag::TrackIPData &data = ipData.impactParameterData()[idx];
+    kin.add(track);
+    if(kin.vectorSum().M() > pdgCharmMass){
+      switch(sigOrVal){
+        case 1:
+        return data.ip2d.significance();
+        case 2:
+        return data.ip3d.significance();
+        case 3:
+        return data.ip2d.value();
+        case 4:
+        return data.ip3d.value();
+      }
+    }
+  }
+  return 0;
 
 }
 
