@@ -24,6 +24,9 @@
 #include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
 
 #include "fastjet/contrib/Njettiness.hh"
+
+#include "SimDataFormats/JetMatching/interface/JetFlavourInfo.h"
+#include "SimDataFormats/JetMatching/interface/JetFlavourInfoMatching.h"
 //
 
 /**\class HiInclusiveJetAnalyzer
@@ -90,6 +93,9 @@ private:
   edm::Handle<edm::ValueMap<float> >       genSymVM_;
   edm::EDGetTokenT< edm::ValueMap<int> >   tokenGenDroppedBranches_;
   edm::Handle<edm::ValueMap<int> >         genDroppedBranchesVM_;
+
+  bool doExtendedFlavorTagging_;
+  edm::EDGetTokenT<reco::JetFlavourInfoMatchingCollection> jetFlavourInfosToken_;
   
   // towers
   edm::EDGetTokenT<CaloTowerCollection> TowerSrc_;
@@ -185,6 +191,8 @@ private:
     float jttau1[MAXJETS];
     float jttau2[MAXJETS];
     float jttau3[MAXJETS];
+
+    float jtPartonFlavor[MAXJETS];
 
     float jtsym[MAXJETS];
     float   jtrg[MAXJETS];

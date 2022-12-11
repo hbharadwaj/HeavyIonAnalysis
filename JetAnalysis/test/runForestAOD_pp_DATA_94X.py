@@ -142,7 +142,7 @@ for idmod in my_id_modules:
 
 process.ana_step = cms.Path(
     process.hltanalysis *
-    process.hltobject *
+    # process.hltobject *
     # process.l1object +
     process.hiEvtAnalyzer *
     process.jetSequence +
@@ -196,3 +196,17 @@ process.pVertexFilterCutEandG = cms.Path(process.pileupVertexFilterCutEandG)
 process.pAna = cms.EndPath(process.skimanalysis)
 
 # Customization
+from HLTrigger.HLTfilters.hltHighLevel_cfi import hltHighLevel
+process.hltfilter = hltHighLevel.clone(
+    HLTPaths = [
+
+        "HLT_HIPhoton40_*",
+        #"HLT_HISinglePhoton40_*"
+        
+
+    ]
+)
+
+process.filterSequence = cms.Sequence(
+    process.hltfilter
+)

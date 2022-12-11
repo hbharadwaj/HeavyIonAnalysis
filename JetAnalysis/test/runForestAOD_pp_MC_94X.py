@@ -26,13 +26,20 @@ process.HiForest.HiForestVersion = cms.string(version)
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-	"file:/data_CMS/cms/bharikri/AODFiles/pp_MC/06038465-564E-E911-AB25-549F358EB748.root"
+	#"file:/data_CMS/cms/bharikri/AODFiles/pp_MC/06038465-564E-E911-AB25-549F358EB748.root",
+    'root://cms-xrd-global.cern.ch//store/himc/RunIIpp5Spring18DR/QCDPhoton_pThat-80_Filter30GeV_TuneCP5_5p02TeV_pythia8/AODSIM/94X_mc2017_realistic_forppRef5TeV_v1-v1/130000/28019269-44A6-E911-A090-A0369FC52134.root' #Pythia pthat80
+    #'root://cms-xrd-global.cern.ch///store/user/mnguyen/herwig_GJet/herwig_GJet_part2_RECO/221029_085556/0000/step3_RAW2DIGI_L1Reco_RECO_1.root' #Herwig pthat80
+    ,'root://cms-xrd-global.cern.ch//store/himc/RunIIpp5Spring18DR/QCDPhoton_pThat-80_Filter30GeV_TuneCP5_5p02TeV_pythia8/AODSIM/94X_mc2017_realistic_forppRef5TeV_v1-v1/130000/14AA2F54-58B1-E911-987C-3417EBE64B25.root'
+    ,'root://cms-xrd-global.cern.ch//store/himc/RunIIpp5Spring18DR/QCDPhoton_pThat-80_Filter30GeV_TuneCP5_5p02TeV_pythia8/AODSIM/94X_mc2017_realistic_forppRef5TeV_v1-v1/130000/00DD6EC8-49B1-E911-A126-008CFA198258.root'
+    ,'root://cms-xrd-global.cern.ch//store/himc/RunIIpp5Spring18DR/QCDPhoton_pThat-80_Filter30GeV_TuneCP5_5p02TeV_pythia8/AODSIM/94X_mc2017_realistic_forppRef5TeV_v1-v1/130000/4A390A0A-40A6-E911-A0FB-A0369FC52134.root'
+    ,'root://cms-xrd-global.cern.ch//store/himc/RunIIpp5Spring18DR/QCDPhoton_pThat-80_Filter30GeV_TuneCP5_5p02TeV_pythia8/AODSIM/94X_mc2017_realistic_forppRef5TeV_v1-v1/130000/602E6EB8-3BA6-E911-87AC-A0369FC52134.root'
+
     )
 )
 
 # Number of events we want to process, -1 = all events
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(100))
+    input = cms.untracked.int32(-1))
 
 #####################################################################################
 # Load Global Tag, Geometry, etc.
@@ -153,10 +160,10 @@ for idmod in my_id_modules:
 
 process.ana_step = cms.Path(
     process.hltanalysis *
-    process.hiEvtAnalyzer *
-    process.hltobject +
+    process.hiEvtAnalyzer +
+    #process.hltobject +
     # process.l1object +
-    process.HiGenParticleAna*
+    # process.HiGenParticleAna*
     process.genJetSequence +
     process.jetSequence +
     # Should be added in the path for VID module
