@@ -33,8 +33,7 @@ using namespace std;
 using namespace edm;
 using namespace reco;
 
-HiInclusiveJetAnalyzer::HiInclusiveJetAnalyzer(const edm::ParameterSet& iConfig)
-{
+HiInclusiveJetAnalyzer::HiInclusiveJetAnalyzer(const edm::ParameterSet& iConfig) {
 
   doMatch_ = iConfig.getUntrackedParameter<bool>("matchJets",false);
   jetTag_ = consumes<pat::JetCollection> (iConfig.getParameter<InputTag>("jetTag"));
