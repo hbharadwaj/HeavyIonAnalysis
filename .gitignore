@@ -12,17 +12,6 @@ MuonAnalysis/
 TrackAnalysis/
 VNAnalysis/
 VertexAnalysis/
-JetAnalysis/test/OutputPlots_Data_2018_jets/angu_all.png
-JetAnalysis/test/OutputPlots_Data_2018_jets/angu_lead.png
-JetAnalysis/test/OutputPlots_Data_2018_jets/Angu_xJ_0_30.png
-JetAnalysis/test/OutputPlots_Data_2018_jets/dphi_all.png
-JetAnalysis/test/OutputPlots_Data_2018_jets/dphi_lead.png
-JetAnalysis/test/OutputPlots_Data_2018_jets/ktdyn_all.png
-JetAnalysis/test/OutputPlots_Data_2018_jets/ktdyn_lead.png
-JetAnalysis/test/OutputPlots_Data_2018_jets/Ktdyn_xJ_0_30.png
-JetAnalysis/test/OutputPlots_Data_2018_jets/Rg_all.png
-JetAnalysis/test/OutputPlots_Data_2018_jets/Rg_lead.png
-JetAnalysis/test/OutputPlots_Data_2018_jets/Rg_xJ_0_30.png
-JetAnalysis/test/OutputPlots_Data_2018_jets/xJ_all.png
-JetAnalysis/test/OutputPlots_Data_2018_jets/xJ_lead.png
+JetAnalysis/test/OutputPlots/*
+JetAnalysis/test/UnfoldedPlots/*
 
