@@ -1,9 +1,10 @@
 *.root
 *.sh
 *.pyc
-JetAnalysis/test/plot_jet
-JetAnalysis/test/overlay
+*.png
+*.jpeg
 PhotonAnalysis/test/crabJobs/crab_projects/
+PhotonAnalysis/test/crabJobs/CRABtasks/
 CentralityAnalysis/
 Configuration/
 EventAnalysis/
@@ -12,6 +13,11 @@ MuonAnalysis/
 TrackAnalysis/
 VNAnalysis/
 VertexAnalysis/
-JetAnalysis/test/OutputPlots/*
-JetAnalysis/test/UnfoldedPlots/*
+JetAnalysis/test/OutputPlots/
+JetAnalysis/test/UnfoldedPlots/
+JetAnalysis/test/OverlayData/
+JetAnalysis/test/OverlayPlots/
+JetAnalysis/test/Overlay_ppPbPb/
+JetAnalysis/test/Overlay_uncert/
+JetAnalysis/test/Plot_jets/
 
