@@ -71,11 +71,11 @@ void SkimFile_Jets_Data(){
    SetPlotStyle();
     TChain data("data"), EventTree("EventTree"), HiTree("HiTree"), skimanalysis("skimanalysis"),hltanalysis("hltanalysis");
 
-   data.Add("/data_CMS/cms/bharikri/Data_2018/HiForestAOD_*.root/akCs2PFJetAnalyzer_substructure/t");
-   EventTree.Add("/data_CMS/cms/bharikri/Data_2018/HiForestAOD_*.root/ggHiNtuplizerGED/EventTree");
-   HiTree.Add("/data_CMS/cms/bharikri/Data_2018/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
-   skimanalysis.Add("/data_CMS/cms/bharikri/Data_2018/HiForestAOD_*.root/skimanalysis/HltTree");
-   hltanalysis.Add("/data_CMS/cms/bharikri/Data_2018/HiForestAOD_*.root/hltanalysis/HltTree");
+   data.Add("/data_CMS/cms/bharikri/2023_NTuples/PbPb/Data/HiForestAOD_*.root/akCs2PFJetAnalyzer_substructure/t");
+   EventTree.Add("/data_CMS/cms/bharikri/2023_NTuples/PbPb/Data/HiForestAOD_*.root/ggHiNtuplizerGED/EventTree");
+   HiTree.Add("/data_CMS/cms/bharikri/2023_NTuples/PbPb/Data/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
+   skimanalysis.Add("/data_CMS/cms/bharikri/2023_NTuples/PbPb/Data/HiForestAOD_*.root/skimanalysis/HltTree");
+   hltanalysis.Add("/data_CMS/cms/bharikri/2023_NTuples/PbPb/Data/HiForestAOD_*.root/hltanalysis/HltTree");
 
    data.AddFriend("EventTree");
    data.AddFriend("HiTree");
@@ -85,41 +85,68 @@ void SkimFile_Jets_Data(){
   // ----------------------------------------------------------------------------------------------------------------
   // Variables
 
-    Float_t jet_pt[500];
-    Float_t jet_eta[500];
-    Float_t jet_phi[500];
-    Float_t jet_sym[500];
-    Float_t jet_rg[500];
-    Float_t jet_dynkt[500];
-    Float_t jet_angu[500];
-    Int_t nref=0;
-    Float_t ref_pt[500];
-    Float_t ref_eta[500];
-    Float_t ref_phi[500];
-    Float_t ref_sym[500];
-    Float_t ref_rg[500];
-    Float_t ref_dynkt[500];
-    Float_t ref_angu[500];
+   Float_t jet_pt[500];
+   Float_t jet_eta[500];
+   Float_t jet_phi[500];
+   Float_t jet_sym[500];
+   Float_t jet_rg[500];
+   Float_t jet_dynkt[500];
+   Float_t jet_angu[500];
+   Int_t nref=0;
+   Float_t ref_pt[500];
+   Float_t ref_eta[500];
+   Float_t ref_phi[500];
+   Float_t ref_sym[500];
+   Float_t ref_rg[500];
+   Float_t ref_dynkt[500];
+   Float_t ref_angu[500];
 
-    data.SetBranchAddress("jtpt", &jet_pt);
-    data.SetBranchAddress("jteta", &jet_eta);
-    data.SetBranchAddress("jtphi", &jet_phi);
-    data.SetBranchAddress("jtsym", &jet_sym);
-    data.SetBranchAddress("jtrg", &jet_rg);
-    data.SetBranchAddress("jtdynkt", &jet_dynkt);
-    data.SetBranchAddress("jtangu", &jet_angu);
-    data.SetBranchAddress("nref",&nref); 
-    data.SetBranchAddress("refpt", &ref_pt);
-    data.SetBranchAddress("refeta", &ref_eta);
-    data.SetBranchAddress("refphi", &ref_phi);
-    data.SetBranchAddress("refsym", &ref_sym);
-    data.SetBranchAddress("refrg", &ref_rg);
-    data.SetBranchAddress("refdynkt", &ref_dynkt);
-    data.SetBranchAddress("refangu", &ref_angu);
+   data.SetBranchAddress("jtpt", &jet_pt);
+   data.SetBranchAddress("jteta", &jet_eta);
+   data.SetBranchAddress("jtphi", &jet_phi);
+   data.SetBranchAddress("jtsym", &jet_sym);
+   data.SetBranchAddress("jtrg", &jet_rg);
+   data.SetBranchAddress("jtdynkt", &jet_dynkt);
+   data.SetBranchAddress("jtangu", &jet_angu);
+   data.SetBranchAddress("nref",&nref); 
+   // data.SetBranchAddress("refpt", &ref_pt);
+   // data.SetBranchAddress("refeta", &ref_eta);
+   // data.SetBranchAddress("refphi", &ref_phi);
+   // data.SetBranchAddress("refsym", &ref_sym);
+   // data.SetBranchAddress("refrg", &ref_rg);
+   // data.SetBranchAddress("refdynkt", &ref_dynkt);
+   // data.SetBranchAddress("refangu", &ref_angu);
 
    Int_t hiBin=0;
+   float pthat=0;
+   Float_t weight = 0;
+   Float_t hiHF=0;
+   Float_t alphaQCD = 0;
+   Float_t qScale = 0;   
+   int lumi = 0;
+   float vx = -999;
+   float vy = -999;
+   float vz = -999;
+
+   Int_t pHBHENoiseFilterResultProducer = 0;
+   Int_t HBHENoiseFilterResult = 0;
+   Int_t HBHENoiseFilterResultRun1 = 0;
+   Int_t HBHENoiseFilterResultRun2Loose  = 0;
+   Int_t HBHENoiseFilterResultRun2Tight = 0;
+   Int_t HBHEIsoNoiseFilterResult  = 0;
    
    data.SetBranchAddress("hiBin", &hiBin);
+   data.SetBranchAddress("hiHF", &hiHF);
+   data.SetBranchAddress("lumi",  &lumi);
+   data.SetBranchAddress("vx",  &vx);
+   data.SetBranchAddress("vy",  &vy);
+   data.SetBranchAddress("vz",  &vz);
+
+   data.SetBranchAddress("pHBHENoiseFilterResultProducer",&pHBHENoiseFilterResultProducer);
+   data.SetBranchAddress("HBHENoiseFilterResult",&HBHENoiseFilterResult);
+   data.SetBranchAddress("HBHENoiseFilterResultRun1",&HBHENoiseFilterResultRun1);
+   data.SetBranchAddress("HBHENoiseFilterResultRun2Loose",&HBHENoiseFilterResultRun2Loose); 
+   data.SetBranchAddress("HBHENoiseFilterResultRun2Tight",&HBHENoiseFilterResultRun2Tight);
 
    // reco::Photon
    std::vector<float>*  phoE;
@@ -169,6 +196,14 @@ void SkimFile_Jets_Data(){
    std::vector<float>* eleEta;
    std::vector<float>* elePhi;
    std::vector<float>* eleEoverP;
+
+   std::vector<float>* eleSigmaIEtaIEta_2012;
+   std::vector<float>* eledEtaSeedAtVtx;
+   std::vector<float>* eledPhiAtVtx;
+   std::vector<float>* eleHoverE;
+   std::vector<float>* eleEoverPInv;
+   std::vector<int>* eleMissHits;
+   std::vector<float>* eleIP3D;
 
    /// ----
 /*
@@ -228,6 +263,14 @@ void SkimFile_Jets_Data(){
    eleEta = 0;
    elePhi = 0;
    eleEoverP = 0;
+
+   eleSigmaIEtaIEta_2012 = 0;
+   eledEtaSeedAtVtx = 0;
+   eledPhiAtVtx = 0;
+   eleHoverE = 0;
+   eleEoverPInv = 0;
+   eleMissHits = 0;
+   eleIP3D = 0;
    /*
    data.SetBranchAddress("mcPID",        &mcPID);
    data.SetBranchAddress("mcPt",         &mcPt);
@@ -284,6 +327,14 @@ void SkimFile_Jets_Data(){
    data.SetBranchAddress("elePhi",  &elePhi);
    data.SetBranchAddress("eleEoverP",  &eleEoverP);
 
+   data.SetBranchAddress("eleSigmaIEtaIEta_2012",   &eleSigmaIEtaIEta_2012);
+   data.SetBranchAddress("eledEtaSeedAtVtx",  &eledEtaSeedAtVtx);
+   data.SetBranchAddress("eledPhiAtVtx",  &eledPhiAtVtx);
+   data.SetBranchAddress("eleHoverE",  &eleHoverE);
+   data.SetBranchAddress("eleEoverPInv",  &eleEoverPInv);
+   data.SetBranchAddress("eleMissHits",  &eleMissHits);
+   data.SetBranchAddress("eleIP3D",  &eleIP3D);
+
    int pprimaryVertexFilter = 0;
    int pclusterCompatibilityFilter = 0;
    int phfCoincFilter2Th4 = 0;
@@ -293,10 +344,18 @@ void SkimFile_Jets_Data(){
    data.SetBranchAddress("phfCoincFilter2Th4",  &phfCoincFilter2Th4);
 
    Int_t L1_SingleEG21_BptxAND = 0;
+   Int_t HLT_HIGEDPhoton20_v1 = 0;
+   Int_t HLT_HIGEDPhoton30_v1 = 0;
    Int_t HLT_HIGEDPhoton40_v1 = 0;
+   Int_t HLT_HIGEDPhoton50_v1 = 0;
+   Int_t HLT_HIGEDPhoton60_v1 = 0;
 
    data.SetBranchAddress("L1_SingleEG21_BptxAND",  &L1_SingleEG21_BptxAND);
+   data.SetBranchAddress("HLT_HIGEDPhoton20_v1",  &HLT_HIGEDPhoton20_v1);
+   data.SetBranchAddress("HLT_HIGEDPhoton30_v1",  &HLT_HIGEDPhoton30_v1);
    data.SetBranchAddress("HLT_HIGEDPhoton40_v1",  &HLT_HIGEDPhoton40_v1);
+   data.SetBranchAddress("HLT_HIGEDPhoton50_v1",  &HLT_HIGEDPhoton50_v1);
+   data.SetBranchAddress("HLT_HIGEDPhoton60_v1",  &HLT_HIGEDPhoton60_v1);
 
 // ----------------------------------------------------------------------------------------------------------------
 // Histograms
@@ -332,7 +391,11 @@ void SkimFile_Jets_Data(){
 
    Int_t   train_hiBin = 0;
    Int_t   train_L1_SingleEG21_BptxAND = 0;
+   Int_t   train_HLT_HIGEDPhoton20_v1 = 0;
+   Int_t   train_HLT_HIGEDPhoton30_v1 = 0;
    Int_t   train_HLT_HIGEDPhoton40_v1 = 0;
+   Int_t   train_HLT_HIGEDPhoton50_v1 = 0;
+   Int_t   train_HLT_HIGEDPhoton60_v1 = 0;
    
    jet_tree->Branch("phoSCRawE",&train_phoSCRawE);
    jet_tree->Branch("phoSCEta",&train_phoSCEta);
@@ -363,7 +426,40 @@ void SkimFile_Jets_Data(){
    jet_tree->Branch("eleRej",&train_eleRej);
 
    jet_tree->Branch("L1_SingleEG21_BptxAND",&train_L1_SingleEG21_BptxAND);
+   jet_tree->Branch("HLT_HIGEDPhoton20_v1",&train_HLT_HIGEDPhoton20_v1);
+   jet_tree->Branch("HLT_HIGEDPhoton30_v1",&train_HLT_HIGEDPhoton30_v1);
    jet_tree->Branch("HLT_HIGEDPhoton40_v1",&train_HLT_HIGEDPhoton40_v1);
+   jet_tree->Branch("HLT_HIGEDPhoton50_v1",&train_HLT_HIGEDPhoton50_v1);
+   jet_tree->Branch("HLT_HIGEDPhoton60_v1",&train_HLT_HIGEDPhoton60_v1);
+
+   Float_t train_alphaQCD = 0;
+   Float_t train_qScale = 0;
+   Float_t train_hiHF =0;
+   Int_t train_lumi = 0;
+   Float_t train_vx = -999;
+   Float_t train_vy = -999;
+   Float_t train_vz = -999;
+
+   Int_t train_pHBHENoiseFilterResultProducer = 0;
+   Int_t train_HBHENoiseFilterResult = 0;
+   Int_t train_HBHENoiseFilterResultRun1 = 0;
+   Int_t train_HBHENoiseFilterResultRun2Loose  = 0;
+   Int_t train_HBHENoiseFilterResultRun2Tight = 0;
+   Int_t train_HBHEIsoNoiseFilterResult  = 0;
+
+   jet_tree->Branch("alphaQCD",&train_alphaQCD);
+   jet_tree->Branch("qScale",&train_qScale);
+   jet_tree->Branch("hiHF",&train_hiHF);
+   jet_tree->Branch("lumi",&train_lumi);
+   jet_tree->Branch("vx",&train_vx);
+   jet_tree->Branch("vy",&train_vy);
+   jet_tree->Branch("vz",&train_vz);
+
+   jet_tree->Branch("pHBHENoiseFilterResultProducer", &train_pHBHENoiseFilterResultProducer);
+   jet_tree->Branch("HBHENoiseFilterResult",    &train_HBHENoiseFilterResult);
+   jet_tree->Branch("HBHENoiseFilterResultRun1",    &train_HBHENoiseFilterResultRun1);
+   jet_tree->Branch("HBHENoiseFilterResultRun2Loose" ,    &train_HBHENoiseFilterResultRun2Loose); 
+   jet_tree->Branch("HBHENoiseFilterResultRun2Tight",    &train_HBHENoiseFilterResultRun2Tight);
 
    Int_t train_nref = 0;
    Int_t train_jet_index = -1;
@@ -374,13 +470,7 @@ void SkimFile_Jets_Data(){
    Float_t train_jet_rg[500]={-1};
    Float_t train_jet_dynkt[500]={-1};
    Float_t train_jet_angu[500]={-1};
-   Float_t train_ref_pt[500]={-1};
-   Float_t train_ref_eta[500]={-1};
-   Float_t train_ref_phi[500]={-1};
-   Float_t train_ref_sym[500]={-1};
-   Float_t train_ref_rg[500]={-1};
-   Float_t train_ref_dynkt[500]={-1};
-   Float_t train_ref_angu[500]={-1};
+   Float_t train_jet_xJ[500]={-1};
 
    jet_tree->Branch("nref", &train_nref);
    jet_tree->Branch("jet_index", &train_jet_index);
@@ -391,13 +481,7 @@ void SkimFile_Jets_Data(){
    jet_tree->Branch("jtrg", &train_jet_rg,"jtrg[nref]/F");
    jet_tree->Branch("jtdynkt", &train_jet_dynkt,"jtdynkt[nref]/F");
    jet_tree->Branch("jtangu", &train_jet_angu,"jtangu[nref]/F");
-   jet_tree->Branch("refpt", &train_ref_pt,"refpt[nref]/F");
-   jet_tree->Branch("refeta", &train_ref_eta,"refeta[nref]/F");
-   jet_tree->Branch("refphi", &train_ref_phi,"refphi[nref]/F");
-   jet_tree->Branch("refsym", &train_ref_sym,"refsym[nref]/F");
-   jet_tree->Branch("refrg", &train_ref_rg,"refrg[nref]/F");
-   jet_tree->Branch("refdynkt", &train_ref_dynkt,"refdynkt[nref]/F");
-   jet_tree->Branch("refangu", &train_ref_angu,"refangu[nref]/F");
+   jet_tree->Branch("jtxJ", &train_jet_xJ,"jtxJ[nref]/F");
 
    phoERegression myPhoERegr;
    myPhoERegr.initiliazeReaderEB("/home/llr/cms/bharikri/Projects/Photon_Analysis/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/PhotonAnalysis/test/2_Regression_Training/dataset/weights/tmvaTrainRegr_BDTG_pbpb18_EB.weights.xml");
@@ -410,6 +494,7 @@ void SkimFile_Jets_Data(){
 
    Int_t nEv=data.GetEntries();
    float scale = 1;
+   std::cout<<"Number of Entries = "<<nEv<<std::endl;
 
    for(int iEntry=0; iEntry< nEv; iEntry++){
       displayProgress(iEntry,nEv);
@@ -426,12 +511,13 @@ void SkimFile_Jets_Data(){
       if(pprimaryVertexFilter<=0) continue;
       if(pclusterCompatibilityFilter<=0) continue;
       if(phfCoincFilter2Th4<=0) continue;
-      if(hiBin>180) continue;
+      // if(HLT_HIGEDPhoton40_v1<=0) continue;
+      // if(hiBin>180) continue;
 
       for(int ipho=0; ipho<phoEt->size(); ipho++){
         if(!(fabs(phoEta->at(ipho))<2.4)) continue; // || (fabs(phoEta->at(ipho))>1.6 && fabs(phoEta->at(ipho))<2.0)
-        if(phoEta->at(ipho)<-1.39 && phoPhi->at(ipho)<-0.9 && phoPhi->at(ipho)>-1.6) continue;  // HEM Failure
-        if(phoEt->at(ipho)<30) continue;                          // Minimum ET cut
+        // if(phoEta->at(ipho)<-1.39 && phoPhi->at(ipho)<-0.9 && phoPhi->at(ipho)>-1.6) continue;  // HEM Failure
+        // if(phoEt->at(ipho)<30) continue;                          // Minimum ET cut
         if(phoSigmaEtaEta_2012->at(ipho)<=0.002) continue;        // Spike Cuts   
         if(fabs(pho_seedTime->at(ipho))>=3 || pho_swissCrx->at(ipho)>=0.9) continue;
 
@@ -455,6 +541,7 @@ void SkimFile_Jets_Data(){
          phoVars[16] = phoESEn->at(ipho);
 
          corrected_Et = myPhoERegr.getCorrectedPt(phoVars, phoEt->at(ipho), phoEta->at(ipho), phoSCEta->at(ipho));
+         if(corrected_Et/phoEt->at(ipho) > 3) corrected_Et = phoEt->at(ipho);
 
          if(Etmax<corrected_Et){
             Etmax = corrected_Et;
@@ -467,24 +554,41 @@ void SkimFile_Jets_Data(){
       Bool_t flagEle = false;
       for(int iele=0;iele<elePt->size();iele++){
 
-         double dee=TMath::Abs(eleEta->at(iele)-phoEta->at(pho_index));
-         double dephi=RelativePhi(elePhi->at(iele),phoPhi->at(pho_index));
+        // Electron Loose ID -> flagEle==true means loose Electron cuts satisfied 
+        if(elePt->at(iele)<20) continue;
+        if(fabs(eleEta->at(iele))<1.442) {
+            if(eleMissHits->at(iele)>1) continue;
+            if(eleIP3D->at(iele)>=0.03) continue;
+        }
 
-         if(elePt->at(iele)<10) continue;
-         if(eleEoverP->at(iele)>100) continue;
-         if(dee<0.02 && dephi<0.015) flagEle=true;
+         if(hiBin>=0 && hiBin<60){
+            if(eleSigmaIEtaIEta_2012->at(iele)>=0.0135) continue;
+            if(eledEtaSeedAtVtx->at(iele)>=0.0038) continue;
+            if(eledPhiAtVtx->at(iele)>=0.0376) continue;
+            if(eleHoverE->at(iele)>=0.1616) continue;
+            if(eleEoverPInv->at(iele)>=0.0177) continue;
+            flagEle=true;
+         }
+         else{
+            if(eleSigmaIEtaIEta_2012->at(iele)>=0.0107) continue;
+            if(eledEtaSeedAtVtx->at(iele)>=0.0035) continue;
+            if(eledPhiAtVtx->at(iele)>=0.0327) continue;
+            if(eleHoverE->at(iele)>=0.1268) continue;
+            if(eleEoverPInv->at(iele)>=0.0774) continue;
+            flagEle=true;
+         }
       }
 
-      int jet_index=-1;
+      int lead_jet_index=-1;
       float jet_pt_max=-1;
       train_nref = 0;
 
       for(int ijet=0; ijet<nref; ijet++){
-         if(jet_pt[ijet]<15) continue;
-         if(jet_phi[ijet]>-1.6 && jet_phi[ijet]<-0.9 && jet_eta[ijet]<-1.39) continue; // HEM Failure
+         if(jet_pt[ijet]<20) continue;
+         // if(jet_phi[ijet]>-1.6 && jet_phi[ijet]<-0.9 && jet_eta[ijet]<-1.39) continue; // HEM Failure
          float dEta = jet_eta[ijet] - phoEta->at(pho_index);
          float dPhi = RelativePhi(jet_phi[ijet],phoPhi->at(pho_index));
-         if(sqrt(dEta*dEta + dPhi*dPhi)<0.5) continue;
+         // if(sqrt(dEta*dEta + dPhi*dPhi)<0.5) continue;
 
          train_jet_pt[train_nref] = jet_pt[ijet];
          train_jet_eta[train_nref] = jet_eta[ijet];
@@ -493,15 +597,16 @@ void SkimFile_Jets_Data(){
          train_jet_rg[train_nref] = jet_rg[ijet];
          train_jet_dynkt[train_nref] = jet_dynkt[ijet];
          train_jet_angu[train_nref] = jet_angu[ijet];
+         train_jet_xJ[train_nref] = jet_pt[ijet]/corrected_Et;
          train_nref++;
          
 
-         if(abs(dPhi)>2*TMath::Pi()/3){
+         // if(abs(dPhi)>2*TMath::Pi()/3){
             if(jet_pt_max<jet_pt[ijet]){
                jet_pt_max = jet_pt[ijet];
-               jet_index = ijet;
+               lead_jet_index = ijet;
             }
-         }
+         // }
       }
 
       train_phoSCRawE = phoSCRawE->at(pho_index);
@@ -519,7 +624,7 @@ void SkimFile_Jets_Data(){
       train_pho_trackIsoR3PtCut20 = pho_trackIsoR3PtCut20->at(pho_index);
       train_pho_ecalClusterIsoR4 = pho_ecalClusterIsoR4->at(pho_index);
       train_pho_hcalRechitIsoR4 = pho_hcalRechitIsoR4->at(pho_index);
-      train_pho_trackIsoR4PtCut20 = pho_trackIsoR4PtCut20->at(pho_index);    
+      train_pho_trackIsoR4PtCut20 = pho_trackIsoR4PtCut20->at(pho_index);   
       train_phoSigmaEtaEta_2012 = phoSigmaEtaEta_2012->at(pho_index);    
       train_pfcIso3subUE = pfcIso3subUE->at(pho_index);
       train_pfnIso3subUE = pfnIso3subUE->at(pho_index);
@@ -528,9 +633,28 @@ void SkimFile_Jets_Data(){
       train_SumCalIso = pho_ecalClusterIsoR3->at(pho_index)+pho_hcalRechitIsoR3->at(pho_index)+pho_trackIsoR3PtCut20->at(pho_index);
       train_hiBin = hiBin;
       train_eleRej = flagEle;
+      
+      train_alphaQCD =  alphaQCD;
+      train_qScale =  qScale;
+      train_hiHF = hiHF;
+      train_lumi =  lumi;
+      train_vx =  vx;
+      train_vy =  vy;
+      train_vz =  vz;
+      train_pHBHENoiseFilterResultProducer =  pHBHENoiseFilterResultProducer;
+      train_HBHENoiseFilterResult =  HBHENoiseFilterResult;
+      train_HBHENoiseFilterResultRun1 =  HBHENoiseFilterResultRun1;
+      train_HBHENoiseFilterResultRun2Loose  =  HBHENoiseFilterResultRun2Loose;
+      train_HBHENoiseFilterResultRun2Tight =  HBHENoiseFilterResultRun2Tight;
+      train_HBHEIsoNoiseFilterResult =  HBHEIsoNoiseFilterResult;
+
       train_L1_SingleEG21_BptxAND = L1_SingleEG21_BptxAND;
+      train_HLT_HIGEDPhoton20_v1 = HLT_HIGEDPhoton20_v1;
+      train_HLT_HIGEDPhoton30_v1 = HLT_HIGEDPhoton30_v1;
       train_HLT_HIGEDPhoton40_v1 = HLT_HIGEDPhoton40_v1;
-      train_jet_index = jet_index;
+      train_HLT_HIGEDPhoton50_v1 = HLT_HIGEDPhoton50_v1;
+      train_HLT_HIGEDPhoton60_v1 = HLT_HIGEDPhoton60_v1;
+      train_jet_index = lead_jet_index;
       jet_tree->Fill();
 
       // cout<<"i = "<< iEntry << " hiBin = "<<hiBin <<" Genin = "<<genin<<endl;
@@ -538,7 +662,7 @@ void SkimFile_Jets_Data(){
    } // End Event loop
 
    TFile *fout;
-   fout = new TFile(type_dir + "Data_2018_jets_2.root", "recreate");
+   fout = new TFile(type_dir + "Data_2018_jets.root", "recreate");
    jet_tree->Write("",TObject::kOverwrite);
 
    fout->Close();

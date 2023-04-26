@@ -40,11 +40,11 @@
 
 using namespace std;
 
-const int NCUTOFF = 6;
+const int NCUTOFF = 5;
 // const float CUTOFF[NCUTOFF] = {0,29.808813095,49.885753632,79.932403564,119.952224731,169.969177246};
 // const float CUTOFF_MAX[NCUTOFF] = {29.808813095,49.885753632,79.932403564,119.952224731,169.969177246,0};
-const float CUTOFF[NCUTOFF] = {0,49.908184052,79.949401855,119.969474792,169.972900391,219.981445312};
-const float CUTOFF_MAX[NCUTOFF] = {49.908184052,79.949401855,119.969474792,169.972900391,219.981445312,0};
+const float CUTOFF[NCUTOFF] = {0,50,80,120,170};
+const float CUTOFF_MAX[NCUTOFF] = {50,80,120,170,0};
 // const float CUTOFF[NCUTOFF] = {30,50,80,120,170};
 Double_t scale[NCUTOFF]; 
 
@@ -163,12 +163,12 @@ float calc_scale(float pthat){
         else if(pthat<CUTOFF_MAX[3]){
             return (scale[3]);
         }
-        else if(pthat<CUTOFF_MAX[4]){
+        else{ // if(pthat<CUTOFF_MAX[4]){
             return (scale[4]);
         }
-        else {
-            return (scale[5]);
-        }
+        // else {
+        //     return (scale[5]);
+        // }
 }
 
 void weight_pthat(TString temp_sample="QCDPhoton_pthat_15", TString add_sample="QCDPhoton_pthat_30", Int_t range = 1
@@ -178,52 +178,52 @@ void weight_pthat(TString temp_sample="QCDPhoton_pthat_15", TString add_sample="
     
     TChain template_sample("template_sample"),sample("sample");
 
-    if(temp_sample.Contains("QCDPhoton_pthat_15")){
-        template_sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_15/HiForestAOD_*.root/hiEvtAnalyzer/HiTree"); 
-    }
+    // if(temp_sample.Contains("QCDPhoton_pthat_15")){
+    //     template_sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_15/HiForestAOD_*.root/hiEvtAnalyzer/HiTree"); 
+    // }
     if(temp_sample.Contains("QCDPhoton_pthat_30")){
-        template_sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree"); 
-        // template_sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_30_Filter_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");   // pthat template
+        // template_sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree"); 
+        template_sample.Add("/data_CMS/cms/bharikri/Signal_MC_RefParton_R_0_234/QCDPhoton_pthat_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");   // pthat template
     }
     if(temp_sample.Contains("QCDPhoton_pthat_50")){
-        template_sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_50/HiForestAOD_*.root/hiEvtAnalyzer/HiTree"); 
-        // template_sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_50_Filter_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");   // pthat template
+        // template_sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_50/HiForestAOD_*.root/hiEvtAnalyzer/HiTree"); 
+        template_sample.Add("/data_CMS/cms/bharikri/Signal_MC_RefParton_R_0_234/QCDPhoton_pthat_50/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");   // pthat template
     }
     if(temp_sample.Contains("QCDPhoton_pthat_80")){
-        template_sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_80/HiForestAOD_*.root/hiEvtAnalyzer/HiTree"); 
-        // template_sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_80_Filter_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");   // pthat template
+        // template_sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_80/HiForestAOD_*.root/hiEvtAnalyzer/HiTree"); 
+        template_sample.Add("/data_CMS/cms/bharikri/Signal_MC_RefParton_R_0_234/QCDPhoton_pthat_80/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");   // pthat template
     }
     if(temp_sample.Contains("QCDPhoton_pthat_120")){
-        template_sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_120/HiForestAOD_*.root/hiEvtAnalyzer/HiTree"); 
-        // template_sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_120_Filter_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");   // pthat template
+        // template_sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_120/HiForestAOD_*.root/hiEvtAnalyzer/HiTree"); 
+        template_sample.Add("/data_CMS/cms/bharikri/Signal_MC_RefParton_R_0_234/QCDPhoton_pthat_120/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");   // pthat template
     }
     if(temp_sample.Contains("QCDPhoton_pthat_170")){
-        template_sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_170/HiForestAOD_*.root/hiEvtAnalyzer/HiTree"); 
-        // template_sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_170_Filter_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");   // pthat template
+        // template_sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_170/HiForestAOD_*.root/hiEvtAnalyzer/HiTree"); 
+        template_sample.Add("/data_CMS/cms/bharikri/Signal_MC_RefParton_R_0_234/QCDPhoton_pthat_170/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");   // pthat template
     }
 
-    if(add_sample.Contains("QCDPhoton_pthat_15")){
-        sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_15/HiForestAOD_*.root/hiEvtAnalyzer/HiTree"); 
-    }
+    // if(add_sample.Contains("QCDPhoton_pthat_15")){
+    //     sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_15/HiForestAOD_*.root/hiEvtAnalyzer/HiTree"); 
+    // }
     if(add_sample.Contains("QCDPhoton_pthat_30")){
-        sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");    // List of samples 
-        // sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_30_Filter_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
+        // sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");    // List of samples 
+        sample.Add("/data_CMS/cms/bharikri/Signal_MC_RefParton_R_0_234/QCDPhoton_pthat_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
     }
     if(add_sample.Contains("QCDPhoton_pthat_50")){
-        sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_50/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");    // List of samples 
-        // sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_50_Filter_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
+        // sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_50/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");    // List of samples 
+        sample.Add("/data_CMS/cms/bharikri/Signal_MC_RefParton_R_0_234/QCDPhoton_pthat_50/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
     }
     if(add_sample.Contains("QCDPhoton_pthat_80")){
-        sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_80/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");    // List of samples 
-        // sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_80_Filter_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
+        // sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_80/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");    // List of samples 
+        sample.Add("/data_CMS/cms/bharikri/Signal_MC_RefParton_R_0_234/QCDPhoton_pthat_80/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
     }
     if(add_sample.Contains("QCDPhoton_pthat_120")){
-        sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_120/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");    // List of samples 
-        // sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_120_Filter_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
+        // sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_120/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");    // List of samples 
+        sample.Add("/data_CMS/cms/bharikri/Signal_MC_RefParton_R_0_234/QCDPhoton_pthat_120/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
     }
     if(add_sample.Contains("QCDPhoton_pthat_170")){
-        sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_170/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");    // List of samples 
-        // sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_170_Filter_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
+        // sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_170/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");    // List of samples 
+        sample.Add("/data_CMS/cms/bharikri/Signal_MC_RefParton_R_0_234/QCDPhoton_pthat_170/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
     }
 
 
@@ -328,18 +328,18 @@ void plot_pthat(){
     TString type_dir = "/home/llr/cms/bharikri/Projects/Photon_Analysis/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/PhotonAnalysis/test/1_Skimming_weighting/";
     TChain sample5("sample5"),sample4("sample4"),sample3("sample3"), sample2("sample2"),sample1("sample1"),sample("sample");
     
-    sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_15/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");    // List of samples 
-    sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
-    sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_50/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
-    sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_80/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
-    sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_120/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");    
-    sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_170/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
+    // sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_15/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");    // List of samples 
+    // sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
+    // sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_50/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
+    // sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_80/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
+    // sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_120/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");    
+    // sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_170/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
 
-    // // sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_30_Filter_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
-    // // sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_50_Filter_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
-    // // sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_80_Filter_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
-    // // sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_120_Filter_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
-    // // sample.Add("/data_CMS/cms/bharikri/QCDPhoton_pthat_170_Filter_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
+    sample.Add("/data_CMS/cms/bharikri/Signal_MC_RefParton_R_0_234/QCDPhoton_pthat_30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
+    sample.Add("/data_CMS/cms/bharikri/Signal_MC_RefParton_R_0_234/QCDPhoton_pthat_50/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
+    sample.Add("/data_CMS/cms/bharikri/Signal_MC_RefParton_R_0_234/QCDPhoton_pthat_80/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
+    sample.Add("/data_CMS/cms/bharikri/Signal_MC_RefParton_R_0_234/QCDPhoton_pthat_120/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
+    sample.Add("/data_CMS/cms/bharikri/Signal_MC_RefParton_R_0_234/QCDPhoton_pthat_170/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
     
 
     // sample.Add("/eos/user/b/bharikri/CERNBox_synced/Projects/HeavyIon/Results/2022_03_17_Photon_Final_Reproduction/1_Skimming_weighting/QCDPhoton_Kaya.root/pho_tree");
@@ -382,12 +382,12 @@ void plot_pthat(){
         else if(pthat<CUTOFF_MAX[3]){
             tempscale *=scale[3];
         }
-        else if(pthat<CUTOFF_MAX[4]){
+        else {//if(pthat<CUTOFF_MAX[4]){
             tempscale *=scale[4];
         }
-        else {
-            tempscale *=scale[5];
-        }
+        // else {
+        //     tempscale *=scale[5];
+        // }
         h_pthat->Fill(pthat,tempscale);
     }
 
@@ -439,20 +439,21 @@ int main(){
     // gROOT->SetBatch();
     SetPlotStyle();
     gErrorIgnoreLevel = kWarning;
-/*
-    TString sample0 = "QCDPhoton_pthat_15";
-    TString sample1 = "QCDPhoton_pthat_30";
-    TString sample2 = "QCDPhoton_pthat_50";
-    TString sample3 = "QCDPhoton_pthat_80";
-    TString sample4 = "QCDPhoton_pthat_120";
-    TString sample5 = "QCDPhoton_pthat_170";*/
 
+    // TString sample0 = "QCDPhoton_pthat_15";
+    TString sample0 = "QCDPhoton_pthat_30";
+    TString sample1 = "QCDPhoton_pthat_50";
+    TString sample2 = "QCDPhoton_pthat_80";
+    TString sample3 = "QCDPhoton_pthat_120";
+    TString sample4 = "QCDPhoton_pthat_170";
+/*
     TString sample0 = "EMEnrichedDijet-pthat_30";
     TString sample1 = "EMEnrichedDijet-pthat_50";
     TString sample2 = "EMEnrichedDijet-pthat_80";
     TString sample3 = "EMEnrichedDijet-pthat_120";
     TString sample4 = "EMEnrichedDijet-pthat_170";
     TString sample5 = "EMEnrichedDijet-pthat_220";
+*/
 
     scale[0]=1; // 15-30 = 1
     scale[1]=1; // 30-50
@@ -465,7 +466,7 @@ int main(){
     weight_pthat(sample0+sample1,sample0+sample1+sample2,2);
     weight_pthat(sample0+sample1+sample2,sample0+sample1+sample2+sample3,3);
     weight_pthat(sample0+sample1+sample2+sample3,sample0+sample1+sample2+sample3+sample4,4);
-    weight_pthat(sample0+sample1+sample2+sample3+sample4,sample0+sample1+sample2+sample3+sample4+sample5,5);
+    // weight_pthat(sample0+sample1+sample2+sample3+sample4,sample0+sample1+sample2+sample3+sample4+sample5,5);
 
     plot_pthat();
 
@@ -474,7 +475,7 @@ int main(){
     printf("\nscale in [%0.3f,%0.3f] = %.9f\n",CUTOFF[2],CUTOFF_MAX[2],scale[2]);
     printf("\nscale in [%0.3f,%0.3f] = %.9f\n",CUTOFF[3],CUTOFF_MAX[3],scale[3]);
     printf("\nscale in [%0.3f,%0.3f] = %.9f\n",CUTOFF[4],CUTOFF_MAX[4],scale[4]);
-    printf("\nscale in [%0.3f,%0.3f] = %.9f\n",CUTOFF[5],CUTOFF_MAX[5],scale[5]);
+    // printf("\nscale in [%0.3f,%0.3f] = %.9f\n",CUTOFF[5],CUTOFF_MAX[5],scale[5]);
 
     
     return 0;

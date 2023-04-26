@@ -68,7 +68,7 @@ gSystem->Load("libRooUnfold.so");
 
 The unfolding script has options for the unfolding tests:
 
-|Case|Option|
+|Option|Case|
 |:--:|:---:|
 |kNoTest | All Systematic Uncertainties|
 |kTrivial| Trivial Unfolding of MC with same response|

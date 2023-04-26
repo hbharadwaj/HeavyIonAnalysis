@@ -4,7 +4,7 @@ config = Configuration()
 
 ### General ###
 config.section_('General')
-config.General.requestName = 'Feb_28_QCDPhoton_pthat_80_Filter_30'
+config.General.requestName = 'Jan_30_QCDPhoton_pThat_80_Filter30_z_0p2_R234_substructure_down_FIXED'
 config.General.workArea = 'crab_projects'
 config.General.transferOutputs = True
 config.General.transferLogs = True
@@ -23,8 +23,8 @@ config.JobType.numCores = 1
 config.section_("Data")
 
 config.Data.inputDataset = "/QCDPhoton_pThat-80_Filter30GeV_TuneCP5_HydjetDrumMB_5p02TeV_Pythia8/HINPbPbAutumn18DR-mva98_103X_upgrade2018_realistic_HI_v11-v1/AODSIM"
-#config.Data.inputDataset = "/QCD_pThat-220_EMEnrichedDijet_TuneCP5_HydjetDrumMB_5p02TeV_pythia8/HINPbPbAutumn18DR-mva98_103X_upgrade2018_realistic_HI_v11-v2/AODSIM"
-#config.Data.inputDataset = "/QCDPhoton_pThat-120_Filter30GeV_TuneCP5_HydjetDrumMB_5p02TeV_Pythia8/HINPbPbAutumn18DR-mva98_103X_upgrade2018_realistic_HI_v11-v1/AODSIM"
+#config.Data.inputDataset = "/QCD_pThat-30_EMEnrichedDijet_TuneCP5_HydjetDrumMB_5p02TeV_pythia8/HINPbPbAutumn18DR-mva98_103X_upgrade2018_realistic_HI_v11-v2/AODSIM"
+#config.Data.inputDataset = "/QCDPhoton_pThat-30_TuneCP5_HydjetDrumMB_5p02TeV_Pythia8/HINPbPbAutumn18DR-mva98_103X_upgrade2018_realistic_HI_v11-v1/AODSIM"
 
 #config.Data.lumiMask = 'Cert_326381-327564_HI_PromptReco_Collisions18_JSON.txt'
 #config.Data.lumiMask = 'crab_projects/crab_bJet2018_HIHardProbes_deepCSVAVF/results/notFinishedLumis.json'
@@ -35,7 +35,7 @@ config.Data.unitsPerJob = 1
 #config.Data.unitsPerJob = 1
 config.Data.totalUnits = -1
 config.Data.publication = False
-config.Data.outLFNDirBase = '/store/user/bharikri/Feb_28_QCDPhoton_pthat_80_Filter_30/' 
+config.Data.outLFNDirBase = '/store/user/bharikri/Jan_30_QCDPhoton_pThat_80_Filter30_z_0p2_R234_substructure_down/' 
 config.Data.outputDatasetTag = config.General.requestName
 #config.Data.ignoreLocality = True
 config.Data.allowNonValidInputDataset = True
@@ -43,4 +43,4 @@ config.Data.allowNonValidInputDataset = True
 #### Site ####
 config.section_('Site')
 #config.Site.whitelist = ['T2_FR_GRIF_*', "T2_RU_*","T2_BR_*"]
-config.Site.storageSite = 'T2_FR_GRIF_LLR'
+config.Site.storageSite = 'T2_FR_GRIF_LLR'#'T3_CH_CERNBOX'#'T2_FR_GRIF_LLR'
