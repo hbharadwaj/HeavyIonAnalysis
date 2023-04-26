@@ -21,6 +21,7 @@ TString label="";
 TString output_path = "./";
 TString x_label = "dyn k_{T}";
 TString y_label = "x_{J,#gamma}";
+TString centstring = "Cent. 0-30%";
 
 void Plot_hist(std::vector<TH1D*>,std::vector<TString> ,TString opt="label",std::vector<TString> eopt={"end"});
 
@@ -33,47 +34,49 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrue
     // fileother is used for 2nd MC to calculate priors - otherwise pass same input to both
     // flagdummy == 0 -> Data Corrected
     // flagdummy == 1 -> MC Det level test
-    // flagdummy == 2 -> MC True at Det level - Bottomline Test
+    // flagdummy == 2 -> MC True at Det level - Split Test
     // Range [1,-1] -> All Bins other than Underflow and Overflow
+    
 
     // Bins to Project
-    int bintrueY_min = 2;   
+    int bintrueY_min = 1;//2;   
     int bintrueX_min = 1; // x_label.Contains("dyn")?2:1
-    int bintrueX_max = 5; // x_label.Contains("Angu")?4:4;
+    int bintrueX_max = 5; // x_label.Contains("Girth")?4:4;
 
     int binrawY_min = 1;
     int binrawY_max = 1;
     int binrawX_min = bintrueX_min;
     int binrawX_max = bintrueX_max;
     //-----------------------
-    //                       Pythia                              Prior
-    // 0-30%  - >  x_label.Contains("Angu")?20:6;       x_label.Contains("Angu")?25:7;
-    // 30-90% - >  x_label.Contains("Angu")?1:7;        x_label.Contains("Angu")?3:8;
 
-    const int iter_ref = x_label.Contains("Angu")?25:7;
+    //                       Pythia                              Prior
+    // 0-30%  - >  x_label.Contains("Girth")?20:6;       x_label.Contains("Girth")?25:7;
+    // 30-90% - >  x_label.Contains("Girth")?1:7;        x_label.Contains("Girth")?3:8;
+
+    const int iter_ref = x_label.Contains("Girth")?7:7;
     float nbins = 1; 
 
     // inputs for Unfolding 
-        const int bin_true_xj=2;
-        const int bin_true_Rg=6;
-        const int bin_true_angu=6;
+        const int bin_true_xj=1;//2;
+        const int bin_true_Rg=5;//6;
+        const int bin_true_angu=5;//6;
         const int bin_true_dynkt=5;
 
-        Double_t xjmin_true=0;
+        Double_t xjmin_true=0.4;//0;
         Double_t xjmax_true=3;
 
         Double_t Rgmin_true=0.0;
-        Double_t Rgmax_true=0.3;
+        Double_t Rgmax_true=0.2;//0.3;
 
-        Double_t angumax_true=0.3;
         Double_t angumin_true=0.;
+        Double_t angumax_true=0.1;//0.3;
 
         Double_t dynktmax_true=50.0;
         Double_t dynktmin_true=0.;
 
-        Double_t xJ_true_edges[bin_true_xj+1] = {xjmin_true, 0.4, xjmax_true};
-        Double_t Rg_true_edges[bin_true_Rg+1] = {-0.05,Rgmin_true, 0.04, 0.08, 0.12, 0.2, Rgmax_true};
-        Double_t angu_true_edges[bin_true_angu+1] = {angumin_true, 0.02, 0.04, 0.06, 0.08, 0.1, angumax_true};
+        Double_t xJ_true_edges[bin_true_xj+1] ={xjmin_true, xjmax_true}; //{xjmin_true, 0.4, xjmax_true};
+        Double_t Rg_true_edges[bin_true_Rg+1] = {-0.05,Rgmin_true, 0.04, 0.08, 0.12, Rgmax_true};//{-0.05,Rgmin_true, 0.04, 0.08, 0.12, 0.2, Rgmax_true};
+        Double_t angu_true_edges[bin_true_angu+1] = {angumin_true, 0.02, 0.04, 0.06, 0.08, angumax_true};//{angumin_true, 0.02, 0.04, 0.06, 0.08, 0.1, angumax_true};
         Double_t dynkt_true_edges[bin_true_dynkt+1] = {dynktmin_true, 1.5,2.5,4.0,10.0,dynktmax_true};
         Double_t xlabel_min,xlabel_max,ylabel_min,ylabel_max;
 
@@ -82,7 +85,7 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrue
             xlabel_max = dynkt_true_edges[bintrueX_max];
             nbins = bin_true_xj*bin_true_dynkt;
         }
-        else if(x_label.Contains("Angu")){
+        else if(x_label.Contains("Girth")){
             xlabel_min = angu_true_edges[bintrueX_min-1];
             xlabel_max = angu_true_edges[bintrueX_max];
             nbins = bin_true_xj*bin_true_angu;
@@ -114,6 +117,9 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrue
         TH2D* htrue_ineff;      //  MC - Det level Cuts
         TH2D* unfold2d_iter;    //  Unfolded result - updated for each iteration
         TH2D* fold2d_iter;      //  Refolded result - updated for each iteration
+        TH2D* matinvert2d;      //  Matrix Inversion result
+        TH2D* matfolded2d;      //  Refolded Matrix Inversion result
+        TH2D* eff_2d;           //  To calculate Efficiency //* MC True Det level - X in specified Y range
 
         // Projections
         TH1D* raw_X;            //  Detector smeared - Full range X var
@@ -124,12 +130,18 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrue
         TH1D* unfold_X[200];     //  Unfolded - X in specified Y range
         TH1D* fold_X[200];       //  Refolded - X in specified Y range
 
+        TH1D* matinvert_X;       //  Matrix Inversion - X in specified Y range
+        TH1D* matfold_X;         //  Matrix Refolded  - X in specified Y range
+
         TH1D* raw_Y;            //  Detector smeared - Full range Y var
         TH1D* htrue_Y;          //  MC True - Y in specified X range
         TH1D* eff_Y;            //  To calculate Efficiency //* MC True Det level - Y in specified X range
 
         TH1D* unfold_Y[200];     //  Unfolded - Y in specified X range
         TH1D* fold_Y[200];       //  Refolded - Y in specified X range
+
+        TH1D* matinvert_Y;       //  Matrix Inversion - Y in specified X range
+        TH1D* matfold_Y;         //  Matrix Refolded  - Y in specified X range
 
         TH1D* nPho_data;        //  Number of Selected Photons in data
         TH1D* nJet_data;        //  Number of Selected Jets in data
@@ -157,6 +169,11 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrue
             // htrue->Add(htrue_pseudodata);
         }
         // Projection bins include the histograms underflow(0) and overflow(nbins+1) 
+
+        eff_2d=(TH2D*)htrue_ineff->Clone("eff_2d");
+        eff_2d->Divide(htrue_ineff,htrue,1,1,"B");  //! This should be Binomial or Bayes Division since Numerator is a subset of denominator
+        eff_X=(TH1D*)eff_2d->ProjectionX("eff_X",bintrueY_min,bintrueY_max);
+        eff_Y=(TH1D*)eff_2d->ProjectionY("eff_Y",bintrueX_min,bintrueX_max);
         
         raw_X=(TH1D*)raw->ProjectionX("raw_X",binrawY_min,binrawY_max);
         raw_X->Scale(1.0/raw_X->Integral(binrawX_min,binrawX_max),"width");    
@@ -164,29 +181,49 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrue
         raw_X_mc->Scale(1.0/raw_X_mc->Integral(binrawX_min,binrawX_max),"width"); 
 
         htrue_X=(TH1D*)htrue->ProjectionX("true_X",bintrueY_min,bintrueY_max);
-        eff_X=htrue_ineff->ProjectionX("eff_X",bintrueY_min,bintrueY_max);
-        eff_X->Divide(htrue_X);
+        // eff_X=htrue_ineff->ProjectionX("eff_X",bintrueY_min,bintrueY_max);
+        // eff_X->Divide(htrue_X);
 
-        raw_Y=(TH1D*)raw->ProjectionY("raw_Y",0,-1);
-        raw_Y->Scale(1.0/raw_Y->Integral(0,-1),"width");
+
+        raw_Y=(TH1D*)raw->ProjectionY("raw_Y",binrawX_min,binrawX_max);
+        raw_Y->Scale(1.0/raw_Y->Integral(binrawY_min,binrawY_max),"width");
         htrue_Y=(TH1D*)htrue->ProjectionY("true_Y",bintrueX_min,bintrueX_max);
-        eff_Y=htrue_ineff->ProjectionY("eff_Y",bintrueX_min,bintrueX_max);
-        eff_Y->Divide(htrue_Y);
+        // eff_Y=htrue_ineff->ProjectionY("eff_Y",bintrueX_min,bintrueX_max);
+        // eff_Y->Divide(htrue_Y);
 
         // nPho_data=(TH1D*)f->Get("nPho_data");
         // nJet_data=(TH1D*)f->Get("nJet_data");
         // nPho_mc=(TH1D*)f->Get("nPho_mc");
         // nJet_mc=(TH1D*)f->Get("nJet_mc");
-        
+
+        htrue_X->Scale(1.0/htrue_X->Integral(bintrueX_min,bintrueX_max),"width");
+        // htrue_X->Scale(1,"width");
+
+        htrue_Y->Scale(1.0/htrue_Y->Integral(bintrueY_min,bintrueY_max),"width");
+        // htrue_Y->Scale(1,"width");
+
+
     // -------- End Read Histograms
     // ----------------------------------------------------------------------------------------------------------------
     // Iteration Loop
 
-    htrue_X->Scale(1.0/htrue_X->Integral(bintrueX_min,bintrueX_max),"width");
-    // htrue_X->Scale(1,"width");
+    matinvert2d=(TH2D*)f->Get(Form("MatInver_Unfolded"));
+    matinvert2d->Divide(eff_2d);    //! Not a subset and can remain the default division
+    matfolded2d=(TH2D*)f->Get(Form("MatInver_Folded"));
 
-    htrue_Y->Scale(1.0/htrue_Y->Integral(bintrueY_min,bintrueY_max),"width");
-    // htrue_Y->Scale(1,"width");
+    matinvert_X=(TH1D*)matinvert2d->ProjectionX(Form("matinvert_X"),bintrueY_min,bintrueY_max,"");
+    matinvert_X->Divide(eff_X); 
+    matinvert_X->Scale(1.0/matinvert_X->Integral(bintrueX_min,bintrueX_max),"width");
+
+    matfold_X=(TH1D*)matfolded2d->ProjectionX(Form("matfold_X"),binrawY_min,binrawY_max,"");
+    matfold_X->Scale(1.0/matfold_X->Integral(binrawX_min,binrawX_max),"width");
+
+    matinvert_Y=(TH1D*)matinvert2d->ProjectionY(Form("matinvert_Y"),bintrueX_min,bintrueX_max,"");
+    // matinvert_Y->Divide(eff_Y); 
+    matinvert_Y->Scale(1.0/matinvert_Y->Integral(bintrueY_min,bintrueY_max),"width");
+    
+    matfold_Y=(TH1D*)matfolded2d->ProjectionY(Form("matfold_Y"),binrawX_min,binrawX_max,"");
+    matfold_Y->Scale(1.0/matfold_Y->Integral(binrawY_min,binrawY_max),"width");
     
     TH1D *hist_chi2(0),*hist_chi2_smeared(0),*hist_pval_smeared(0);
     hist_chi2=new TH1D("hist_chi2","hist_chi2",80,0,80);
@@ -196,10 +233,11 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrue
 
     for(Int_t j=0;j<80;j++){
         unfold2d_iter=(TH2D*)f->Get(Form("Bayesian_Unfoldediter%d",j+1));
+        unfold2d_iter->Divide(eff_2d);
         fold2d_iter=(TH2D*)f->Get(Form("Bayesian_Foldediter%d",j+1));
 
         unfold_X[j]=(TH1D*)unfold2d_iter->ProjectionX(Form("unfold_X%d",j),bintrueY_min,bintrueY_max,"");
-        unfold_X[j]->Divide(eff_X); 
+        // unfold_X[j]->Divide(eff_X); 
         unfold_X[j]->Scale(1.0/unfold_X[j]->Integral(bintrueX_min,bintrueX_max),"width");
         // unfold_X[j]->Scale(1,"width");
 
@@ -208,7 +246,7 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrue
         
         //* Y unfold 
         unfold_Y[j]=(TH1D*)unfold2d_iter->ProjectionY(Form("unfold_Y%d",j),bintrueX_min,bintrueX_max,"");
-        unfold_Y[j]->Divide(eff_Y); 
+        // unfold_Y[j]->Divide(eff_Y); 
         unfold_Y[j]->Scale(1.0/unfold_Y[j]->Integral(bintrueY_min,bintrueY_max),"width");
         // unfold_Y[j]->Scale(1,"width");
 
@@ -223,7 +261,7 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrue
         TH1D *htemp2 = (TH1D*)htrue_X->Clone(); 
 
         for (Int_t k = 1; k < (htemp1->GetNbinsX()); k++){  // Ignoring the last x Bin
-            // std::cout<<"iter "<<j<<"    =  "<<k<<"     "<<htemp1->GetBinContent(k)<<"     "<<htemp1->GetBinError(k)<<std::endl;
+            // if(j<10)std::cout<<"Unfolded iter "<<j<<"    =  "<<k<<"     "<<sumChi2<<"     \t"<<htemp1->GetBinContent(k)-htemp2->GetBinContent(k)<<"     "<<htemp1->GetBinError(k)<<std::endl;
             if (htemp1->GetBinContent(k) > 0) sumChi2+= (htemp1->GetBinContent(k)-htemp2->GetBinContent(k))*(htemp1->GetBinContent(k)-htemp2->GetBinContent(k))/(htemp1->GetBinError(k)*htemp1->GetBinError(k)); // + htemp2->GetBinError(k)*htemp2->GetBinError(k)
         }
         sumChi2/=(htemp1->GetNbinsX()-1);
@@ -238,11 +276,12 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrue
         // For bottom line test 
 
         TH1D *htemp1_smeared = (TH1D*)raw_X->Clone();
-        TH1D *htemp2_smeared = (TH1D*)raw_X_mc->Clone();//(TH1D*)fold_X[j]->Clone(); //  
+        TH1D *htemp2_smeared = (TH1D*)fold_X[j]->Clone(); // (TH1D*)raw_X_mc->Clone();//
 
         for (Int_t k = 1; k < (htemp1_smeared->GetNbinsX()+1); k++){  
-            // std::cout<<"iter "<<j<<"    =  "<<k<<"     "<<htemp1_smeared->GetBinContent(k)<<"     "<<htemp1_smeared->GetBinError(k)<<std::endl;
-            if (htemp1_smeared->GetBinContent(k) > 0) sumChi2+= (htemp1_smeared->GetBinContent(k)-htemp2_smeared->GetBinContent(k))*(htemp1_smeared->GetBinContent(k)-htemp2_smeared->GetBinContent(k))/(htemp1_smeared->GetBinError(k)*htemp1_smeared->GetBinError(k) ); // + htemp2_smeared->GetBinError(k)*htemp2_smeared->GetBinError(k)
+            // if(j<10)            std::cout<<"Smeared  iter "<<j<<"    =  "<<k<<"     "<<sumChi2<<"     \t"<<htemp1_smeared->GetBinContent(k)-htemp2_smeared->GetBinContent(k)<<"     "<<htemp1_smeared->GetBinError(k)<<std::endl;
+            if (htemp1_smeared->GetBinContent(k) > 0) sumChi2+= (htemp1_smeared->GetBinContent(k)-htemp2_smeared->GetBinContent(k))*(htemp1_smeared->GetBinContent(k)-htemp2_smeared->GetBinContent(k))/(htemp1_smeared->GetBinError(k)*htemp1_smeared->GetBinError(k) ); //+ htemp2_smeared->GetBinError(k)*htemp2_smeared->GetBinError(k)
+            // if (htemp1_smeared->GetBinContent(k) > 0)std::cout<<k<<"\t"<<(htemp1_smeared->GetBinContent(k)-htemp2_smeared->GetBinContent(k))*(htemp1_smeared->GetBinContent(k)-htemp2_smeared->GetBinContent(k))/(htemp1_smeared->GetBinError(k)*htemp1_smeared->GetBinError(k) );
         }
         float pval = TMath::Prob(sumChi2, (htemp1_smeared->GetNbinsX()));
         sumChi2/=(htemp1_smeared->GetNbinsX());
@@ -253,34 +292,8 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrue
         // if(j<8) std::cout<<"iter "<<j<<" \t Chi2smeared =  "<<sumChi2<<"  \t  "<<(htemp1_smeared->GetNbinsX())<<" \t  p-value = "<<pval<<std::endl;
         // sumChi2=htemp1_smeared->Chi2Test(htemp2_smeared,"WWCHI2/NDF");
         hist_chi2_smeared->SetBinContent(j,sumChi2);
-
-        // ---- Refolded p-value
-
-        // if(flagdummy==0){
-        //     pval=raw_X->Chi2Test(fold_X[j],"UW");
-        // }
-        // else{
-        //     pval=fold_X[j]->Chi2Test(raw_X,"WW");
-        // }
         hist_pval_smeared->SetBinContent(j,pval);
         // if(j<8) std::cout<<"Iter "<<j<<"\t p-val = "<<pval<<std::endl;
-
-        // ----- Setting range for Plots -> Remove overflow bin and untagged in Rg
-        /*
-
-        if(x_label.Contains("Rg")){
-            unfold_X[j]->SetRange(2,unfold_X[j]->GetNbinsX()-1);
-            fold_X[j]->SetRange(2,fold_X[j]->GetNbinsX());
-            unfold_Y[j]->SetRange(1,unfold_Y[j]->GetNbinsX());
-            fold_Y[j]->SetRange(1,fold_Y[j]->GetNbinsX());
-        }
-        else{
-            unfold_X[j]->SetRange(1,unfold_X[j]->GetNbinsX()-1);
-            fold_X[j]->SetRange(1,fold_X[j]->GetNbinsX());
-            unfold_Y[j]->SetRange(1,unfold_Y[j]->GetNbinsX());
-            fold_Y[j]->SetRange(1,fold_Y[j]->GetNbinsX());            
-        }
-        */
     }
 
 
@@ -345,22 +358,24 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrue
     }
     htrue_X->Write("",TObject::kOverwrite);
     htrue_Y->Write("",TObject::kOverwrite);
+    matinvert_X->Write("",TObject::kOverwrite);
+    matinvert_Y->Write("",TObject::kOverwrite);
 
-    std::vector<TString>sel = {Form("#gamma p_{T}>%.0f, x_{J}>%.1f, Anti-#it{k}_{T} #it{R}=0.2",100.0,0.4),"Cent. 0-30%",y_label+" vs "+x_label};    
+    std::vector<TString>sel = {" ",centstring,y_label+" vs "+x_label,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4)};    
     std::vector<TH1D*> hist_input;
     std::vector<TString> histname_input;
     sel.push_back("end");
     sel.push_back("noStackHIST");
-    Plot_hist({hist_chi2_smeared,hist_chi2},{"#chi^{2}_{smeared}","#chi^{2}_{unfolded}","Iterations","#chi^{2}/NDF","Chi2_ndf_bottomline"},"rightlabel_opt",sel);
+    // Plot_hist({hist_chi2_smeared,hist_chi2},{"#chi^{2}_{smeared}","#chi^{2}_{unfolded}","Iterations","#chi^{2}/NDF","Chi2_ndf_bottomline"},"rightlabel_opt",sel);
 
     Plot_hist({histotot,historeg,histostat,histoprior},{"Total","Regularization","Statistical","Prior","Iterations","Summed Errors","SumErrors"},"rightlabel_opt",sel);
     Plot_hist({hist_chi2},{x_label.Data(),"Iterations","#chi^{2}/NDF","Chi2_ndf_unfolded"},"rightlabel_opt",sel);
     Plot_hist({hist_chi2},{x_label.Data(),"Iterations","#chi^{2}/NDF","Chi2_ndf_unfolded_log"},"rightlabel_opt_log",sel);
-    sel = {Form("#gamma p_{T}>%.0f, x_{J}>%.1f, Anti-#it{k}_{T} #it{R}=0.2",100.0,0.4),"Cent. 0-30%",y_label+" vs "+x_label,"#chi^{2} Refolded-Raw","end","noStackHIST"};    
+    sel = {" ",centstring,y_label+" vs "+x_label,"#chi^{2} Refolded-Raw",Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4),"end","noStackHIST"};    
     Plot_hist({hist_chi2_smeared},{x_label.Data(),"Iterations","#chi^{2}/NDF","Chi2_ndf_refolded"},"rightlabel_opt",sel);
     Plot_hist({hist_chi2_smeared},{x_label.Data(),"Iterations","#chi^{2}/NDF","Chi2_ndf_refolded_log"},"rightlabel_opt_log",sel);
     Plot_hist({hist_pval_smeared},{x_label.Data(),"Iterations","p-value","p-value_refolded"},"rightlabel_opt",sel);
-    sel = {Form("#gamma p_{T}>%.0f, x_{J}>%.1f, Anti-#it{k}_{T} #it{R}=0.2",100.0,0.4),"Cent. 0-30%",Form("%3.2f<%s<%3.2f",ylabel_min,y_label.Data(),ylabel_max)};    
+    sel = {" ",centstring,Form("%3.2f<%s<%3.2f",ylabel_min,y_label.Data(),ylabel_max),Form("#gamma p_{T}>%.0f,|#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0)};    
     if(x_label.Contains("R")){
         Double_t full_error;
         Double_t full_integral = unfold_X[iter_ref]->IntegralAndError(0, unfold_X[iter_ref]->GetNbinsX()+1, full_error, "width"); // "" or "width"
@@ -373,7 +388,8 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrue
         hist_input={};
         histname_input={};
         TH1D* htemp = (TH1D*)htrue_X->Clone();               // True Level
-        htemp->Divide((TH1D*)unfold_X[iter_ref]->Clone());
+        // htemp->Divide((TH1D*)unfold_X[iter_ref]->Clone());  // For D'Agostini
+        htemp->Divide((TH1D*)matinvert_X->Clone()); 
         hist_input.push_back((TH1D*)htemp->Clone());
         histname_input.push_back(Form("MC True"));
         htemp = (TH1D*)raw_X_mc->Clone();                     // Det Level
@@ -409,10 +425,15 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrue
             histname_input.push_back(Form(" iter %d",iter+1));
         }
         histname_input.push_back(x_label);
-        histname_input.push_back(Form("Folder/Raw"));
+        histname_input.push_back(Form("Folded/Raw"));
         histname_input.push_back("Refolded_IterVsX");
     Plot_hist(hist_input,histname_input,"eff_bcenter_label",sel);
-    sel = {Form("#gamma p_{T}>%.0f, x_{J}>%.1f, Anti-#it{k}_{T} #it{R}=0.2",100.0,0.4),"Cent. 0-30%",Form("%3.2f<%s<%3.2f",xlabel_min,x_label.Data(),xlabel_max)};   
+    overlay({matfold_X,raw_X},{"data-Mat Inversion Refolded","MC Raw",x_label,flagdummy==0?"Matrix Inverted":"Raw MC","X_invert_refolded_overlay"},"right_label",sel);
+    overlay({matinvert_X,htrue_X},{"data-Mat Inversion","MC true",x_label,flagdummy==0?"Matrix Inverted":"True MC","X_inverted_overlay"},"right_label",sel);
+    
+    Plot_hist({raw_X,matfold_X},{"MC Raw",x_label,"Matrix Invertion Refolded/MC Raw","Refolded_MatInvertVsX"},"eff_bcenter_label_leg",sel);
+    Plot_hist({htrue_X,matinvert_X},{"MC true",x_label,"Matrix Inverted/True","Unfolded_MatInvertVsX"},"eff_bcenter_label_leg",sel);
+    sel = {" ",centstring,Form("%3.2f<%s<%3.2f",xlabel_min,x_label.Data(),xlabel_max),Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4)};   
     // Iterations vs y axis plot
         hist_input={};
         histname_input={Form("UnfoldedYiter%d",iter_ref)};
@@ -441,18 +462,21 @@ void plot_unfolded(TString file, TString fileother, int flagdummy=1, int bintrue
         histname_input.push_back(Form("Folder/Raw"));
         histname_input.push_back("Refolded_IterVsY");
     Plot_hist(hist_input,histname_input,"eff_bcenter_label",sel);
-    sel = {Form("#gamma p_{T}>%.0f, x_{J}>%.1f, Anti-#it{k}_{T} #it{R}=0.2",100.0,0.4),"Cent. 0-30%"}; 
+    overlay({matfold_Y,raw_Y},{"data-Mat Inversion Refolded","MC Raw",y_label,flagdummy==0?"Matrix Inverted":"Raw MC","Y_invert_refolded_overlay"},"right_label",sel);
+    overlay({matinvert_Y,htrue_Y},{"data-Mat Inversion","MC true",y_label,flagdummy==0?"Matrix Inverted":"True MC","Y_inverted_overlay"},"right_label",sel);
+    // Plot_hist({unfold_Y[iter_ref],matinvert_Y,htrue_Y},{"data-Unfolded","data-Mat Inversion","MC true",y_label,flagdummy==0?"Matrix Inverted":"True MC","Y_inverted"},"right_label",sel);
+    sel = {" ",centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4)}; 
     Plot_hist({eff_X},{Form("Efficiency for true %3.2f<%s<%3.2f",ylabel_min,y_label.Data(),ylabel_max),x_label,"Efficiency","Kineff_X"},"bcenter_label",sel);
     Plot_hist({eff_Y},{Form("Efficiency for true %3.2f<%s<%3.2f",xlabel_min,x_label.Data(),xlabel_max),y_label,"Efficiency","Kineff_Y"},"bcenter_label",sel);
-    sel = {Form("#gamma p_{T}>%.0f, x_{J}>%.1f, Anti-#it{k}_{T} #it{R}=0.2",100.0,0.4),"Cent. 0-30%",Form("%3.2f<%s<%3.2f",ylabel_min,y_label.Data(),ylabel_max)};  
-    overlay({unfold_X[iter_ref],htrue_X},{"data unfolded","pythia true",x_label,flagdummy==0?"Unfolded":"True MC","X_unfolded_overlay"},x_label.Contains("dyn")?"rightlog_label":"right_label",sel);
-    Plot_hist({unfold_X[iter_ref],htrue_X},{"data unfolded","pythia true",x_label,flagdummy==0?"Unfolded":"True MC","X_unfolded"},x_label.Contains("dyn")?"rightlog_label":"right_label",sel);
-    sel = {Form("#gamma p_{T}>%.0f, x_{J}>%.1f, Anti-#it{k}_{T} #it{R}=0.2",100.0,0.4),"Cent. 0-30%",Form("%3.2f<%s<%3.2f",xlabel_min,x_label.Data(),xlabel_max)};   
-    overlay({unfold_Y[iter_ref],htrue_Y},{"data unfolded","pythia true",y_label,flagdummy==0?"Unfolded":"True MC","Y_unfolded_overlay"},"right_label",sel);
-    Plot_hist({unfold_Y[iter_ref],htrue_Y},{"data unfolded","pythia true",y_label,flagdummy==0?"Unfolded":"True MC","Y_unfolded"},"right_label",sel);
-    sel = {Form("#gamma p_{T}>%.0f, x_{J}>%.1f, Anti-#it{k}_{T} #it{R}=0.2",100.0,0.4),"Cent. 0-30%"}; 
-    Plot_hist2D({raw},{"Raw_Y_X"},"text",sel);
-    overlay({unfold_Y[iter_ref],htrue_Y},{"data unfolded","pythia true",y_label,flagdummy==0?"Unfolded":"True MC","Y_unfolded_overlay"},"right_label",sel);
+    sel = {" ",centstring,Form("%3.2f<%s<%3.2f",ylabel_min,y_label.Data(),ylabel_max),Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4)};  
+    overlay({unfold_X[iter_ref],htrue_X},{"data unfolded","MC true",x_label,flagdummy==0?"Unfolded":"True MC","X_unfolded_overlay"},x_label.Contains("dyn")?"rightlog_label":"right_label",sel);
+    Plot_hist({unfold_X[iter_ref],htrue_X},{"data unfolded","MC true",x_label,flagdummy==0?"Unfolded":"True MC","X_unfolded"},x_label.Contains("dyn")?"rightlog_label":"right_label",sel);
+    sel = {" ",centstring,Form("%3.2f<%s<%3.2f",xlabel_min,x_label.Data(),xlabel_max),Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4)};   
+    overlay({unfold_Y[iter_ref],htrue_Y},{"data unfolded","MC true",y_label,flagdummy==0?"Unfolded":"True MC","Y_unfolded_overlay"},"right_label",sel);
+    Plot_hist({unfold_Y[iter_ref],htrue_Y},{"data unfolded","MC true",y_label,flagdummy==0?"Unfolded":"True MC","Y_unfolded"},"right_label",sel);
+    sel = {" ",centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4)}; 
+    Plot_hist2D({raw},{"Raw_Y_X"},"text_colz",sel);
+    overlay({unfold_Y[iter_ref],htrue_Y},{"data unfolded","MC true",y_label,flagdummy==0?"Unfolded":"True MC","Y_unfolded_overlay"},"right_label",sel);
     fout->Close();    
 
 }
@@ -479,35 +503,32 @@ void Plot_hist(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt
                                        922,910,851,877,811,804,434,606,
                                        1,632,600,616,419,800,425,898,
                                        922,910,851,877,811,804,434,606};// { 1, 2, 4, 6, 8,20,28};
-    const std::vector<int> markarray = {20, 25, 22, 32, 29, 28, 39, 40,
-                                        24, 21, 26, 23, 30, 34, 37, 41,
-                                        20, 25, 22, 32, 29, 28, 39, 40,
-                                        24, 21, 26, 23, 30, 34, 37, 41};
+    const std::vector<int> markarray = {20, 25, 22, 32, 29,   //  28, 39, 40
+                                        24, 21, 26, 23, 30};  //  34, 37, 41
 
     TCanvas *c= new TCanvas();
     TLegend *l;
-    float leg_x1 = 0.7;
-    float leg_y1 = 0.7;
+    float leg_x1 = 0.6;
+    float leg_y1 = 0.58;
     float leg_x2 = 0.8;
-    float leg_y2 = 0.85;
+    float leg_y2 = 0.88;
     if(opt.Contains("bcenter")){
-        leg_x1 = 0.45;
+        leg_x1 = 0.4;
         leg_y1 = 0.15;
-        leg_x2 = 0.55;
+        leg_x2 = 0.6;
         leg_y2 = 0.3;
-
     }
     else if(opt.Contains("left")){
         leg_x1 = 0.15;
-        leg_y1 = 0.7;
-        leg_x2 = 0.25;
-        leg_y2 = 0.85;
+        leg_y1 = 0.55;
+        leg_x2 = 0.35;
+        leg_y2 = 0.88;
     }
     l = new TLegend(leg_x1, leg_y1, leg_x2, leg_y2,"","brNDC");
     l->SetFillStyle(0);
     l->SetFillColor(0);
     l->SetLineColor(0);
-    l->SetTextSize(0.025);
+    l->SetTextSize(0.035);
     l->SetTextFont(42);
 
     THStack hs("hs","hs");
@@ -515,16 +536,16 @@ void Plot_hist(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt
     for(std::size_t ihist=0; ihist<hist.size();){
         if(opt.Contains("eff")){
             if((ihist+1)>=hist.size()) break;
-            hist[ihist+1]->SetLineColor(colarray[ihist]);
-            hist[ihist+1]->SetMarkerColor(colarray[ihist]);
-            hist[ihist+1]->SetMarkerStyle(markarray[ihist]);
+            hist[ihist+1]->SetLineColor(colarray[ihist%10]);
+            hist[ihist+1]->SetMarkerColor(colarray[ihist%10]);
+            hist[ihist+1]->SetMarkerStyle(markarray[ihist%10]);
             hist[ihist+1]->Divide(hist[ihist+1],hist[0],1,1);
             ihist++;
         }
         else{
-            hist[ihist]->SetLineColor(colarray[ihist]);
-            hist[ihist]->SetMarkerColor(colarray[ihist]);
-            hist[ihist]->SetMarkerStyle(markarray[ihist]);
+            hist[ihist]->SetLineColor(colarray[ihist%10]);
+            hist[ihist]->SetMarkerColor(colarray[ihist%10]);
+            hist[ihist]->SetMarkerStyle(markarray[ihist%10]);
         }
         if(opt.Contains("norm_width")){
             hist[ihist]->Scale(1.0/hist[ihist]->Integral(0,hist[ihist]->GetNbinsX()+2),"width");
@@ -544,8 +565,9 @@ void Plot_hist(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt
         hs.SetMinimum(0.5);
     }
     hs.Draw(drawopt);
-    if((histname.back().Contains("Unfolded")||histname.back().Contains("unfolded")||histname.back().Contains("Graphical")) && !histname.back().Contains("Y"))
-        hs.GetXaxis()->SetRange(1,hist[0]->GetNbinsX()-1);
+    //! TO remove Overflow Bin
+    // if((histname.back().Contains("Unfolded")||histname.back().Contains("unfolded")||histname.back().Contains("Graphical")) && !histname.back().Contains("Y"))
+        // hs.GetXaxis()->SetRange(1,hist[0]->GetNbinsX()-1);
     if(opt.Contains("label")){
         hs.GetXaxis()->SetTitle(histname.at(histname.size()-3));
         hs.GetYaxis()->SetTitle(histname.at(histname.size()-2));
@@ -560,7 +582,7 @@ void Plot_hist(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt
     TLatex latex;
     latex.SetTextSize(0.035);
     if(label.Contains("Data"))
-        latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary}} PbPb 2018");
+        latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary}} PbPb 1.69nb^{-1} (5.02 TeV)");
     else
         latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary Simulation}}");
 
@@ -571,15 +593,15 @@ void Plot_hist(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt
         latex.DrawLatexNDC(0.41,0.92,eopt[0]);
         latex.DrawLatexNDC(0.78,0.92,eopt[1]);
     }    
-    latex.SetTextSize(0.025);
+    latex.SetTextSize(0.035);
     if(eopt.size()>2){
         for(std::size_t ind=2;ind<eopt.size() && !eopt[ind].Contains("end"); ind++){
             if(opt.Contains("bcenter")){
-                leg_y2+=0.05;
+                leg_y2+=0.06;
                 latex.DrawLatexNDC(leg_x1,leg_y2,eopt[ind]);
             }
             else{
-                leg_y1-=0.05;
+                leg_y1-=0.06;
                 latex.DrawLatexNDC(leg_x1,leg_y1,eopt[ind]);
             }
         }
@@ -602,10 +624,11 @@ void Plot_hist2D(std::vector<TH2D*> hist,std::vector<TString> histname,TString d
     if(eopt.back().Contains("log")) gStyle->SetOptLogz(1);
     
     TString drawopt = dopt; 
+    gStyle->SetPalette(kBird);
 
     TCanvas *c;
     // TLegend *l;
-    float leg_x1 = 0.7;
+    float leg_x1 = 0.6;
     float leg_y1 = 0.7;
     float leg_x2 = 0.8;
     float leg_y2 = 0.85;
@@ -635,11 +658,12 @@ void Plot_hist2D(std::vector<TH2D*> hist,std::vector<TString> histname,TString d
 
     for(std::size_t ihist=0; ihist<hist.size();ihist++){
         c = new TCanvas();
+        // hist[ihist]->SetMarkerSize(0.05);   
         hist[ihist]->Draw(drawopt);   
         TLatex latex;
         latex.SetTextSize(0.035);
         if(label.Contains("Data"))
-            latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary}} PbPb 2018");
+            latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary}} PbPb 1.69nb^{-1} (5.02 TeV)");
         else
             latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary Simulation}}");
 
@@ -650,15 +674,15 @@ void Plot_hist2D(std::vector<TH2D*> hist,std::vector<TString> histname,TString d
             latex.DrawLatexNDC(0.41,0.92,eopt[0]);
             latex.DrawLatexNDC(0.78,0.92,eopt[1]);
         }    
-        latex.SetTextSize(0.025);
+        latex.SetTextSize(0.035);
         if(eopt.size()>2){
             for(std::size_t ind=2;ind<eopt.size() && !eopt[ind].Contains("end"); ind++){
                 if(eopt.back().Contains("bcenter")){
-                    leg_y2+=0.05;
+                    leg_y2+=0.06;
                     latex.DrawLatexNDC(leg_x1,leg_y2,eopt[ind]);
                 }
                 else{
-                    leg_y1-=0.05;
+                    leg_y1-=0.06;
                     latex.DrawLatexNDC(leg_x1,leg_y1,eopt[ind]);
                 }
             }
@@ -834,7 +858,7 @@ void overlay(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt,s
     TLatex latex;
     latex.SetTextSize(0.035);
     if(label.Contains("Data"))
-        latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary}} PbPb 2018");
+        latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary}} PbPb 1.69nb^{-1} (5.02 TeV)");
     else
         latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary Simulation}}");
 

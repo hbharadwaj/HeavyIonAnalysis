@@ -15,12 +15,12 @@
 #include <iostream>         // needed for I/O
 
 const int bin_det_xj=1;
-const int bin_true_xj=2;//2;
-bool flag_invert = false;
+const int bin_true_xj=1;//2;//2;
+bool flag_invert = true;
 
 const float min_cent_val = 0;
 const float max_cent_val = 30;
-TString label="Apr_17_PbPb_2018_sys_Bayesian";
+TString label="Apr_26_PbPb_2018_sys_allgenjets_matinvert";
 TString output_path = "./Unfolded_Plots/";
 TString centstring = Form("Cent. %.0f-%.0f%%",min_cent_val,max_cent_val);
 TString dir_cent_string = Form("%.0f_%.0f_",min_cent_val,max_cent_val);
@@ -114,7 +114,7 @@ void Plot_hist2D(std::vector<TH2D*> hist,std::vector<TString> histname,TString d
 
 void plot_sys(TString in_file,TString in_test_label);
 
-void plot_sys_inverted_PbPb(TString file_label="",TString in_test_label="Bottomline"){
+void plot_sys_inverted_PbPb(TString file_label="",TString in_test_label="Data"){
     if(file_label=="")file_label=label;
 
     TString file_path = Form("/home/llr/cms/bharikri/Projects/Photon_Analysis/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/JetAnalysis/test/Unfolding/OutputDir/Unfold_%.0f_%.0f_%s",min_cent_val,max_cent_val,label.Data());
@@ -415,7 +415,7 @@ void plot_sys(TString in_file,TString in_test_label){
             histname_input.push_back(Form("MC Det"));
             histname_input.push_back(var_nam[ivar]);
             histname_input.push_back(Form("Ratio to Data"));
-            histname_input.push_back("Graphical_Bottomline_test");
+            // histname_input.push_back("Graphical_Bottomline_test");
             histname_input.push_back("PbPb_"+dir_cent_string+test_label[test_index]+"_Graphical_Bottomline_test_"+var_arr[ivar]+file_string);
             Plot_hist(hist_input,histname_input,"bcenterlabel",sel);
         }

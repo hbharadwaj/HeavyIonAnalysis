@@ -14,7 +14,7 @@
 
 #include <iostream>         // needed for I/O
 
-TString label="Apr_14_PbPb_2018_sys"; // "Substructure_up_jets";//"QCDPhoton_jets"; // "Data_2018_jets";//
+TString label="Apr_26_PbPb_2018_sys_allgenjets"; // "Substructure_up_jets";//"QCDPhoton_jets"; // "Data_2018_jets";//
 TString output_path = "Uncertainty";//"./OutputPlots/Skimsys/"; // Uncertainty/ OutputPlots
 TString in_file="QCDPhoton_jets";
 const float min_cent_val = 0;
@@ -224,6 +224,16 @@ void loop_sys(SystematicsTreatment_PbPb sys_index){
         Float_t refparton_pt[500]={-999};
         Int_t refparton_flavor[500]={-999};
 
+        Int_t nallgen = 0;
+        Int_t allgenmatchindex[500]={-999};
+        Float_t allgenpt[500]={-1};
+        Float_t allgeneta[500]={-1};
+        Float_t allgenphi[500]={-1};
+        Float_t allgensym[500]={-1};
+        Float_t allgenrg[500]={-1};
+        Float_t allgendynkt[500]={-1};
+        Float_t allgenangu[500]={-1};
+
         jet_tree.SetBranchAddress("nref", &nref);
         jet_tree.SetBranchAddress("jet_index", &jet_index);
         jet_tree.SetBranchAddress("jtpt", &jtpt);
@@ -238,7 +248,7 @@ void loop_sys(SystematicsTreatment_PbPb sys_index){
             jet_tree.SetBranchAddress("refparton_flavor", &refparton_flavor);
         }
 
-        if(jet_tree.GetBranch("refpt")){
+        if(jet_tree.GetBranch("allgenmatchindex")){
             jet_tree.SetBranchAddress("pthat",&pthat);
             jet_tree.SetBranchAddress("weight",&weight);
             jet_tree.SetBranchAddress("weight_pthat",&weight_pthat);
@@ -259,6 +269,16 @@ void loop_sys(SystematicsTreatment_PbPb sys_index){
             jet_tree.SetBranchAddress("refrg", &refrg);
             jet_tree.SetBranchAddress("refdynkt", &refdynkt);
             jet_tree.SetBranchAddress("refangu", &refangu);
+
+            jet_tree.SetBranchAddress("nallgen", &nallgen);
+            jet_tree.SetBranchAddress("allgenmatchindex", &allgenmatchindex);
+            jet_tree.SetBranchAddress("allgenpt", &allgenpt);
+            jet_tree.SetBranchAddress("allgeneta", &allgeneta);
+            jet_tree.SetBranchAddress("allgenphi", &allgenphi);
+            jet_tree.SetBranchAddress("allgensym", &allgensym);
+            jet_tree.SetBranchAddress("allgenrg", &allgenrg);
+            jet_tree.SetBranchAddress("allgendynkt", &allgendynkt);
+            jet_tree.SetBranchAddress("allgenangu", &allgenangu);
         }
 
     // -------- End Tree Variable Declaration
@@ -283,14 +303,11 @@ void loop_sys(SystematicsTreatment_PbPb sys_index){
         Float_t var_girth_det   = -9999;
         Float_t var_girth_true  = -9999;
 
-        Float_t var_vec_jetpt_det[50]   = -9999;
-        Float_t var_vec_jetpt_true[50]  = -9999;
-        Float_t var_vec_xJ_det[50]      = -9999;
-        Float_t var_vec_xJ_true[50]     = -9999;
-        Float_t var_vec_Rg_det[50]      = -9999;
-        Float_t var_vec_Rg_true[50]     = -9999;
-        Float_t var_vec_girth_det[50]   = -9999;
-        Float_t var_vec_girth_true[50]  = -9999;
+        Int_t   var_gen_jet_index   = -9999;
+        Float_t var_gen_jetpt_true  = -9999;
+        Float_t var_gen_xJ_true     = -9999;
+        Float_t var_gen_Rg_true     = -9999;
+        Float_t var_gen_girth_true  = -9999;
 
         sys_tree = new TTree(Form("sys_tree_%s",sys_label[sys_index].Data()),Form("sys_tree_%s",sys_label[sys_index].Data()));
     
@@ -309,15 +326,13 @@ void loop_sys(SystematicsTreatment_PbPb sys_index){
         sys_tree->Branch("girth_det"    ,&var_girth_det);
         sys_tree->Branch("girth_true"   ,&var_girth_true);
 
-        sys_tree->Branch("vec_jetpt_det"    ,&var_vec_jetpt_det);
-        sys_tree->Branch("vec_jetpt_true"   ,&var_vec_jetpt_true);
-        sys_tree->Branch("vec_xJ_det"       ,&var_vec_xJ_det);
-        sys_tree->Branch("vec_xJ_true"      ,&var_vec_xJ_true);
-        sys_tree->Branch("vec_Rg_det"       ,&var_vec_Rg_det);
-        sys_tree->Branch("vec_Rg_true"      ,&var_vec_Rg_true);
-        sys_tree->Branch("vec_girth_det"    ,&var_vec_girth_det);
-        sys_tree->Branch("vec_girth_true"   ,&var_vec_girth_true);
+        sys_tree->Branch("gen_jet_index"     ,&var_gen_jet_index);
+        sys_tree->Branch("gen_jetpt_true"    ,&var_gen_jetpt_true);
+        sys_tree->Branch("gen_xJ_true"       ,&var_gen_xJ_true);
+        sys_tree->Branch("gen_Rg_true"       ,&var_gen_Rg_true);
+        sys_tree->Branch("gen_girth_true"    ,&var_gen_girth_true);
 
+        
     // -------- End Histograms
     // ----------------------------------------------------------------------------------------------------------------
     // Constants
@@ -398,16 +413,40 @@ void loop_sys(SystematicsTreatment_PbPb sys_index){
         }
         
         //* Jet Loop----------------------------------------------------------------------------------
-            std::vector<int>   jet_index=-1;
+            // std::vector<int>   vec_jet_index=-1;
             int   jet_index=-1;
             int   jet_true_index=-1;
+            int   jet_true_index_gen=-1;
             float jet_pt_max=-1;
             float jet_true_pt_max=-1;
+            float jet_true_pt_gen=-1;
             float jet_dphi_max=-1;
             float jet_xJ_max=-1;
             float jet_true_xJ_max=-1;
+            float jet_true_xJ_gen=-1;
             float jet_Rg_max=-1;
-            float jet_true_Rg_max=-1;            
+            float jet_true_Rg_max=-1;
+            float jet_true_Rg_gen=-1;   
+
+            for(int igen=0; igen<nallgen;igen++){
+                if(allgeneta[igen]<-1.39 && allgenphi[igen]<-0.9 && allgenphi[igen]>-1.6 ) continue; // HEM Failure
+                if(fabs(allgeneta[igen])>2) continue;
+                float true_xJ = -1;
+                true_xJ = allgenpt[igen]/mcEt;// /phoEtCorrected; //mcEt;
+
+                float dEta = allgeneta[igen] - phoEta; // -mcEta;
+                float dphi = abs(TVector2::Phi_mpi_pi(phoPhi-allgenphi[igen])); // mcPhi
+
+                if(dphi>2*TMath::Pi()/3){
+                    if(jet_true_pt_gen<allgenpt[igen]){
+                        jet_true_pt_gen = allgenpt[igen];
+                        jet_true_index_gen = igen;    
+                        jet_true_xJ_gen = true_xJ; 
+                        jet_true_Rg_gen = allgenrg[igen];                     
+                    }
+                }
+
+            }         
         
             for(int ijet=0; ijet<nref;ijet++){
                 float jetPtCorrected = jtpt[ijet];
@@ -508,6 +547,7 @@ void loop_sys(SystematicsTreatment_PbPb sys_index){
                 
             }
             if(jet_index==-1) continue;
+            if(jet_true_Rg_gen<=0) jet_true_Rg_gen = -0.025;
             if(jet_true_Rg_max<=0) jet_true_Rg_max = -0.025;
             if(jet_Rg_max<=0) jet_Rg_max = -0.025;
         
@@ -542,6 +582,12 @@ void loop_sys(SystematicsTreatment_PbPb sys_index){
             var_Rg_true     = jet_true_Rg_max;
             var_girth_det   = jtangu[jet_index];
             var_girth_true  = refangu[jet_index];
+            
+            var_gen_jet_index   = allgenmatchindex[jet_true_index_gen];
+            var_gen_jetpt_true  = allgenpt[jet_true_index_gen];
+            var_gen_xJ_true     = jet_true_xJ_gen;
+            var_gen_Rg_true     = jet_true_Rg_gen;
+            var_gen_girth_true  = allgenangu[jet_true_index_gen];
             sys_tree->Fill();
 
         if(flagsig) ++count;
@@ -560,7 +606,7 @@ void skim_sys_PbPb(){
 
     in_file="Data_2018_jets";
     loop_sys(kData);
-    in_file = "QCDPhoton_jets";
+    in_file = "QCDPhoton_jets";//"QCDPhoton_jets";
     loop_sys(kNominal);
     
     in_file = "Data_2018_jets";
@@ -572,9 +618,9 @@ void skim_sys_PbPb(){
     loop_sys(kJECdown);
     loop_sys(kCentup);
     loop_sys(kCentdown);
-    in_file = "Substructure_up_jets";
+    in_file = "Substructure_up_jets_FULL";
     loop_sys(kPFScaleup);
-    in_file = "Substructure_down_jets"; 
+    in_file = "Substructure_down_jets_FULL"; 
     loop_sys(kPFScaledown);
     in_file = "QCDPhoton_jets";
     loop_sys(kAltMC);
