@@ -57,8 +57,9 @@ private:
   bool doWTARecluster_ = false;
   fastjet::JetDefinition WTAjtDef = fastjet::JetDefinition(fastjet::JetAlgorithm::antikt_algorithm, 2, fastjet::WTA_pt_scheme);
   //--------------------------------------------
-  void IterativeDeclusteringRec(double groom_type, double groom_combine,const reco::Jet& jet,fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2);
+  void IterativeDeclusteringRec(double groom_type, double groom_combine,const reco::Jet& jet,fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2, edm::Handle<reco::PFCandidateCollection> pfCandidates);
   void IterativeDeclusteringGen(double groom_type, double groom_combine,const reco::GenJet& jet,fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2);
+  void IterativeDeclusteringAllGen(double groom_type, double groom_combine,const reco::GenJet& jet,fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2);
   
   int getPFJetMuon(const pat::Jet& pfJet, const reco::PFCandidateCollection *pfCandidateColl);
 
@@ -165,6 +166,7 @@ private:
   struct JRA{
 
     int nref;
+    int nallgen;
     int run;
     int evt;
     int lumi;
@@ -362,6 +364,15 @@ private:
     float refparton_pt[MAXJETS];
     int refparton_flavor[MAXJETS];
     int refparton_flavorForB[MAXJETS];
+
+    int allgenmatchindex[MAXJETS];
+    float allgenpt[MAXJETS];
+    float allgeneta[MAXJETS];
+    float allgenphi[MAXJETS];
+    float allgensym[MAXJETS];
+    float allgenrg[MAXJETS];
+    float allgendynkt[MAXJETS];
+    float allgenangu[MAXJETS];
 
     float refptG[MAXJETS];
     float refetaG[MAXJETS];
