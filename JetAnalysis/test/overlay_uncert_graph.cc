@@ -35,7 +35,7 @@ void overlay_uncert_graph(TString file_PbPb, TString label_PbPb, TString file_pp
     TH1D *hPbPb_nom = (TH1D*)f_PbPb->Get(label_PbPb+"_nom");
     TGraphAsymmErrors *hPbPb_stat = (TGraphAsymmErrors*)f_PbPb->Get("stat_uncert");
     TGraphAsymmErrors *hPbPb_sys = (TGraphAsymmErrors*)f_PbPb->Get("sys_uncert");
-    TGraphAsymmErrors *hPbPb_tot = (TGraphAsymmErrors*)f_PbPb->Get("tot_uncert");
+    TGraphAsymmErrors *hPbPb_tot = (TGraphAsymmErrors*)f_PbPb->Get("sys_uncert");// (TGraphAsymmErrors*)f_PbPb->Get("tot_uncert");
 
     TH1D *hpp_nom = (TH1D*)f_pp->Get(label_pp+"_nom");
     TGraphAsymmErrors *hpp_stat = (TGraphAsymmErrors*)f_pp->Get("stat_uncert");
@@ -143,7 +143,7 @@ void overlay_uncert_graph(TString file_PbPb, TString label_PbPb, TString file_pp
         // hPbPb_stat->Draw("AP2");
         
         hPbPb_tot->Draw("AP5");
-        hPbPb_sys->Draw("P5");
+        // hPbPb_sys->Draw("P5");
         // hpp_stat->Draw("P2");
         
         hpp_tot->Draw("P5");
@@ -176,12 +176,19 @@ void overlay_uncert_graph(TString file_PbPb, TString label_PbPb, TString file_pp
         // l->AddEntry(hpp_sys, "pp sys. uncert", "f");
         // l->AddEntry(hpp_tot, "pp total(stat. + sys.)", "f");
 
-        l->AddEntry(hPbPb_nom, "MatInvert stat. uncert", "lep");
-        l->AddEntry(hPbPb_sys, "MatInvert sys. uncert", "f");
-        l->AddEntry(hPbPb_tot, "MatInvert total(stat. + sys.)", "f");
-        l->AddEntry(hpp_nom, "D'Agostini stat. uncert", "lep");
-        l->AddEntry(hpp_sys, "D'Agostini sys. uncert", "f");
-        l->AddEntry(hpp_tot, "D'Agostini total(stat. + sys.)", "f");
+        // l->AddEntry(hPbPb_nom, "MatInvert stat. uncert", "lep");
+        // l->AddEntry(hPbPb_sys, "MatInvert sys. uncert", "f");
+        // l->AddEntry(hPbPb_tot, "MatInvert total(stat. + sys.)", "f");
+        // l->AddEntry(hpp_nom, "D'Agostini stat. uncert", "lep");
+        // l->AddEntry(hpp_sys, "D'Agostini sys. uncert", "f");
+        // l->AddEntry(hpp_tot, "D'Agostini total(stat. + sys.)", "f");
+
+        l->AddEntry(hPbPb_nom, "Pre-Approval Result", "lep");
+        // l->AddEntry(hPbPb_sys, "MatInvert sys. uncert", "f");
+        l->AddEntry(hPbPb_tot, "Pre-Approval sys", "f");
+        l->AddEntry(hpp_nom, "Updated stat. uncert", "lep");
+        l->AddEntry(hpp_sys, "Updated sys. uncert", "f");
+        l->AddEntry(hpp_tot, "Updated total(stat. + sys.)", "f");
         l->Draw();
 
         TLatex latex;
@@ -192,14 +199,16 @@ void overlay_uncert_graph(TString file_PbPb, TString label_PbPb, TString file_pp
         leg_y1-=0.08;
         latex.DrawLatexNDC(leg_x1,leg_y1,"Cent. 0-30%");
         leg_y1-=0.08;
-        latex.DrawLatexNDC(leg_x1,leg_y1,"#gamma p_{T}>100 GeV,x_{J}>0.4,|#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi");
+        latex.DrawLatexNDC(leg_x1,leg_y1,"p_{T}^{#gamma }>100 GeV,x_{J}>0.4,|#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi");
         if(label.Contains("Rg")){
             leg_y1-=0.08;
             // latex.DrawLatexNDC(leg_x1,leg_y1,Form("PbPb untagged = %4.2f%%",PbPb_untagged*100));
-            latex.DrawLatexNDC(leg_x1,leg_y1,Form("MatInvert untagged = %4.2f%%",PbPb_untagged*100));
+            // latex.DrawLatexNDC(leg_x1,leg_y1,Form("MatInvert untagged = %4.2f%%",PbPb_untagged*100));
+            latex.DrawLatexNDC(leg_x1,leg_y1,Form("Pre-Approval untagged = %4.2f%%",PbPb_untagged*100));
             leg_y1-=0.08;
             // latex.DrawLatexNDC(leg_x1,leg_y1,Form("pp untagged = %4.2f%%",pp_untagged*100));
-            latex.DrawLatexNDC(leg_x1,leg_y1,Form("D'Agostini untagged = %4.2f%%",pp_untagged*100));
+            // latex.DrawLatexNDC(leg_x1,leg_y1,Form("D'Agostini untagged = %4.2f%%",pp_untagged*100));
+            latex.DrawLatexNDC(leg_x1,leg_y1,Form("Updated untagged = %4.2f%%",pp_untagged*100));
         }
 
             
@@ -302,7 +311,7 @@ int main(int argc, char* argv[]){
         hname.push_back(hlabel);
         // Signal Selection
         std::vector<TString>sel = {" ","PbPb 2018(0-30%), pp 2017",
-        "Anti-#it{k}_{T} #it{R}=0.2","z_{cut}=0.2"};// "#gamma p_{T}>100, Jet p_{T}>40, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi"
+        "Anti-#it{k}_{T} #it{R}=0.2","z_{cut}=0.2"};// "p_{T}^{#gamma }>100, Jet p_{T}>40, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi"
 
         TFile *fout;
         fout = new TFile(DIR+"/Output_"+label+".root", "recreate");

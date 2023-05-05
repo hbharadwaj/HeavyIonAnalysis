@@ -14,7 +14,7 @@
 
 #include <iostream>         // needed for I/O
 
-TString label="Apr_26_PbPb_2018_sys_allgenjets"; // "Substructure_up_jets";//"QCDPhoton_jets"; // "Data_2018_jets";//
+TString label="May_3_PbPb_2018_sys_WP_update"; // "Substructure_up_jets";//"QCDPhoton_jets"; // "Data_2018_jets";//
 TString output_path = "Uncertainty";//"./OutputPlots/Skimsys/"; // Uncertainty/ OutputPlots
 TString in_file="QCDPhoton_jets";
 const float min_cent_val = 0;
@@ -72,8 +72,8 @@ TFile *fout;
 float getpurity(float in_min_cent,float in_max_cent,SystematicsTreatment_PbPb in_sys_index){ 
     // Function to find the photon purity using the template fit and ABCD method 
     const int ncent = 5; // {(0,30),(30,90),(0,90),(0,20),(20,90)}
-    const float purity_values_nom[ncent]  ={0.829,0.894,0.843,0.809,0.898};
-    const float purity_values_ABCD[ncent] ={0.823,0.883,0.837,0.803,0.887};
+    const float purity_values_nom[ncent]  = {0.774996,0.891456,0.805383,0.757357,0.872783};// {0.829,0.894,0.843,0.809,0.898};
+    const float purity_values_ABCD[ncent] = {0.780897,0.889843,0.809544,0.765261,0.870248};// {0.823,0.883,0.837,0.803,0.887};
     
     
     switch(in_sys_index){
@@ -98,8 +98,8 @@ float getpurity(float in_min_cent,float in_max_cent,SystematicsTreatment_PbPb in
 void get_qfrac(float in_min_cent,float in_max_cent,float &out_orig_frac, float &out_fit_frac){ 
     // Function to Find the original and Fit quark fraction -> Used to obtain an Alternative MC sample for response matrix uncertainty
     const int ncent = 5; // {(0,30),(30,90),(0,90),(0,20),(20,90)}
-    const float orig_qg[ncent] = {0.634,0.632,0.6325,0.633,0.633};   // Quark Fraction
-    const float fit_qg[ncent] = {0.485,0.528,0.496,0.472,0.541}; // From angu - {0.483,0.533,0.494,0.467,0.529};
+    const float orig_qg[ncent] = {0.57889581,0.58154138,0.57951658,0.57672473,0.58561608};//{0.634,0.632,0.6325,0.633,0.633};   // Quark Fraction
+    const float fit_qg[ncent]  = {0.446405,0.439685,0.439685,0.431104,0.46912}; //              {0.485,0.528,0.496,0.472,0.541}; // From angu - {0.483,0.533,0.494,0.467,0.529};
     
     if(in_min_cent==0 && in_max_cent==30) out_orig_frac =orig_qg[0]; out_fit_frac =fit_qg[0];  return;
     if(in_min_cent==30&& in_max_cent==90) out_orig_frac =orig_qg[1]; out_fit_frac =fit_qg[1];  return;
@@ -331,15 +331,14 @@ void loop_sys(SystematicsTreatment_PbPb sys_index){
         sys_tree->Branch("gen_xJ_true"       ,&var_gen_xJ_true);
         sys_tree->Branch("gen_Rg_true"       ,&var_gen_Rg_true);
         sys_tree->Branch("gen_girth_true"    ,&var_gen_girth_true);
-
         
     // -------- End Histograms
     // ----------------------------------------------------------------------------------------------------------------
     // Constants
         const float min_pho_et = 100;
-        const float cut_HoverE = 0.137;     // 0.137168;  // 0.0696672;
-        const float cut_SIEIE  = 0.0104;    // 0.0103766; // 0.00983515;
-        const float cut_SumIso = 1.45;      // 1.45486;   // 1.33546;
+        const float cut_HoverE = 0.119947;     // 0.137168;  // 0.0696672;
+        const float cut_SIEIE  = 0.010392;    // 0.0103766; // 0.00983515;
+        const float cut_SumIso = 2.099277;      // 1.45486;   // 1.33546;
         const float min_xJ = 0.4;     // 0.4        
         // const float purity_values[ncent] =  {0.829,0.894,0.843,0.809,0.898};// ABCD Purity - {0.823,0.883,0.837,0.803,0.887};
         float purity_value = 1.0;   // Photon Purity 

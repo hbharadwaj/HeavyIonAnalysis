@@ -15,17 +15,17 @@
 #include <iostream>         // needed for I/O
 
 const int bin_det_xj=1;
-const int bin_true_xj=1;//2;//2;
-bool flag_invert = true;
+const int bin_true_xj=2;//2;
+bool flag_invert = false;
 
 const float min_cent_val = 0;
 const float max_cent_val = 30;
-TString label="Apr_26_PbPb_2018_sys_allgenjets_matinvert";
+TString label="May_5_PbPb_2018_sys_WP_update";
 TString output_path = "./Unfolded_Plots/";
 TString centstring = Form("Cent. %.0f-%.0f%%",min_cent_val,max_cent_val);
 TString dir_cent_string = Form("%.0f_%.0f_",min_cent_val,max_cent_val);
 TString var_arr[]={"Rg","girth"};
-TString var_nam[]={"R_{g}","Girth"};
+TString var_nam[]={"R_{g}","#it{g}"};
 const int nvar = 2;
 
 
@@ -174,7 +174,7 @@ void plot_sys(TString in_file,TString in_test_label){
         
         for(int ivar=0;ivar<nvar;ivar++){
             
-        Int_t iter_ref = 1;
+        Int_t iter_ref = 10;
         const int niter = 50;
         TH1D *hist_chi2_Invert(0),*hist_chi2_Bayesian(0),*hist_chi2_smeared(0),*hist_pval_smeared(0);
         hist_chi2_Invert=new TH1D("hist_chi2_Invert","hist_chi2_Invert",niter,0,niter);
@@ -344,7 +344,8 @@ void plot_sys(TString in_file,TString in_test_label){
             sel = {"","Corrected Data Counts "+var_nam[ivar]};
             Plot_hist2D({h2_Raw},{test_label[test_index]+"_Raw_X_Y"+file_string+"_"+var_arr[ivar]},"text_E_colz",sel);
             sel = {"","Covariance Matrix "+var_nam[ivar]};
-            Plot_hist2D({h2_Covariance},{test_label[test_index]+"_MatCovariance"+file_string+"_"+var_arr[ivar]},"text_E_colz",sel);
+            gStyle->SetPaintTextFormat("4.1f");
+            Plot_hist2D({h2_Covariance},{test_label[test_index]+"_MatCovariance"+file_string+"_"+var_arr[ivar]},"text_colz",sel);
         }
         switch(test_index){
             case kTrivial:  sel = {" ","Trivial Test"      ,centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4)};  break;
@@ -367,13 +368,31 @@ void plot_sys(TString in_file,TString in_test_label){
         else{
             TH1D *h_Folded_Raw_Bayesian_X = (TH1D*)h_Bayesian_Refolded_X[iter_ref]->Clone(test_label[test_index]+"_hfold_Bayesian_raw_"+var_arr[ivar]+"_xJ_X");
             h_Folded_Raw_Bayesian_X->Divide(h_Raw_X);
+            h_Folded_Raw_Bayesian_X->Write("",TObject::kWriteDelete);
 
+            TH1D *h_Folded_Raw_Bayesian_X_niter = (TH1D*)h_Bayesian_Refolded_X[niter-1]->Clone(test_label[test_index]+"_hfold_Bayesian_raw_"+var_arr[ivar]+"_xJ_X_niter");
+            h_Folded_Raw_Bayesian_X_niter->Divide(h_Raw_X);
+            h_Folded_Raw_Bayesian_X_niter->Write("",TObject::kWriteDelete);
+
+            TH1D *h_Folded_Raw_Bayesian_X_niter_2 = (TH1D*)h_Bayesian_Refolded_X[(niter/2) -1]->Clone(test_label[test_index]+"_hfold_Bayesian_raw_"+var_arr[ivar]+"_xJ_X_niter_2");
+            h_Folded_Raw_Bayesian_X_niter_2->Divide(h_Raw_X);
+            h_Folded_Raw_Bayesian_X_niter_2->Write("",TObject::kWriteDelete);
+            
             TH1D *h_Unfolded_True_Bayesian_X = (TH1D*)h_Bayesian_Unfolded_X[iter_ref]->Clone(test_label[test_index]+"_hunf_Bayesian_true_"+var_arr[ivar]+"_xJ_X");
             h_Unfolded_True_Bayesian_X->Divide(h_True_X);
+            h_Unfolded_True_Bayesian_X->Write("",TObject::kWriteDelete);
 
-            Plot_hist_ratio({h_Folded_Raw_Bayesian_X},{"Folded_Raw",var_nam[ivar],"Refolded/Raw","PbPb_"+dir_cent_string+test_label[test_index]+"_Refolded_BayesianVs"+var_arr[ivar]+file_string},"bcenter_label_leg",sel);
-            if(test_index!=kNoTest)
-                Plot_hist_ratio({h_Unfolded_True_Bayesian_X},{"Unfolded_True",var_nam[ivar],"Unfolded/True","PbPb_"+dir_cent_string+test_label[test_index]+"_Unfolded_BayesianVs"+var_arr[ivar]+file_string},"bcenter_label_leg",sel);
+            TH1D *h_Unfolded_True_Bayesian_X_niter = (TH1D*)h_Bayesian_Unfolded_X[niter-1]->Clone(test_label[test_index]+"_hunf_Bayesian_true_"+var_arr[ivar]+"_xJ_X_niter");
+            h_Unfolded_True_Bayesian_X_niter->Divide(h_True_X);
+            h_Unfolded_True_Bayesian_X_niter->Write("",TObject::kWriteDelete);
+            
+            TH1D *h_Unfolded_True_Bayesian_X_niter_2 = (TH1D*)h_Bayesian_Unfolded_X[(niter/2) -1]->Clone(test_label[test_index]+"_hunf_Bayesian_true_"+var_arr[ivar]+"_xJ_X_niter_2");
+            h_Unfolded_True_Bayesian_X_niter_2->Divide(h_True_X);
+            h_Unfolded_True_Bayesian_X_niter_2->Write("",TObject::kWriteDelete);
+
+            Plot_hist_ratio({h_Folded_Raw_Bayesian_X,h_Folded_Raw_Bayesian_X_niter_2,h_Folded_Raw_Bayesian_X_niter},{Form("Iter %d (p val>0.95)",iter_ref),Form("Iter %d",(niter/2)+1),Form("Iter %d",niter),var_nam[ivar],"Refolded/Raw","PbPb_"+dir_cent_string+test_label[test_index]+"_Refolded_BayesianVs"+var_arr[ivar]+file_string},"bcenter_label",sel);
+            if(test_index!=kNoTest || test_index!=kBottomline)
+                Plot_hist_ratio({h_Unfolded_True_Bayesian_X,h_Unfolded_True_Bayesian_X_niter_2,h_Unfolded_True_Bayesian_X_niter},{Form("Iter %d (p val>0.95)",iter_ref),Form("Iter %d",(niter/2)),Form("Iter %d",niter),var_nam[ivar],"Unfolded/True","PbPb_"+dir_cent_string+test_label[test_index]+"_Unfolded_BayesianVs"+var_arr[ivar]+file_string},"bcenter_label",sel);
 
             Plot_hist({h_True_X,h_Bayesian_Unfolded_X[iter_ref]},{"True MC","D'Agostini",var_nam[ivar],"1/N_{jet} dN/d"+var_nam[ivar],"PbPb_"+dir_cent_string+test_label[test_index]+"_True_Unfolded_Bayesian_"+var_arr[ivar]+file_string},"rightlabel",sel);
         }
@@ -401,11 +420,11 @@ void plot_sys(TString in_file,TString in_test_label){
             histname_input={};
             TH1D* htemp = (TH1D*)h_True_X->Clone();               // True Level
             if(flag_invert){
-                htemp->Divide((TH1D*)h_Bayesian_Unfolded_X[iter_ref]->Clone());  // For D'Agostini
-                hist_input.push_back((TH1D*)htemp->Clone());
+                htemp->Divide((TH1D*)h_Unfolded_Invert_X->Clone());  // For D'Agostini
+                hist_input.push_back((TH1D*)htemp->Clone());                
             }
             else{
-                htemp->Divide((TH1D*)h_Unfolded_Invert_X->Clone());  // For D'Agostini
+                htemp->Divide((TH1D*)h_Bayesian_Unfolded_X[iter_ref]->Clone());  // For D'Agostini
                 hist_input.push_back((TH1D*)htemp->Clone());
             }
             histname_input.push_back(Form("MC True"));
@@ -554,7 +573,7 @@ void Plot_hist_ratio(std::vector<TH1D*> hist,std::vector<TString> histname,TStri
     TLatex latex;
     latex.SetTextSize(0.035);
     if(label.Contains("Data"))
-        latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary}} PbPb 1.69 nb^{-1} (5.02 TeV)");
+        latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary}} #bf{PbPb 1.69 nb^{-1} (5.02 TeV)}");
     else
         latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary Simulation}}");
 
@@ -688,7 +707,7 @@ void Plot_hist(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt
     TLatex latex;
     latex.SetTextSize(0.035);
     if(label.Contains("Data"))
-        latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary}} PbPb 1.69 nb^{-1} (5.02 TeV)");
+        latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary}} #bf{PbPb 1.69 nb^{-1} (5.02 TeV)}");
     else
         latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary Simulation}}");
 
@@ -768,13 +787,14 @@ void Plot_hist2D(std::vector<TH2D*> hist,std::vector<TString> histname,TString d
         hist[ihist]->SetMarkerSize(1.5);   
         hist[ihist]->Draw(drawopt);   
         //! TO remove Overflow Bin
-        // if((histname.back().Contains("Unfolded")||histname.back().Contains("unfolded")||histname.back().Contains("Graphical")) && !histname.back().Contains("Y"))
-        //hist[ihist]->GetXaxis()->SetRange(1,hist[ihist]->GetNbinsX()-1);
-        //hist[ihist]->GetYaxis()->SetRange(1,hist[ihist]->GetNbinsY()-1);
+        if((histname.back().Contains("Efficiency")) && !flag_invert){
+        hist[ihist]->GetXaxis()->SetRange(1,hist[ihist]->GetNbinsX()-1);
+        hist[ihist]->GetYaxis()->SetRange(2,hist[ihist]->GetNbinsY());
+        }
         TLatex latex;
         latex.SetTextSize(0.035);
         if(label.Contains("Data"))
-            latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary}} PbPb 1.69 nb^{-1} (5.02 TeV)");
+            latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary}} #bf{PbPb 1.69 nb^{-1} (5.02 TeV)}");
         else
             latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary Simulation}}");
 

@@ -593,7 +593,7 @@ void overlay_uncert(TString file_PbPb, TString label_PbPb, TString file_pp, TStr
         leg_y1-=0.08;
         latex.DrawLatexNDC(leg_x1,leg_y1,"Cent. 0-30%");
         leg_y1-=0.08;
-        latex.DrawLatexNDC(leg_x1,leg_y1,"#gamma p_{T}>100 GeV,x_{J}>0.4,|#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi");
+        latex.DrawLatexNDC(leg_x1,leg_y1,"p_{T}^{#gamma }>100 GeV,x_{J}>0.4,|#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi");
         if(label.Contains("Rg")){
             leg_y1-=0.08;
             latex.DrawLatexNDC(leg_x1,leg_y1,Form("PbPb untagged = %4.2f%%",PbPb_untagged*100));
@@ -733,7 +733,7 @@ int main(int argc, char* argv[]){
         hname.push_back(hlabel);
         // Signal Selection
         std::vector<TString>sel = {" ","PbPb 2018(0-30%), pp 2017",
-        "Anti-#it{k}_{T} #it{R}=0.2","z_{cut}=0.2"};// "#gamma p_{T}>100, Jet p_{T}>40, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi"
+        "Anti-#it{k}_{T} #it{R}=0.2","z_{cut}=0.2"};// "p_{T}^{#gamma }>100, Jet p_{T}>40, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi"
 
         TFile *fout;
         fout = new TFile(DIR+"/Output_"+label+".root", "recreate");

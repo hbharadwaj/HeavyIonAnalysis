@@ -32,13 +32,13 @@ using "\n";
 #endif
 
 const int bin_det_xj=1;
-const int bin_true_xj=1;//2;
+const int bin_true_xj=2;
 
 const float min_cent_val = 0;
 const float max_cent_val = 30;
-TString label = "Apr_26_PbPb_2018_sys_allgenjets_matinvert";
+TString label = "May_5_PbPb_2018_sys_WP_update";
 TString in_path = "/home/llr/cms/bharikri/Projects/Photon_Analysis/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/JetAnalysis/test/";
-TString in_file = in_path+"Uncertainty/Output_Apr_26_PbPb_2018_sys_allgenjets_0_30.root";
+TString in_file = in_path+"Uncertainty/Output_May_3_PbPb_2018_sys_WP_update_0_30.root";
 TString out_path = "/home/llr/cms/bharikri/Projects/Photon_Analysis/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/JetAnalysis/test/Unfolding/OutputDir/";
 TFile* fout;
 
@@ -393,49 +393,51 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
     // ----------------------------------------------------------------------------------------------------------------
     //* Histograms
 
+        TH1::SetDefaultSumw2();
+        TH2::SetDefaultSumw2();
         // inputs for Unfolding 
-            const int bin_det_Rg =     5;// 5;
-            const int bin_true_Rg =    5;// 6;
-            const int bin_det_girth =  5;// 5;
-            const int bin_true_girth = 5;// 6;
+            const int bin_det_Rg =     5;
+            const int bin_true_Rg =    6;
+            const int bin_det_girth =  5;
+            const int bin_true_girth = 6;
 
             Double_t xjmin_det =0.4;//0.4;
-            Double_t xjmin_true=0.4;//0.0;
+            Double_t xjmin_true=0.0;
 
             Double_t xjmax_det =3;//5
             Double_t xjmax_true=3;//5
 
             Double_t Rgmax_det = 0.2;// 0.22;// 0.2;
-            Double_t Rgmax_true= 0.2;// 0.22;// 0.3;
+            Double_t Rgmax_true= 0.3;// 0.22;// 0.3;
             
             Double_t Rgmin_det =-0.05;
             Double_t Rgmin_true=-0.05;
 
             Double_t girthmax_det = 0.1;// 0.15;// 0.1;
-            Double_t girthmax_true= 0.1;// 0.15;// 0.3;
+            Double_t girthmax_true= 0.3;// 0.15;// 0.3;
             
             Double_t girthmin_det =0.;
             Double_t girthmin_true=0.;
 
-            // Double_t xJ_det_edges[bin_det_xj+1]   = {           xjmin_det,xjmax_det};
-            // Double_t xJ_true_edges[bin_true_xj+1] = {xjmin_true,xjmin_det,xjmax_true};
+            Double_t xJ_det_edges[bin_det_xj+1]   = {           xjmin_det,xjmax_det};
+            Double_t xJ_true_edges[bin_true_xj+1] = {xjmin_true,xjmin_det,xjmax_true};
 
-            Double_t xJ_det_edges[bin_det_xj+1]   = {xjmin_det,xjmax_det};
-            Double_t xJ_true_edges[bin_true_xj+1] = {xjmin_true,xjmax_true};
+            // Double_t xJ_det_edges[bin_det_xj+1]   = {xjmin_det,xjmax_det};
+            // Double_t xJ_true_edges[bin_true_xj+1] = {xjmin_true,xjmax_true};
 
-            // Double_t Rg_det_edges[bin_det_Rg+1]   = {-0.05,0.00, 0.04, 0.08, 0.12, Rgmax_det};
-            // Double_t Rg_true_edges[bin_true_Rg+1] = {-0.05,0.00, 0.04, 0.08, 0.12, Rgmax_det, Rgmax_true};
+            Double_t Rg_det_edges[bin_det_Rg+1]   = {-0.05,0.00, 0.04, 0.08, 0.12, Rgmax_det};
+            Double_t Rg_true_edges[bin_true_Rg+1] = {-0.05,0.00, 0.04, 0.08, 0.12, Rgmax_det, Rgmax_true};
             // Double_t Rg_det_edges[bin_det_Rg+1]   = {-0.05,0.00, 0.03, 0.06, 0.1, 0.15, Rgmax_det};
             // Double_t Rg_true_edges[bin_true_Rg+1] = {-0.05,0.00, 0.03, 0.06, 0.1, 0.15, Rgmax_det};
-            Double_t Rg_det_edges[bin_det_Rg+1]   = {-0.05,0.00, 0.04, 0.08, 0.12, Rgmax_det};
-            Double_t Rg_true_edges[bin_true_Rg+1] = {-0.05,0.00, 0.04, 0.08, 0.12, Rgmax_det};
+            // Double_t Rg_det_edges[bin_det_Rg+1]   = {-0.05,0.00, 0.04, 0.08, 0.12, Rgmax_det};
+            // Double_t Rg_true_edges[bin_true_Rg+1] = {-0.05,0.00, 0.04, 0.08, 0.12, Rgmax_det};
 
             
-            // Double_t girth_det_edges[bin_det_girth+1] =   {girthmin_det, 0.02, 0.04, 0.06, 0.08, girthmax_det};
-            // Double_t girth_true_edges[bin_true_girth+1] = {girthmin_det, 0.02, 0.04, 0.06, 0.08, girthmax_det, girthmax_true};
-            
             Double_t girth_det_edges[bin_det_girth+1] =   {girthmin_det, 0.02, 0.04, 0.06, 0.08, girthmax_det};
-            Double_t girth_true_edges[bin_true_girth+1] = {girthmin_det, 0.02, 0.04, 0.06, 0.08, girthmax_det};
+            Double_t girth_true_edges[bin_true_girth+1] = {girthmin_det, 0.02, 0.04, 0.06, 0.08, girthmax_det, girthmax_true};
+            
+            // Double_t girth_det_edges[bin_det_girth+1] =   {girthmin_det, 0.02, 0.04, 0.06, 0.08, girthmax_det};
+            // Double_t girth_true_edges[bin_true_girth+1] = {girthmin_det, 0.02, 0.04, 0.06, 0.08, girthmax_det};
              
         // Data
             TH2D* h_Rg_xJ_det;
@@ -498,9 +500,9 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
         h_mc_Rg_xJ_det = new TH2D(test_label[in_test_index]+"_h_mc_Rg_xJ_det",test_label[in_test_index]+"_h_mc_Rg_xJ_det;R_{g};x_{#gamma,jet}"   ,bin_det_Rg,Rg_det_edges,  bin_det_xj,xJ_det_edges);
         hbkg_Rg_xJ_det = new TH2D(test_label[in_test_index]+"_hbkg_Rg_xJ_det",test_label[in_test_index]+"_hbkg_Rg_xJ_det;R_{g};x_{#gamma,jet}"   ,bin_det_Rg,Rg_det_edges,  bin_det_xj,xJ_det_edges);
 
-        h_girth_xJ_det    = new TH2D(test_label[in_test_index]+"_h_girth_xJ_det",test_label[in_test_index]+"_h_girth_xJ_det;Girth;x_{#gamma,jet}"             ,bin_det_girth,girth_det_edges,   bin_det_xj,xJ_det_edges);
-        h_mc_girth_xJ_det = new TH2D(test_label[in_test_index]+"_h_mc_girth_xJ_det",test_label[in_test_index]+"_h_mc_girth_xJ_det;Girth;x_{#gamma,jet}"       ,bin_det_girth,girth_det_edges,   bin_det_xj,xJ_det_edges);
-        hbkg_girth_xJ_det = new TH2D(test_label[in_test_index]+"_hbkg_girth_xJ_det",test_label[in_test_index]+"_hbkg_girth_xJ_det;Girth;x_{#gamma,jet}"       ,bin_det_girth,girth_det_edges,   bin_det_xj,xJ_det_edges);
+        h_girth_xJ_det    = new TH2D(test_label[in_test_index]+"_h_girth_xJ_det",test_label[in_test_index]+"_h_girth_xJ_det;#it{g};x_{#gamma,jet}"             ,bin_det_girth,girth_det_edges,   bin_det_xj,xJ_det_edges);
+        h_mc_girth_xJ_det = new TH2D(test_label[in_test_index]+"_h_mc_girth_xJ_det",test_label[in_test_index]+"_h_mc_girth_xJ_det;#it{g};x_{#gamma,jet}"       ,bin_det_girth,girth_det_edges,   bin_det_xj,xJ_det_edges);
+        hbkg_girth_xJ_det = new TH2D(test_label[in_test_index]+"_hbkg_girth_xJ_det",test_label[in_test_index]+"_hbkg_girth_xJ_det;#it{g};x_{#gamma,jet}"       ,bin_det_girth,girth_det_edges,   bin_det_xj,xJ_det_edges);
         
         h_Rg_xJ_eff_num             = new TH2D(test_label[in_test_index]+"_h_Rg_xJ_eff_num",test_label[in_test_index]+"_h_Rg_xJ_eff_num;R_{g};x_{#gamma,jet}"           ,bin_true_Rg,Rg_true_edges,   bin_true_xj,xJ_true_edges);
         h_data_Rg_xJ_eff_num        = new TH2D(test_label[in_test_index]+"_h_data_Rg_xJ_eff_num",test_label[in_test_index]+"_h_data_Rg_xJ_eff_num;R_{g};x_{#gamma,jet}" ,bin_true_Rg,Rg_true_edges,   bin_true_xj,xJ_true_edges);   
@@ -515,18 +517,18 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
         h_Rg_xJ_pur_den             = new TH2D(test_label[in_test_index]+"_h_Rg_xJ_pur_den",test_label[in_test_index]+"_h_Rg_xJ_pur_den;R_{g};x_{#gamma,jet}"           ,bin_det_Rg,Rg_det_edges,     bin_det_xj,xJ_det_edges);
         h_data_Rg_xJ_pur_den        = new TH2D(test_label[in_test_index]+"_h_data_Rg_xJ_pur_den",test_label[in_test_index]+"_h_data_Rg_xJ_pur_den;R_{g};x_{#gamma,jet}" ,bin_det_Rg,Rg_det_edges,     bin_det_xj,xJ_det_edges);
         
-        h_girth_xJ_eff_num             = new TH2D(test_label[in_test_index]+"_h_girth_xJ_eff_num",test_label[in_test_index]+"_h_girth_xJ_eff_num;Girth;x_{#gamma,jet}"              ,bin_true_girth,girth_true_edges,     bin_true_xj,xJ_true_edges);
-        h_data_girth_xJ_eff_num        = new TH2D(test_label[in_test_index]+"_h_data_girth_xJ_eff_num",test_label[in_test_index]+"_h_data_girth_xJ_eff_num;Girth;x_{#gamma,jet}"    ,bin_true_girth,girth_true_edges,     bin_true_xj,xJ_true_edges);   
-        h_girth_xJ_eff_den             = new TH2D(test_label[in_test_index]+"_h_girth_xJ_eff_den",test_label[in_test_index]+"_h_girth_xJ_eff_den;Girth;x_{#gamma,jet}"              ,bin_true_girth,girth_true_edges,     bin_true_xj,xJ_true_edges);
-        h_data_girth_xJ_eff_den        = new TH2D(test_label[in_test_index]+"_h_data_girth_xJ_eff_den",test_label[in_test_index]+"_h_data_girth_xJ_eff_den;Girth;x_{#gamma,jet}"    ,bin_true_girth,girth_true_edges,     bin_true_xj,xJ_true_edges);   
-        h_girth_xJ_eff_match_num       = new TH2D(test_label[in_test_index]+"_h_girth_xJ_eff_match_num",test_label[in_test_index]+"_h_girth_xJ_eff_match_num;Girth;x_{#gamma,jet}"              ,bin_true_girth,girth_true_edges,     bin_true_xj,xJ_true_edges);
-        h_data_girth_xJ_eff_match_num  = new TH2D(test_label[in_test_index]+"_h_data_girth_xJ_eff_match_num",test_label[in_test_index]+"_h_data_girth_xJ_eff_match_num;Girth;x_{#gamma,jet}"    ,bin_true_girth,girth_true_edges,     bin_true_xj,xJ_true_edges);   
-        h_girth_xJ_eff_match_den       = new TH2D(test_label[in_test_index]+"_h_girth_xJ_eff_match_den",test_label[in_test_index]+"_h_girth_xJ_eff_match_den;Girth;x_{#gamma,jet}"              ,bin_true_girth,girth_true_edges,     bin_true_xj,xJ_true_edges);
-        h_data_girth_xJ_eff_match_den  = new TH2D(test_label[in_test_index]+"_h_data_girth_xJ_eff_match_den",test_label[in_test_index]+"_h_data_girth_xJ_eff_match_den;Girth;x_{#gamma,jet}"    ,bin_true_girth,girth_true_edges,     bin_true_xj,xJ_true_edges);   
-        h_girth_xJ_pur_num             = new TH2D(test_label[in_test_index]+"_h_girth_xJ_pur_num",test_label[in_test_index]+"_h_girth_xJ_pur_num;Girth;x_{#gamma,jet}"              ,bin_det_girth,girth_det_edges,       bin_det_xj,xJ_det_edges);
-        h_data_girth_xJ_pur_num        = new TH2D(test_label[in_test_index]+"_h_data_girth_xJ_pur_num",test_label[in_test_index]+"_h_data_girth_xJ_pur_num;Girth;x_{#gamma,jet}"    ,bin_det_girth,girth_det_edges,       bin_det_xj,xJ_det_edges);
-        h_girth_xJ_pur_den             = new TH2D(test_label[in_test_index]+"_h_girth_xJ_pur_den",test_label[in_test_index]+"_h_girth_xJ_pur_den;Girth;x_{#gamma,jet}"              ,bin_det_girth,girth_det_edges,       bin_det_xj,xJ_det_edges);
-        h_data_girth_xJ_pur_den        = new TH2D(test_label[in_test_index]+"_h_data_girth_xJ_pur_den",test_label[in_test_index]+"_h_data_girth_xJ_pur_den;Girth;x_{#gamma,jet}"    ,bin_det_girth,girth_det_edges,       bin_det_xj,xJ_det_edges);
+        h_girth_xJ_eff_num             = new TH2D(test_label[in_test_index]+"_h_girth_xJ_eff_num",test_label[in_test_index]+"_h_girth_xJ_eff_num;#it{g};x_{#gamma,jet}"              ,bin_true_girth,girth_true_edges,     bin_true_xj,xJ_true_edges);
+        h_data_girth_xJ_eff_num        = new TH2D(test_label[in_test_index]+"_h_data_girth_xJ_eff_num",test_label[in_test_index]+"_h_data_girth_xJ_eff_num;#it{g};x_{#gamma,jet}"    ,bin_true_girth,girth_true_edges,     bin_true_xj,xJ_true_edges);   
+        h_girth_xJ_eff_den             = new TH2D(test_label[in_test_index]+"_h_girth_xJ_eff_den",test_label[in_test_index]+"_h_girth_xJ_eff_den;#it{g};x_{#gamma,jet}"              ,bin_true_girth,girth_true_edges,     bin_true_xj,xJ_true_edges);
+        h_data_girth_xJ_eff_den        = new TH2D(test_label[in_test_index]+"_h_data_girth_xJ_eff_den",test_label[in_test_index]+"_h_data_girth_xJ_eff_den;#it{g};x_{#gamma,jet}"    ,bin_true_girth,girth_true_edges,     bin_true_xj,xJ_true_edges);   
+        h_girth_xJ_eff_match_num       = new TH2D(test_label[in_test_index]+"_h_girth_xJ_eff_match_num",test_label[in_test_index]+"_h_girth_xJ_eff_match_num;#it{g};x_{#gamma,jet}"              ,bin_true_girth,girth_true_edges,     bin_true_xj,xJ_true_edges);
+        h_data_girth_xJ_eff_match_num  = new TH2D(test_label[in_test_index]+"_h_data_girth_xJ_eff_match_num",test_label[in_test_index]+"_h_data_girth_xJ_eff_match_num;#it{g};x_{#gamma,jet}"    ,bin_true_girth,girth_true_edges,     bin_true_xj,xJ_true_edges);   
+        h_girth_xJ_eff_match_den       = new TH2D(test_label[in_test_index]+"_h_girth_xJ_eff_match_den",test_label[in_test_index]+"_h_girth_xJ_eff_match_den;#it{g};x_{#gamma,jet}"              ,bin_true_girth,girth_true_edges,     bin_true_xj,xJ_true_edges);
+        h_data_girth_xJ_eff_match_den  = new TH2D(test_label[in_test_index]+"_h_data_girth_xJ_eff_match_den",test_label[in_test_index]+"_h_data_girth_xJ_eff_match_den;#it{g};x_{#gamma,jet}"    ,bin_true_girth,girth_true_edges,     bin_true_xj,xJ_true_edges);   
+        h_girth_xJ_pur_num             = new TH2D(test_label[in_test_index]+"_h_girth_xJ_pur_num",test_label[in_test_index]+"_h_girth_xJ_pur_num;#it{g};x_{#gamma,jet}"              ,bin_det_girth,girth_det_edges,       bin_det_xj,xJ_det_edges);
+        h_data_girth_xJ_pur_num        = new TH2D(test_label[in_test_index]+"_h_data_girth_xJ_pur_num",test_label[in_test_index]+"_h_data_girth_xJ_pur_num;#it{g};x_{#gamma,jet}"    ,bin_det_girth,girth_det_edges,       bin_det_xj,xJ_det_edges);
+        h_girth_xJ_pur_den             = new TH2D(test_label[in_test_index]+"_h_girth_xJ_pur_den",test_label[in_test_index]+"_h_girth_xJ_pur_den;#it{g};x_{#gamma,jet}"              ,bin_det_girth,girth_det_edges,       bin_det_xj,xJ_det_edges);
+        h_data_girth_xJ_pur_den        = new TH2D(test_label[in_test_index]+"_h_data_girth_xJ_pur_den",test_label[in_test_index]+"_h_data_girth_xJ_pur_den;#it{g};x_{#gamma,jet}"    ,bin_det_girth,girth_det_edges,       bin_det_xj,xJ_det_edges);
 
         eff_Rg_xJ = new TEfficiency(test_label[in_test_index]+"_eff_Rg_xJ",test_label[in_test_index]+"_eff_Rg_xJ;R_{g};x_{#gamma,jet}"           ,bin_true_Rg,Rg_true_edges,   bin_true_xj,xJ_true_edges);
 
@@ -562,10 +564,12 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
                 h_data_Rg_xJ_eff_match_num->Fill(data_gen_Rg_true ,data_gen_xJ_true,data_weight);
             }
             
-            h_data_Rg_xJ_eff_den->Fill(data_Rg_true,data_xJ_true,data_weight);
-            if(data_xJ_det>=xjmin_det && data_xJ_det<xjmax_det
-            && data_Rg_det>=Rgmin_det && data_Rg_det<Rgmax_det){
-                h_data_Rg_xJ_eff_num->Fill(data_Rg_true,data_xJ_true,data_weight);
+            if(data_gen_jet_index==data_jet_index && true){
+                h_data_Rg_xJ_eff_den->Fill(data_gen_Rg_true,data_gen_xJ_true,data_weight);
+                if(data_xJ_det>=xjmin_det && data_xJ_det<xjmax_det
+                && data_Rg_det>=Rgmin_det && data_Rg_det<Rgmax_det){
+                    h_data_Rg_xJ_eff_num->Fill(data_gen_Rg_true,data_gen_xJ_true,data_weight);
+                }
             }
 
             h_data_Rg_xJ_pur_den->Fill(data_Rg_det,data_xJ_det,data_weight);
@@ -582,10 +586,12 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
                 h_data_girth_xJ_eff_match_num->Fill(data_gen_girth_true ,data_gen_xJ_true,data_weight);
             }
 
-            h_data_girth_xJ_eff_den->Fill(data_girth_true,data_xJ_true,data_weight);
-            if(data_xJ_det>=xjmin_det && data_xJ_det<xjmax_det
-            && data_girth_det>=girthmin_det && data_girth_det<girthmax_det){
-                h_data_girth_xJ_eff_num->Fill(data_girth_true,data_xJ_true,data_weight);
+            if(data_gen_jet_index==data_jet_index && true){
+                h_data_girth_xJ_eff_den->Fill(data_gen_girth_true,data_gen_xJ_true,data_weight);
+                if(data_xJ_det>=xjmin_det && data_xJ_det<xjmax_det
+                && data_girth_det>=girthmin_det && data_girth_det<girthmax_det){
+                    h_data_girth_xJ_eff_num->Fill(data_gen_girth_true,data_gen_xJ_true,data_weight);
+                }
             }
 
             h_data_girth_xJ_pur_den->Fill(data_girth_det,data_xJ_det,data_weight);
@@ -615,11 +621,11 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
         if(!mc_flagsig) continue;  // This should never happen
 
         if(mc_gen_jet_index==mc_jet_index && true &&
-        mc_xJ_true>=xjmin_true && mc_xJ_true<xjmax_true
-        && mc_Rg_true>=Rgmin_true && mc_Rg_true<Rgmax_true){
+        mc_gen_xJ_true>=xjmin_true && mc_gen_xJ_true<xjmax_true
+        && mc_gen_Rg_true>=Rgmin_true && mc_gen_Rg_true<Rgmax_true){
             if(mc_xJ_det>=xjmin_det && mc_xJ_det<xjmax_det
             && mc_Rg_det>=Rgmin_det && mc_Rg_det<Rgmax_det){
-                response_Rg.Fill(mc_Rg_det,mc_xJ_det,mc_Rg_true,mc_xJ_true,mc_weight);
+                response_Rg.Fill(mc_Rg_det,mc_xJ_det,mc_gen_Rg_true,mc_gen_xJ_true,mc_weight);
                 h_mc_Rg_xJ_det->Fill(mc_Rg_det,mc_xJ_det,mc_weight);
             }
             // else{
@@ -627,7 +633,7 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
             // }
         }  
         // else{
-        //     response_Rg.Miss(mc_Rg_true,mc_xJ_true,mc_weight);            
+        //     response_Rg.Miss(mc_gen_Rg_true,mc_gen_xJ_true,mc_weight);            
         // }    
 
         h_Rg_xJ_eff_match_den->Fill(mc_gen_Rg_true ,mc_gen_xJ_true,mc_weight);
@@ -636,13 +642,15 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
         }     
 
         Bool_t pass_Rg_xJ = false;
-        h_Rg_xJ_eff_den->Fill(mc_Rg_true,mc_xJ_true,mc_weight);
-        if(mc_xJ_det>=xjmin_det && mc_xJ_det<xjmax_det
-        && mc_Rg_det>=Rgmin_det && mc_Rg_det<Rgmax_det){
-            h_Rg_xJ_eff_num->Fill(mc_Rg_true,mc_xJ_true,mc_weight);
-            pass_Rg_xJ = true;
+        if(mc_gen_jet_index==mc_jet_index && true){
+            h_Rg_xJ_eff_den->Fill(mc_gen_Rg_true,mc_gen_xJ_true,mc_weight);
+            if(mc_xJ_det>=xjmin_det && mc_xJ_det<xjmax_det
+            && mc_Rg_det>=Rgmin_det && mc_Rg_det<Rgmax_det){
+                h_Rg_xJ_eff_num->Fill(mc_gen_Rg_true,mc_gen_xJ_true,mc_weight);
+                pass_Rg_xJ = true;
+            }
+            eff_Rg_xJ->FillWeighted(pass_Rg_xJ,mc_weight,mc_gen_Rg_true,mc_gen_xJ_true);
         }
-        eff_Rg_xJ->FillWeighted(pass_Rg_xJ,mc_weight,mc_Rg_true,mc_xJ_true);
 
         h_Rg_xJ_pur_den->Fill(mc_Rg_det,mc_xJ_det,mc_weight);
         if(mc_gen_jet_index==mc_jet_index && true
@@ -654,11 +662,11 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
         // ----------------------------------------------------------------------------------
 
         if(mc_gen_jet_index==mc_jet_index && true &&
-        mc_xJ_true>=xjmin_true && mc_xJ_true<xjmax_true
-        && mc_girth_true>=girthmin_true && mc_girth_true<girthmax_true){
+        mc_gen_xJ_true>=xjmin_true && mc_gen_xJ_true<xjmax_true
+        && mc_gen_girth_true>=girthmin_true && mc_gen_girth_true<girthmax_true){
             if(mc_xJ_det>=xjmin_det && mc_xJ_det<xjmax_det
             && mc_girth_det>=girthmin_det && mc_girth_det<girthmax_det){
-                response_girth.Fill(mc_girth_det,mc_xJ_det,mc_girth_true,mc_xJ_true,mc_weight);
+                response_girth.Fill(mc_girth_det,mc_xJ_det,mc_gen_girth_true,mc_gen_xJ_true,mc_weight);
                 h_mc_girth_xJ_det->Fill(mc_girth_det,mc_xJ_det,mc_weight);   
             }
             // else{
@@ -666,18 +674,19 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
             // }
         }   
         // else{
-        //     response_girth.Miss(mc_girth_true,mc_xJ_true,mc_weight);            
+        //     response_girth.Miss(mc_gen_girth_true,mc_gen_xJ_true,mc_weight);            
         // }  
-
         h_girth_xJ_eff_match_den->Fill(mc_gen_girth_true ,mc_gen_xJ_true,mc_weight);
         if(mc_gen_jet_index==mc_jet_index && true){
             h_girth_xJ_eff_match_num->Fill(mc_gen_girth_true ,mc_gen_xJ_true,mc_weight);
         } 
         
-        h_girth_xJ_eff_den->Fill(mc_girth_true,mc_xJ_true,mc_weight);
-        if(mc_xJ_det>=xjmin_det && mc_xJ_det<xjmax_det
-        && mc_girth_det>=girthmin_det && mc_girth_det<girthmax_det){
-            h_girth_xJ_eff_num->Fill(mc_girth_true,mc_xJ_true,mc_weight);
+        if(mc_gen_jet_index==mc_jet_index && true){
+            h_girth_xJ_eff_den->Fill(mc_gen_girth_true,mc_gen_xJ_true,mc_weight);
+            if(mc_xJ_det>=xjmin_det && mc_xJ_det<xjmax_det
+            && mc_girth_det>=girthmin_det && mc_girth_det<girthmax_det){
+                h_girth_xJ_eff_num->Fill(mc_gen_girth_true,mc_gen_xJ_true,mc_weight);
+            }
         }
 
         h_girth_xJ_pur_den->Fill(mc_girth_det,mc_xJ_det,mc_weight);
@@ -732,10 +741,12 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
                     h_data_Rg_xJ_eff_match_num->Fill(mc_gen_Rg_true ,mc_gen_xJ_true,mc_weight);
                 } 
                 
-                h_data_Rg_xJ_eff_den->Fill(mc_Rg_true,mc_xJ_true,mc_weight);
-                if(mc_xJ_det>=xjmin_det && mc_xJ_det<xjmax_det
-                && mc_Rg_det>=Rgmin_det && mc_Rg_det<Rgmax_det){
-                    h_data_Rg_xJ_eff_num->Fill(mc_Rg_true,mc_xJ_true,mc_weight);
+                if(mc_gen_jet_index==mc_jet_index && true){
+                    h_data_Rg_xJ_eff_den->Fill(mc_gen_Rg_true,mc_gen_xJ_true,mc_weight);
+                    if(mc_xJ_det>=xjmin_det && mc_xJ_det<xjmax_det
+                    && mc_Rg_det>=Rgmin_det && mc_Rg_det<Rgmax_det){
+                        h_data_Rg_xJ_eff_num->Fill(mc_gen_Rg_true,mc_gen_xJ_true,mc_weight);
+                    }
                 }
 
                 h_data_Rg_xJ_pur_den->Fill(mc_Rg_det,mc_xJ_det,mc_weight);
@@ -757,10 +768,12 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
                     h_data_girth_xJ_eff_match_num->Fill(mc_gen_girth_true ,mc_gen_xJ_true,mc_weight);
                 } 
 
-                h_data_girth_xJ_eff_den->Fill(mc_girth_true,mc_xJ_true,mc_weight);
-                if(mc_xJ_det>=xjmin_det && mc_xJ_det<xjmax_det
-                && mc_girth_det>=girthmin_det && mc_girth_det<girthmax_det){
-                    h_data_girth_xJ_eff_num->Fill(mc_girth_true,mc_xJ_true,mc_weight);
+                if(mc_gen_jet_index==mc_jet_index && true){
+                    h_data_girth_xJ_eff_den->Fill(mc_gen_girth_true,mc_gen_xJ_true,mc_weight);
+                    if(mc_xJ_det>=xjmin_det && mc_xJ_det<xjmax_det
+                    && mc_girth_det>=girthmin_det && mc_girth_det<girthmax_det){
+                        h_data_girth_xJ_eff_num->Fill(mc_gen_girth_true,mc_gen_xJ_true,mc_weight);
+                    }
                 }
 
                 h_data_girth_xJ_pur_den->Fill(mc_girth_det,mc_xJ_det,mc_weight);
@@ -774,11 +787,11 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
             else{
 
                 if(mc_gen_jet_index==mc_jet_index && true
-                && mc_xJ_true>=xjmin_true && mc_xJ_true<xjmax_true
-                && mc_Rg_true>=Rgmin_true && mc_Rg_true<Rgmax_true){
+                && mc_gen_xJ_true>=xjmin_true && mc_gen_xJ_true<xjmax_true
+                && mc_gen_Rg_true>=Rgmin_true && mc_gen_Rg_true<Rgmax_true){
                     if(mc_xJ_det>=xjmin_det && mc_xJ_det<xjmax_det
                     && mc_Rg_det>=Rgmin_det && mc_Rg_det<Rgmax_det){
-                        response_Rg.Fill(mc_Rg_det,mc_xJ_det,mc_Rg_true,mc_xJ_true,mc_weight);
+                        response_Rg.Fill(mc_Rg_det,mc_xJ_det,mc_gen_Rg_true,mc_gen_xJ_true,mc_weight);
                         h_mc_Rg_xJ_det->Fill(mc_Rg_det,mc_xJ_det,mc_weight);
                     }
                 }  
@@ -788,10 +801,12 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
                     h_Rg_xJ_eff_match_num->Fill(mc_gen_Rg_true ,mc_gen_xJ_true,mc_weight);
                 }         
 
-                h_Rg_xJ_eff_den->Fill(mc_Rg_true,mc_xJ_true,mc_weight);
-                if(mc_xJ_det>=xjmin_det && mc_xJ_det<xjmax_det
-                && mc_Rg_det>=Rgmin_det && mc_Rg_det<Rgmax_det){
-                    h_Rg_xJ_eff_num->Fill(mc_Rg_true,mc_xJ_true,mc_weight);
+                if(mc_gen_jet_index==mc_jet_index && true){
+                    h_Rg_xJ_eff_den->Fill(mc_gen_Rg_true,mc_gen_xJ_true,mc_weight);
+                    if(mc_xJ_det>=xjmin_det && mc_xJ_det<xjmax_det
+                    && mc_Rg_det>=Rgmin_det && mc_Rg_det<Rgmax_det){
+                        h_Rg_xJ_eff_num->Fill(mc_gen_Rg_true,mc_gen_xJ_true,mc_weight);
+                    }
                 }
 
                 h_Rg_xJ_pur_den->Fill(mc_Rg_det,mc_xJ_det,mc_weight);
@@ -804,11 +819,11 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
                 // ----------------------------------------------------------------------------------
 
                 if(mc_gen_jet_index==mc_jet_index && true
-                && mc_xJ_true>=xjmin_true && mc_xJ_true<xjmax_true
-                && mc_girth_true>=girthmin_true && mc_girth_true<girthmax_true){
+                && mc_gen_xJ_true>=xjmin_true && mc_gen_xJ_true<xjmax_true
+                && mc_gen_girth_true>=girthmin_true && mc_gen_girth_true<girthmax_true){
                     if(mc_xJ_det>=xjmin_det && mc_xJ_det<xjmax_det
                     && mc_girth_det>=girthmin_det && mc_girth_det<girthmax_det){
-                        response_girth.Fill(mc_girth_det,mc_xJ_det,mc_girth_true,mc_xJ_true,mc_weight);
+                        response_girth.Fill(mc_girth_det,mc_xJ_det,mc_gen_girth_true,mc_gen_xJ_true,mc_weight);
                         h_mc_girth_xJ_det->Fill(mc_girth_det,mc_xJ_det,mc_weight);   
                     }
                 }   
@@ -818,10 +833,10 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
                     h_girth_xJ_eff_match_num->Fill(mc_gen_girth_true ,mc_gen_xJ_true,mc_weight);
                 } 
 
-                h_girth_xJ_eff_den->Fill(mc_girth_true,mc_xJ_true,mc_weight);
+                h_girth_xJ_eff_den->Fill(mc_gen_girth_true,mc_gen_xJ_true,mc_weight);
                 if(mc_xJ_det>=xjmin_det && mc_xJ_det<xjmax_det
                 && mc_girth_det>=girthmin_det && mc_girth_det<girthmax_det){
-                    h_girth_xJ_eff_num->Fill(mc_girth_true,mc_xJ_true,mc_weight);
+                    h_girth_xJ_eff_num->Fill(mc_gen_girth_true,mc_gen_xJ_true,mc_weight);
                 }
 
                 h_girth_xJ_pur_den->Fill(mc_girth_det,mc_xJ_det,mc_weight);
@@ -862,7 +877,7 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
         h_Rg_xJ_eff->Multiply(h_Rg_xJ_eff_match);
 
         h_girth_xJ_pur = (TH2D*)h_girth_xJ_pur_num->Clone(test_label[in_test_index]+"_h_girth_xJ_pur");
-        h_girth_xJ_pur->SetTitle(test_label[in_test_index]+"_h_girth_xJ_pur;Girth;x_{#gamma,jet}");
+        h_girth_xJ_pur->SetTitle(test_label[in_test_index]+"_h_girth_xJ_pur;#it{g};x_{#gamma,jet}");
         h_girth_xJ_pur->Divide(h_girth_xJ_pur,h_girth_xJ_pur_den,1,1,"B");
         // SetHistErrZero(h_girth_xJ_pur);
 
@@ -873,7 +888,7 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
         h_girth_xJ_eff_match->Divide(h_girth_xJ_eff_match_num,h_girth_xJ_eff_match_den,1,1,"B");
 
         h_girth_xJ_eff = (TH2D*)h_girth_xJ_eff_num->Clone(test_label[in_test_index]+"_h_girth_xJ_eff");
-        h_girth_xJ_eff->SetTitle(test_label[in_test_index]+"_h_girth_xJ_eff;Girth;x_{#gamma,jet}");
+        h_girth_xJ_eff->SetTitle(test_label[in_test_index]+"_h_girth_xJ_eff;#it{g};x_{#gamma,jet}");
         h_girth_xJ_eff->Divide(h_girth_xJ_eff,h_girth_xJ_eff_den,1,1,"B");
         // SetHistErrZero(h_girth_xJ_eff);
 
@@ -919,11 +934,15 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
         h_data_Rg_xJ_pur_den->Write("",TObject::kWriteDelete);
         h_data_Rg_xJ_eff_num->Write("",TObject::kWriteDelete);
         h_data_Rg_xJ_eff_den->Write("",TObject::kWriteDelete);
+        h_data_Rg_xJ_eff_match_num->Write("",TObject::kWriteDelete);
+        h_data_Rg_xJ_eff_match_den->Write("",TObject::kWriteDelete);
 
         h_data_girth_xJ_pur_num->Write("",TObject::kWriteDelete);
         h_data_girth_xJ_pur_den->Write("",TObject::kWriteDelete);
         h_data_girth_xJ_eff_num->Write("",TObject::kWriteDelete);
         h_data_girth_xJ_eff_den->Write("",TObject::kWriteDelete);
+        h_data_girth_xJ_eff_match_num->Write("",TObject::kWriteDelete);
+        h_data_girth_xJ_eff_match_den->Write("",TObject::kWriteDelete);
 
         
         fout->cd();
@@ -958,7 +977,7 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
         for(int i_cond=0;i_cond<singular_values_girth.GetNoElements();i_cond++){
            std::cout<<i_cond<<"\t"<<singular_values_girth[i_cond]<<"\n";
         }
-        std::cout<<"Condition Number for Girth = "<<singular_values_girth.Max()/singular_values_girth.Min()<<"\n";
+        std::cout<<"Condition Number for #it{g} = "<<singular_values_girth.Max()/singular_values_girth.Min()<<"\n";
         // svd_girth->Print();
     }
     if(in_test_index==kNoTest || in_test_index==kBottomline){
@@ -1087,7 +1106,7 @@ void Unfold_hist(std::vector<TH2D*> vecHist2D,RooUnfoldResponse *response, Tests
         }
 
         TH2D *htempUnf=(TH2D*)hunf->Clone("htempUnf");          
-        htempUnf->SetName(Form("Bayesian_Unfoldediter_%d",iter));
+        htempUnf->SetName(Form("%s_Bayesian_Unfoldediter_%s_%d",test_label[test_index].Data(),unfold_label.Data(),iter));
 
         TH2D *htempFold=(TH2D*)hfold->Clone("htempFold");          
         htempFold->SetName(Form("%s_Bayesian_Refoldediter_%s_%d",test_label[test_index].Data(),unfold_label.Data(),iter));   
