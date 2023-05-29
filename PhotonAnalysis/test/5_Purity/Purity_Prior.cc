@@ -34,7 +34,7 @@ const std::vector<int> max_cent_val = {60, 180, 180, 40, 180};
 
 const std::vector<int> min_cent = { 9,  69,   9,  9,  49};   // Centrality nominal
 const std::vector<int> max_cent = {69, 189, 189, 49, 189};
-const std::size_t ncent = 1;//min_cent.size();
+const std::size_t ncent = 5;//min_cent.size();
 
 const std::vector<float> min_pt = {100};
 const std::vector<float> max_pt = {9999};
@@ -196,9 +196,8 @@ int Purity_Prior(const TString skim_data, const TString skim_mc, const TString s
       float sig_shift = 0;//config.proc[CUTS::kHISTOGRAM].obj[CUTS::kPHOTON].f[CUTS::PHO::k_puritySignalShift];
       float bkg_shift = 0;//config.proc[CUTS::kHISTOGRAM].obj[CUTS::kPHOTON].f[CUTS::PHO::k_purityBackgroundShift];
 
-      TH1D* hdata = (TH1D*) fskim_data->Get(Form("hangu_all_%zu",i)); // new TH1D(Form("hdata_%zu_%zu", i, j), "", nbins, 0, 0.025);
+      TH1D* hdata = (TH1D*) fskim_data->Get(Form("hangu_lead_%zu",i)); // new TH1D(Form("hdata_%zu_%zu", i, j), "", nbins, 0, 0.025);
       // hdata->Rebin();
-      hdata->SetBinContent(1,0);
       hdata->SetName(Form("data_hist_%zu",i));
       hdata->Write("", TObject::kOverwrite);
       // data_tree->Project(hdata->GetName(), "phoSigmaIEtaIEta_2012", candidate_cut, "");
@@ -206,16 +205,14 @@ int Purity_Prior(const TString skim_data, const TString skim_mc, const TString s
       std::cout << "data count: " << hdata->GetEntries() << std::endl;
       }
 
-      TH1D* hbkg = (TH1D*) fskim_mc_2->Get(Form("hangu_all_%zu",i));// new TH1D(Form("hbkg_%zu_%zu", i, j), "", nbins * divisions, 0, 0.025);
+      TH1D* hbkg = (TH1D*) fskim_mc_2->Get(Form("hangu_lead_%zu",i));// new TH1D(Form("hbkg_%zu_%zu", i, j), "", nbins * divisions, 0, 0.025);
       // hbkg->Rebin();
-      hbkg->SetBinContent(1,0);
       hbkg->SetName(Form("bkg_hist_%zu",i));
       // hbkg->Scale(hdata->Integral()*0.35/hbkg->Integral());
       hbkg->Write("", TObject::kOverwrite);
       // data_tree->Project(hbkg->GetName(), Form("phoSigmaIEtaIEta_2012 + %f", bkg_shift), sideband_cut, "");
-      TH1D* hsig = (TH1D*) fskim_mc->Get(Form("hangu_all_%zu",i));//new TH1D(Form("hsig_%zu_%zu", i, j), "", nbins * divisions, 0, 0.025);
+      TH1D* hsig = (TH1D*) fskim_mc->Get(Form("hangu_lead_%zu",i));//new TH1D(Form("hsig_%zu_%zu", i, j), "", nbins * divisions, 0, 0.025);
       // hsig->Rebin();
-      hsig->SetBinContent(1,0);
       hsig->SetName(Form("sig_hist_%zu",i));
       // hsig->Scale(hdata->Integral()*0.65/hsig->Integral());
       hsig->Write("", TObject::kOverwrite);
