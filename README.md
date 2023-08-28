@@ -8,11 +8,18 @@ cmsenv
 # this must always be forest_CMSSW_10_3_1, regardless of the version used earlier
 git cms-merge-topic CmsHI:forest_CMSSW_10_3_1
 git remote add cmshi git@github.com:CmsHI/cmssw.git
+
+```
+Copy the files from this repo to PhotonAnalysis directory
+
+```
+scram b -j 8
 cd HeavyIonsAnalysis/PhotonAnalysis/test/
 # Analysis folders and scripts in order are here. 
 # To create a test NTuple
 cd crabJobs/
 cmsRun runForestAOD_pponAA_MIX_103X_subs_gamma.py
+
 ```
 
 Sample crab config file available in `crabJobs/crabConfig_ECALStudy.py`
