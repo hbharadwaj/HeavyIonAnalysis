@@ -146,10 +146,10 @@ void overlay_uncert_graph(TString file_PbPb, TString label_PbPb, TString file_pp
         // hPbPb_sys->Draw("P5");
         // hpp_stat->Draw("P2");
         
-        hpp_tot->Draw("P5");
-        hpp_sys->Draw("P5");
+        // hpp_tot->Draw("P5");
+        // hpp_sys->Draw("P5");
         hPbPb_nom->Draw("SAME_E1_][P0");
-        hpp_nom->Draw("SAME_E1_][P0");
+        // hpp_nom->Draw("SAME_E1_][P0");
 
         hPbPb_tot->SetMaximum(ymax);
         // hPbPb_tot->GetXaxis()->SetLabelSize(0);
@@ -183,32 +183,42 @@ void overlay_uncert_graph(TString file_PbPb, TString label_PbPb, TString file_pp
         // l->AddEntry(hpp_sys, "D'Agostini sys. uncert", "f");
         // l->AddEntry(hpp_tot, "D'Agostini total(stat. + sys.)", "f");
 
-        l->AddEntry(hPbPb_nom, "Pre-Approval Result", "lep");
+        // l->AddEntry(hPbPb_nom, "Pre-Approval Result", "lep");
         // l->AddEntry(hPbPb_sys, "MatInvert sys. uncert", "f");
-        l->AddEntry(hPbPb_tot, "Pre-Approval sys", "f");
-        l->AddEntry(hpp_nom, "Updated stat. uncert", "lep");
-        l->AddEntry(hpp_sys, "Updated sys. uncert", "f");
-        l->AddEntry(hpp_tot, "Updated total(stat. + sys.)", "f");
+        // l->AddEntry(hPbPb_tot, "Pre-Approval sys", "f");
+        // l->AddEntry(hpp_nom, "Updated stat. uncert", "lep");
+        // l->AddEntry(hpp_sys, "Updated sys. uncert", "f");
+        // l->AddEntry(hpp_tot, "Updated total(stat. + sys.)", "f");
+
+        l->AddEntry(hPbPb_nom, "x_{J}>0.4", "lep");
+        // l->AddEntry(hPbPb_sys, "MatInvert sys. uncert", "f");
+        // l->AddEntry(hPbPb_tot, "Pre-Approval sys", "f");
+        // l->AddEntry(hpp_nom, "xJ>0.8", "lep");
+        // l->AddEntry(hpp_sys, "Updated sys. uncert", "f");
+        // l->AddEntry(hpp_tot, "Updated total(stat. + sys.)", "f");
         l->Draw();
 
         TLatex latex;
         latex.SetTextSize(0.035);
         latex.DrawLatexNDC(0.12,0.92,"CMS #it{#bf{Preliminary}}");
         // latex.DrawLatexNDC(0.55,0.9,"PbPb 1.69 nb^{-1}, pp 300.6 pb^{-1} (5.02 TeV)");
+        // latex.DrawLatexNDC(0.55,0.92,"pp 300.6 pb^{-1} (5.02 TeV)");
+        latex.DrawLatexNDC(0.55,0.92,"PbPb 1.69 nb^{-1} (5.02 TeV)");
         latex.SetTextSize(0.035);
+        // leg_y1-=0.08;
+        // latex.DrawLatexNDC(leg_x1,leg_y1,"Cent. 0-30%");
         leg_y1-=0.08;
-        latex.DrawLatexNDC(leg_x1,leg_y1,"Cent. 0-30%");
-        leg_y1-=0.08;
-        latex.DrawLatexNDC(leg_x1,leg_y1,"p_{T}^{#gamma }>100 GeV,x_{J}>0.4,|#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi");
+        // latex.DrawLatexNDC(leg_x1,leg_y1,"p_{T}^{#gamma }>100 GeV,x_{J}>0.4,|#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi");
+        latex.DrawLatexNDC(leg_x1,leg_y1,"p_{T}^{#gamma }>100 GeV,|#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi");
         if(label.Contains("Rg")){
-            leg_y1-=0.08;
+            // leg_y1-=0.08;
             // latex.DrawLatexNDC(leg_x1,leg_y1,Form("PbPb untagged = %4.2f%%",PbPb_untagged*100));
             // latex.DrawLatexNDC(leg_x1,leg_y1,Form("MatInvert untagged = %4.2f%%",PbPb_untagged*100));
-            latex.DrawLatexNDC(leg_x1,leg_y1,Form("Pre-Approval untagged = %4.2f%%",PbPb_untagged*100));
-            leg_y1-=0.08;
+            // latex.DrawLatexNDC(leg_x1,leg_y1,Form("Pre-Approval untagged = %4.2f%%",PbPb_untagged*100));
+            // leg_y1-=0.08;
             // latex.DrawLatexNDC(leg_x1,leg_y1,Form("pp untagged = %4.2f%%",pp_untagged*100));
             // latex.DrawLatexNDC(leg_x1,leg_y1,Form("D'Agostini untagged = %4.2f%%",pp_untagged*100));
-            latex.DrawLatexNDC(leg_x1,leg_y1,Form("Updated untagged = %4.2f%%",pp_untagged*100));
+            // latex.DrawLatexNDC(leg_x1,leg_y1,Form("Updated untagged = %4.2f%%",pp_untagged*100));
         }
 
             

@@ -372,6 +372,31 @@ void HiInclusiveJetSubstructure::analyze(const Event& iEvent,const EventSetup& i
     }
   }
 
+  // Updated to 2 way matching
+  // for(int ijet = 0 ; ijet < jets_.nref; ++ijet){
+  //   // const reco::GenJet & genjet = (*genjets)[igen];
+  //   // if(genjet.pt() < jetPtMin_) continue;
+
+  //   // find matching patJet if there is one
+  //   // jets_.allgenmatchindex[igen] = -1;
+
+  //   for(int igen = 0 ; igen < jets_.nallgen; ++igen){    
+
+  //     double deltaPt = fabs(jets_.allgenpt[igen]-jets_.refpt[ijet]); //Note: precision of this ~ .0001, so cut .01
+  //     double deltaEta = fabs(jets_.allgeneta[igen]-jets_.refeta[ijet]); //Note: precision of this is  ~.0000001, but keep it low, .0001 is well below cone size and typical pointing resolution
+  //     double deltaPhi = fabs(reco::deltaPhi(jets_.allgenphi[igen], jets_.refphi[ijet])); //Note: precision of this is  ~.0000001, but keep it low, .0001 is well below cone size and typical pointing resolution
+
+  //     if(deltaPt < 0.01 && deltaEta < .0001 && deltaPhi < .0001){
+  //         if(ijet==jets_.allgenmatchindex[igen]){
+  //           break;
+  //         }
+  //         else{
+  //           jets_.allgenmatchindex[igen] = -1;
+  //         }
+  //     }
+  //   }
+  // }
+
   t->Fill();
 
   memset(&jets_,0,sizeof jets_);
@@ -440,16 +465,17 @@ void HiInclusiveJetSubstructure::IterativeDeclusteringRec(double groom_type, dou
       // if(vec_jet_consituent_type[i_jetconst]== reco::PFCandidate::gamma)
       //     std::cout<<"\t Type = Photon"<<"\n";
       float Charged_Scale = 1.00; // 1.01; // 0.99;
+      float Photon_Scale  = 1.00; 
       float Neutral_Scale = 1.00; // 1.03; // 0.97;
       float PFEnergy_Scale = 1.00;
       if(vec_jet_consituent_type[i_jetconst]==reco::PFCandidate::h0){
         PFEnergy_Scale = Neutral_Scale;
       }
-      else if(
-        vec_jet_consituent_type[i_jetconst]==reco::PFCandidate::h
-        || vec_jet_consituent_type[i_jetconst]==reco::PFCandidate::gamma
-      ){
+      else if(vec_jet_consituent_type[i_jetconst]==reco::PFCandidate::h){
         PFEnergy_Scale = Charged_Scale;
+      }
+      else if(vec_jet_consituent_type[i_jetconst]==reco::PFCandidate::gamma){
+        PFEnergy_Scale = Photon_Scale;
       }
 
       float temp_px =    (**it).px()*PFEnergy_Scale;

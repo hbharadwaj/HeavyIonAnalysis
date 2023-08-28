@@ -16,11 +16,13 @@
 
 const int bin_det_xj=1;
 const int bin_true_xj=2;//2;
+const float xjmin_det = 0.4;
+const float min_pho_et = 100.0;
 bool flag_invert = false;
 
 const float min_cent_val = 0;
 const float max_cent_val = 30;
-TString label="May_5_PbPb_2018_sys_WP_update";
+TString label="Jul_31_PbPb_2018_sys_Decorrelate_PF";
 TString output_path = "./Unfolded_Plots/";
 TString centstring = Form("Cent. %.0f-%.0f%%",min_cent_val,max_cent_val);
 TString dir_cent_string = Form("%.0f_%.0f_",min_cent_val,max_cent_val);
@@ -59,50 +61,62 @@ static const TString test_label[] =
 
 
 enum SystematicsTreatment_PbPb {       // Systematics treatment
-    kData       =0,               //* Nominal PbPb 2018 Data 
-    kNominal    =1,               //* Nominal Pythia8 (centrality +4.5%)  
-    kPhoPurity  =2,               //* ABCD Photon Purity Data 
-    kJERup      =3,               //* Pythia8 with JER up 
-    kJERdown    =4,               //* Pythia8 with JER down 
-    kJECup      =5,               //* Pythia8 with JEC up 
-    kJECdown    =6,               //* Pythia8 with JEC down 
-    kCentup     =7,               //* Pythia8 with Centrality +6% 
-    kCentdown   =8,               //* Pythia8 with Centrality +3% 
-    kPFScaleup  =9,               //* Pythia8 with +1% PF scale substructure 
-    kPFScaledown=10,              //* Pythia8 with -1% PF scale substructure 
-    kAltMC      =11,              //* Pythia8 with quark/gluon fraction reweighted 
-    kResponse   =12               //* Propagating Pythia8 Response stats while unfolding
+    kData          =0,               //* Nominal PbPb 2018 Data 
+    kNominal       =1,               //* Nominal Pythia8 (centrality +4.5%)  
+    kPhoPurity     =2,               //* ABCD Photon Purity Data 
+    kJERup         =3,               //* Pythia8 with JER up 
+    kJERdown       =4,               //* Pythia8 with JER down 
+    kJECup         =5,               //* Pythia8 with JEC up 
+    kJECdown       =6,               //* Pythia8 with JEC down 
+    kCentup        =7,               //* Pythia8 with Centrality +6% 
+    kCentdown      =8,               //* Pythia8 with Centrality +3% 
+    kPScaleup      =9,               //* Pythia8 with +1% Photon scale substructure 
+    kPScaledown    =10,              //* Pythia8 with -1% Photon scale substructure 
+    kChScaleup     =11,              //* Pythia8 with +1% Charged Hadron scale substructure 
+    kChScaledown   =12,              //* Pythia8 with -1% Charged Hadron scale substructure 
+    kNScaleup      =13,              //* Pythia8 with +3% Neutral Hadron scale substructure 
+    kNScaledown    =14,              //* Pythia8 with -3% Neutral Hadron scale substructure 
+    kAltMC         =15,              //* Pythia8 with quark/gluon fraction reweighted 
+    kResponse      =16               //* Propagating Pythia8 Response stats while unfolding
 }sys_index;
 static const SystematicsTreatment_PbPb sys_list[] =  
 {
-    kData       ,
-    kNominal    ,
-    kPhoPurity  ,
-    kJERup      ,
-    kJERdown    ,
-    kJECup      ,
-    kJECdown    ,
-    kCentup     ,
-    kCentdown   ,
-    kPFScaleup  ,
-    kPFScaledown,
-    kAltMC      ,
+    kData          ,
+    kNominal       ,
+    kPhoPurity     ,
+    kJERup         ,
+    kJERdown       ,
+    kJECup         ,
+    kJECdown       ,
+    kCentup        ,
+    kCentdown      ,
+    kPScaleup      ,
+    kPScaledown    ,
+    kChScaleup     ,
+    kChScaledown   ,
+    kNScaleup      ,
+    kNScaledown    ,
+    kAltMC         ,
     kResponse 
 };
 static const TString sys_label[] = 
 {
-    "Data"          ,
-    "Pythia8_nom"   ,
-    "ABCD_purity"   ,
-    "JER_up"        ,
-    "JER_down"      ,
-    "JEC_up"        ,
-    "JEC_down"      ,
-    "Cent_up"       ,
-    "Cent_down"     ,
-    "PFScale_up"    ,
-    "PFScale_down"  ,
-    "AltMC"         ,
+    "Data"            ,
+    "Pythia8_nom"     ,
+    "ABCD_purity"     ,
+    "JER_up"          ,
+    "JER_down"        ,
+    "JEC_up"          ,
+    "JEC_down"        ,
+    "Cent_up"         ,
+    "Cent_down"       ,
+    "PScale_up"       ,
+    "PScale_down"     ,
+    "ChScale_up"      ,
+    "ChScale_down"    ,
+    "NScale_up"       ,
+    "NScale_down"     ,
+    "AltMC"           ,
     "response"
 };
 
@@ -326,12 +340,12 @@ void plot_sys(TString in_file,TString in_test_label){
         std::vector<TH1D*> hist_input;
         std::vector<TString> histname_input;
         if(test_index==kBottomline){
-            sel = {centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4)};  
+            sel = {centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,xjmin_det)};  
             if(flag_invert){ sel.insert(sel.begin(), {"Purity","Matrix Inversion"});}
             else{            sel.insert(sel.begin(), {"Purity","D'Agostini"});}
             gStyle->SetPaintTextFormat("4.2f");
             Plot_hist2D({h2_pur},{"Purity"+file_string+"_"+var_arr[ivar]},"text_E_colz",sel);
-            sel = {centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4)};  
+            sel = {centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,xjmin_det)};  
             if(flag_invert){ sel.insert(sel.begin(), {"Efficiency","Matrix Inversion"});}
             else{            sel.insert(sel.begin(), {"Efficiency","D'Agostini"});}
             Plot_hist2D({h2_eff},{"Efficiency"+file_string+"_"+var_arr[ivar]},"text_E_colz",sel);
@@ -342,17 +356,18 @@ void plot_sys(TString in_file,TString in_test_label){
         }
         if(test_index==kNoTest){
             sel = {"","Corrected Data Counts "+var_nam[ivar]};
+            gStyle->SetPaintTextFormat("6.1f");
             Plot_hist2D({h2_Raw},{test_label[test_index]+"_Raw_X_Y"+file_string+"_"+var_arr[ivar]},"text_E_colz",sel);
             sel = {"","Covariance Matrix "+var_nam[ivar]};
             gStyle->SetPaintTextFormat("4.1f");
             Plot_hist2D({h2_Covariance},{test_label[test_index]+"_MatCovariance"+file_string+"_"+var_arr[ivar]},"text_colz",sel);
         }
         switch(test_index){
-            case kTrivial:  sel = {" ","Trivial Test"      ,centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4)};  break;
+            case kTrivial:  sel = {" ","Trivial Test"      ,centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,xjmin_det)};  break;
             case kSplitNominal:
             case kSplitAltMC:
-                            sel = {" ","Split Test - 25/75"        ,centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4)};  break;  
-            default:        sel = {centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4)};  
+                            sel = {" ","Split Test - 25/75"        ,centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,xjmin_det)};  break;  
+            default:        sel = {centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,xjmin_det)};  
                             if(flag_invert){ sel.insert(sel.begin(), {" ","Matrix Inversion"});}
                             else{            sel.insert(sel.begin(), {" ","D'Agostini"});}
                             break;  
@@ -397,7 +412,7 @@ void plot_sys(TString in_file,TString in_test_label){
             Plot_hist({h_True_X,h_Bayesian_Unfolded_X[iter_ref]},{"True MC","D'Agostini",var_nam[ivar],"1/N_{jet} dN/d"+var_nam[ivar],"PbPb_"+dir_cent_string+test_label[test_index]+"_True_Unfolded_Bayesian_"+var_arr[ivar]+file_string},"rightlabel",sel);
         }
         
-        sel = {var_nam[ivar],centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4),"end","noStackHIST"};
+        sel = {var_nam[ivar],centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,xjmin_det),"end","noStackHIST"};
         if(flag_invert){ sel.insert(sel.begin(), "Matrix Inversion");}
         else{            sel.insert(sel.begin(), "D'Agostini");}
         if(test_index==kBottomline){

@@ -1,3 +1,5 @@
+// overlay_theory("Uncertainty/OutputCombined/Data_0_30_May_5_PbPb_2018_sys_WP_update_Data_Rg_unfold_X.root","Data_0_30_May_5_PbPb_2018_sys_WP_update_Data_Rg_unfold_X","~/pp_analysis/Analysis/Uncertainty/OutputCombined/pp_Data_May_5_pp_2017_sys_WP_update_Data_Rg_unfold_X.root","pp_Data_May_5_pp_2017_sys_WP_update_Data_Rg_unfold_X","PbPb_pp_0_30_May_5_Bayesian_WP_update_Rg_theory","Rg")
+
 #include <TLegend.h>        // needed for Legend
 #include <TCanvas.h>        // needed for Canvas
 #include <TMath.h>          //! needed for floating values in plots for some reason
@@ -12,30 +14,51 @@ TString output_path = "Overlay_theory";
 Bool_t flag_add_theory = true;
 
 void write_theory(TString out_filename){
-    const int nbins = 14;
-    Double_t bin_center[] = {0.0025,0.0075,0.0125,0.0175,0.0225,0.0275,0.0325,0.0375,0.045,0.055,0.065,0.08,0.1075,0.1375}; 
-    Double_t vacuum_center[] = {0.704774,2.33436,7.7861,14.8642,18.8961,20.7584,19.6572,17.785,15.4143,11.5469,8.49999,4.81468,0.999461,0.00730948};
-    Double_t vacuum_err[] = {0.0691644,0.0915652,0.162143,0.261015,0.296149,0.341575,0.340316,0.344485,0.237784,0.209247,0.18301,0.0970873,0.0334525,0.00255189};
-    Double_t medium_up[] = {1.03284742215687,2.83347421819892,9.24791143333554,17.5147971902724,23.1177985856312,25.1018718866859,23.4661494197575,20.4896569093417,15.4797490714611,9.92429083191286,6.20570490064862,2.96882287137053,0.519753113556775,0.004401882822613};
-    Double_t medium_do[] = {0.96003794864313,2.74848424280108,9.09135734726446,17.2878371637276,22.8416796763688,24.7887908913141,23.1495648482425,20.1826185646583,15.2842428585389,9.76506633348714,6.07743026975138,2.90470222882947,0.500637191923225,0.002664498381587};
-    Double_t ratio_up[] = {1.56190096479151,1.24591477609978,1.20419853340677,1.19261550252738,1.23652203710247,1.22286102661245,1.20776673411791,1.1672137221034,1.01455325954627,0.869500608898365,0.739828277918956,0.623946651561149,0.530050257746967,0.689774021732687};
-    Double_t ratio_do[] = {1.26579326172649,1.14530100081552,1.15118718994639,1.14875734996384,1.19569827618969,1.18053532272083,1.16366532477146,1.11967272568968,0.98125530328175,0.835663302229297,0.705248148100368,0.595973488552005,0.490890334712369,0.276967963223835};
+   
+    Double_t Rg_det_edges[5]    = {0.00, 0.04, 0.08, 0.12, 0.2};
+    Double_t girth_det_edges[6] = {0.0, 0.02, 0.04, 0.06, 0.08, 0.1};
+
+    TH1D *h_Rg = new TH1D("h_Rg","h_Rg; R_{g};Norm.",4,Rg_det_edges);
+    TH1D *h_an = new TH1D("h_an","h_an;#it{g};Norm.",5,girth_det_edges);
+
+    const int nbins = 5;
+    TH1D *hinput;
+    if(out_filename.Contains("Rg")){
+        hinput = (TH1D*)h_Rg->Clone("hRg");
+    }
+    else{
+        hinput = (TH1D*)h_an->Clone("hgirth");
+    }
+
+    Double_t bin_center[nbins]; 
+    Double_t vacuum_center[] = {9.35033,23.2271,11.0939,4.62982,1.69882};
+
+    Double_t vacuum_err[] = {0.11389,0.210172,0.147658,0.0941261,0.0552125};
+    Double_t medium_up[] = {12.7925200416601,25.833429303458,8.20333153993775,2.59651660570585,0.869777797454504};
+    Double_t medium_do[] = {12.6601768543399,25.612567646542,8.07546029126225,2.52606966229415,0.830199174205496};
+    Double_t ratio_up[] = {1.37908420986726,1.11854786595743,0.745021092945039,0.56679517710343,0.520343679778958};
+    Double_t ratio_do[] = {1.34303328716226,1.09636475550629,0.722343119027306,0.539637960253962,0.480337364510607};
 
     Double_t errx_up[20],errx_do[20], medium_center[20],ratio_center[20], vacuum_up[20], vacuum_do[20];
 
     std::copy(std::begin(vacuum_err), std::end(vacuum_err), std::begin(vacuum_up));
     std::copy(std::begin(vacuum_err), std::end(vacuum_err), std::begin(vacuum_do));
-    errx_do[0] = bin_center[0];
-    errx_up[nbins-1] =  0;
-    medium_center[0] = (medium_up[0] + medium_do[0])/2.0;
-    medium_up[0] -= medium_center[0];
-    medium_do[0]  = medium_center[0] - medium_do[0];
-    ratio_center[0]  = (ratio_up[0]  + ratio_do[0] )/2.0;
-    ratio_up[0] -= ratio_center[0];
-    ratio_do[0]  = ratio_center[0]-ratio_do[0];
-    for(int i=1;i<nbins;i++){
-        errx_up[i-1] = ((bin_center[i-1]+bin_center[i])/2.0) - bin_center[i-1];
-        errx_do[i] = errx_up[i-1];
+
+    // errx_do[0] = bin_center[0];
+    // errx_up[nbins-1] =  0;
+    // medium_center[0] = (medium_up[0] + medium_do[0])/2.0;
+    // medium_up[0] -= medium_center[0];
+    // medium_do[0]  = medium_center[0] - medium_do[0];
+    // ratio_center[0]  = (ratio_up[0]  + ratio_do[0] )/2.0;
+    // ratio_up[0] -= ratio_center[0];
+    // ratio_do[0]  = ratio_center[0]-ratio_do[0];
+    for(int i=0;i<nbins;i++){
+        // errx_up[i-1] = ((bin_center[i-1]+bin_center[i])/2.0) - bin_center[i-1];
+        // errx_do[i] = errx_up[i-1];
+
+        bin_center[i]=hinput->GetBinCenter(i+1);
+        errx_up[i]=0.5*hinput->GetBinWidth(i+1);
+        errx_do[i]=errx_up[i];
 
         medium_center[i] = (medium_up[i] + medium_do[i])/2.0;
         medium_up[i] -= medium_center[i];
@@ -50,6 +73,7 @@ void write_theory(TString out_filename){
     auto medium_graph = new TGraphAsymmErrors(nbins,bin_center,medium_center,errx_up,errx_do,medium_up,medium_do);
     auto ratio_graph  = new TGraphAsymmErrors(nbins,bin_center,ratio_center ,errx_up,errx_do,ratio_up ,ratio_do );
 
+    output_path = "Overlay_theory/Theory_graph";
     TString DIR = output_path +"/";
     TString makedir = "mkdir -p " + DIR;
     const char *mkDIR = makedir.Data();
@@ -108,8 +132,23 @@ void overlay_theory(TString file_PbPb, TString label_PbPb, TString file_pp, TStr
     TGraphAsymmErrors *hpp_sys = (TGraphAsymmErrors*)f_pp->Get("sys_uncert");
     TGraphAsymmErrors *hpp_tot = (TGraphAsymmErrors*)f_pp->Get("tot_uncert");
 
+
+    Double_t error_PbPb_num,error_PbPb_den, error_pp_num,error_pp_den;
+    Double_t PbPb_num = hPbPb_nom->IntegralAndError(0,1,error_PbPb_num,"width");
+    Double_t PbPb_den = hPbPb_nom->IntegralAndError(0,-1,error_PbPb_den,"width");
+
+    Double_t PbPb_untagged_Err = (error_PbPb_num/PbPb_num) + (error_PbPb_den/PbPb_den); // TMath::Sqrt((error_PbPb_num/PbPb_num)*(error_PbPb_num/PbPb_num) + (error_PbPb_den/PbPb_den)*(error_PbPb_den/PbPb_den));
+
+    Double_t pp_num = hpp_nom->IntegralAndError(0,1,error_pp_num,"width");
+    Double_t pp_den = hpp_nom->IntegralAndError(0,-1,error_pp_den,"width");
+
+    Double_t pp_untagged_Err = (error_pp_num/pp_num) + (error_pp_den/pp_den);
+
     Double_t PbPb_untagged = hPbPb_nom->Integral(0,1)/hPbPb_nom->Integral(0,-1);
     Double_t pp_untagged = hpp_nom->Integral(0,1)/hpp_nom->Integral(0,-1);
+
+    std::cout<<"\nPbPb Untagged = "<<PbPb_num/PbPb_den <<" +- "<<PbPb_untagged_Err<<" \t ("<<PbPb_untagged <<")\n";
+    std::cout<<"\n  pp Untagged = "<<pp_num/pp_den <<" +- "<<pp_untagged_Err<<" \t ("<<pp_untagged <<")\n";
 
     // Define the ratio plot
     TH1D *hratio = (TH1D*)hPbPb_nom->Clone("ratio");
@@ -137,6 +176,8 @@ void overlay_theory(TString file_PbPb, TString label_PbPb, TString file_pp, TStr
 
         Double_t erry_ratio_total_up = TMath::Sqrt(erry_stat_a*erry_stat_a + erry_uncorr_up*erry_uncorr_up);
         Double_t erry_ratio_total_do = TMath::Sqrt(erry_stat_b*erry_stat_b + erry_uncorr_do*erry_uncorr_do);
+
+        // std::cout<<"\nBin = "<<j<<"\t PbPb sys = "<<hPbPb_sys->GetErrorYhigh(j)<<"\t stat = "<<hPbPb_nom->GetBinError(j)
 
         // Error x and vectors
         vec_x[j] = hratio->GetBinCenter(j);
@@ -269,15 +310,15 @@ void overlay_theory(TString file_PbPb, TString label_PbPb, TString file_pp, TStr
             h_theory_noElastic_Wake->SetFillColor(korangeLight);
         }
 
-    float lower_pad_ratio = 0.3;
+    float lower_pad_ratio = 0.4;
     float upper_pad_ratio = 1-lower_pad_ratio;
 
     // Upper plot will be in pad1
         TPad *pad1 = new TPad("pad1", "pad1", 0, lower_pad_ratio, 1, 1.0);
-        pad1->SetTopMargin(0.4*lower_pad_ratio);
+        pad1->SetTopMargin(0.3*lower_pad_ratio);
         pad1->SetRightMargin(0.05); 
         pad1->SetLeftMargin(0.15); 
-        pad1->SetBottomMargin(0.025); 
+        pad1->SetBottomMargin(0.0); 
         pad1->Draw();             // Draw the upper pad: pad1
         pad1->cd();               // pad1 becomes the current pad
         float ymax = 1.2*hpp_nom->GetMaximum();
@@ -299,12 +340,17 @@ void overlay_theory(TString file_PbPb, TString label_PbPb, TString file_pp, TStr
         hpp_sys->GetXaxis()->SetLabelSize(0);
         hPbPb_tot->GetXaxis()->SetTitleOffset(999999);
         hpp_sys->GetXaxis()->SetTitleOffset(999999);
-        hPbPb_tot->GetXaxis()->SetRangeUser(hPbPb_nom->GetXaxis()->GetBinLowEdge(1),hPbPb_nom->GetXaxis()->GetBinUpEdge(hPbPb_nom->GetNbinsX()-1));
+        
+        float line_left_edge = hPbPb_nom->GetXaxis()->GetBinLowEdge(1);
+        if(label.Contains("Rg")){
+            line_left_edge = hPbPb_nom->GetXaxis()->GetBinLowEdge(2);
+        }
+        hPbPb_tot->GetXaxis()->SetRangeUser(line_left_edge,hPbPb_nom->GetXaxis()->GetBinUpEdge(hPbPb_nom->GetNbinsX()-1));
         
         float leg_x1 = 0.5;
-        float leg_y1 = 0.58;
+        float leg_y1 = 0.5;
         float leg_x2 = 0.85;
-        float leg_y2 = 0.85;
+        float leg_y2 = 0.8;
         l = new TLegend(leg_x1, leg_y1, leg_x2, leg_y2,"","brNDC");
         l->SetFillStyle(0);
         l->SetFillColor(0);
@@ -332,25 +378,29 @@ void overlay_theory(TString file_PbPb, TString label_PbPb, TString file_pp, TStr
         latex.DrawLatexNDC(0.15,0.92,"CMS #it{#bf{Preliminary}}");
         latex.DrawLatexNDC(0.42,0.92,"#bf{PbPb 1.69 nb^{-1}, pp 300.6 pb^{-1} (5.02 TeV)}");
         latex.SetTextSize(0.11*lower_pad_ratio);
-        leg_y1-=0.06;
-        latex.DrawLatexNDC(leg_x1,leg_y1,"Cent. 0-30%");
-        leg_y1-=0.06;
-        latex.DrawLatexNDC(leg_x1,leg_y1,"p_{T}^{#gamma }>100 GeV,x_{J}>0.4,|#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi");
+        leg_y1-=0.08;
+        latex.DrawLatexNDC(leg_x1,leg_y1,"#bf{Centrality: 0-30%}");
+        leg_y1-=0.08;
+        latex.DrawLatexNDC(leg_x1,leg_y1,"#bf{p_{T}^{#gamma }>100 GeV , #frac{p_{T}^{jet}}{p_{T}^{#gamma}}>0.4}");
+        leg_y1-=0.08;
+        latex.DrawLatexNDC(leg_x1,leg_y1,"#bf{|#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi}");
+        leg_y1-=0.08;
+        latex.DrawLatexNDC(leg_x1,leg_y1,"#bf{Soft Drop z_{#bf{cut}}=0.2, #beta=0}");
         leg_x1=0.2;
         leg_y1=0.85;
-        if(label.Contains("Rg")){
-            leg_y1-=0.08;
-            latex.DrawLatexNDC(leg_x1,leg_y1,Form("PbPb untagged = %4.2f%%",PbPb_untagged*100));
-            // latex.DrawLatexNDC(leg_x1,leg_y1,Form("MatInvert untagged = %4.2f%%",PbPb_untagged*100));
-            leg_y1-=0.08;
-            latex.DrawLatexNDC(leg_x1,leg_y1,Form("pp untagged = %4.2f%%",pp_untagged*100));
-            // latex.DrawLatexNDC(leg_x1,leg_y1,Form("D'Agostini untagged = %4.2f%%",pp_untagged*100));
-        }
+        // if(label.Contains("Rg")){
+        //     leg_y1-=0.08;
+        //     latex.DrawLatexNDC(leg_x1,leg_y1,Form("PbPb untagged = %4.2f%%",PbPb_untagged*100));
+        //     // latex.DrawLatexNDC(leg_x1,leg_y1,Form("MatInvert untagged = %4.2f%%",PbPb_untagged*100));
+        //     leg_y1-=0.08;
+        //     latex.DrawLatexNDC(leg_x1,leg_y1,Form("pp untagged = %4.2f%%",pp_untagged*100));
+        //     // latex.DrawLatexNDC(leg_x1,leg_y1,Form("D'Agostini untagged = %4.2f%%",pp_untagged*100));
+        // }
 
     // lower plot will be in pad
         c.cd();          // Go back to the main canvas before defining pad2
         TPad *pad2 = new TPad("pad2", "pad2", 0, 0, 1, lower_pad_ratio);
-        pad2->SetTopMargin(0.025);
+        pad2->SetTopMargin(0.0); // 0.025
         pad2->SetRightMargin(0.05); 
         pad2->SetLeftMargin(0.15); 
         pad2->SetBottomMargin(0.4*upper_pad_ratio); 
@@ -406,9 +456,15 @@ void overlay_theory(TString file_PbPb, TString label_PbPb, TString file_pp, TStr
         hratio_tot->Draw("SAME_P5");
         hratio_sys->Draw("SAME_P5");
         hratio->Draw("SAME_E1_][P0");
-        hratio->GetXaxis()->SetRangeUser(hPbPb_nom->GetXaxis()->GetBinLowEdge(1),hPbPb_nom->GetXaxis()->GetBinUpEdge(hPbPb_nom->GetNbinsX()-1));
 
-        TLine *line=new TLine(hPbPb_nom->GetXaxis()->GetBinLowEdge(1),1.0,hratio->GetXaxis()->GetBinLowEdge(hratio->GetNbinsX()),1.0);
+        //! Already set in upper pad
+        // float line_left_edge = hPbPb_nom->GetXaxis()->GetBinLowEdge(1);
+        // if(label.Contains("Rg")){
+        //     line_left_edge = hPbPb_nom->GetXaxis()->GetBinLowEdge(2);
+        // }
+        hratio->GetXaxis()->SetRangeUser(line_left_edge,hPbPb_nom->GetXaxis()->GetBinUpEdge(hPbPb_nom->GetNbinsX()-1));
+
+        TLine *line=new TLine(line_left_edge,1.0,hratio->GetXaxis()->GetBinLowEdge(hratio->GetNbinsX()),1.0);
         line->SetLineColor(kRed);
         // line->SetLineStyle(2);
         line->SetLineWidth(3);

@@ -34,9 +34,9 @@ using "\n";
 const int bin_det_xj=1;
 const int bin_true_xj=2;
 
-TString label = "May_5_pp_2017_sys_WP_update";
+TString label = "Jul_31_pp_2017_sys_Decorrelate_PF_xJ_gp8";
 TString in_path = "/home/llr/cms/bharikri/Projects/ppHiForest/CMSSW_9_4_10/src/HeavyIonsAnalysis/JetAnalysis/test/Analysis/";
-TString in_file = in_path+"Uncertainty/Output_May_3_pp_2017_WP_update.root";
+TString in_file = in_path+"Uncertainty/Output_Jul_31_pp_2017_sys_Decorrelate_PF.root";
 TString out_path = "/home/llr/cms/bharikri/Projects/Photon_Analysis/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/JetAnalysis/test/Unfolding/OutputDir_pp/";
 TFile* fout;
 
@@ -69,45 +69,58 @@ static const TString test_label[] =
 };
 
 enum SystematicsTreatment_pp {       // Systematics treatment
-    kData       =0,               //* Nominal pp 2017 Data 
-    kNominal    =1,               //* Nominal Pythia8 (centrality +4.5%)  
-    kPhoPurity  =2,               //* ABCD Photon Purity Data 
-    kJERup      =3,               //* Pythia8 with JER up 
-    kJERdown    =4,               //* Pythia8 with JER down 
-    kJECup      =5,               //* Pythia8 with JEC up 
-    kJECdown    =6,               //* Pythia8 with JEC down 
-    kPFScaleup  =7,               //* Pythia8 with +1% PF scale substructure 
-    kPFScaledown=8,               //* Pythia8 with -1% PF scale substructure 
-    kAltMC      =9,               //* HERWIG7 
-    kResponse   =10               //* Propagating Pythia8 Response stats while unfolding
+    kData           =0,               //* Nominal PbPb 2018 Data 
+    kNominal        =1,               //* Nominal Pythia8 (centrality +4.5%)  
+    kPhoPurity      =2,               //* ABCD Photon Purity Data 
+    kJERup          =3,               //* Pythia8 with JER up 
+    kJERdown        =4,               //* Pythia8 with JER down 
+    kJECup          =5,               //* Pythia8 with JEC up 
+    kJECdown        =6,               //* Pythia8 with JEC down 
+    kPScaleup       =7,               //* Pythia8 with +1% Photon scale substructure 
+    kPScaledown     =8,               //* Pythia8 with -1% Photon scale substructure 
+    kChScaleup      =9,               //* Pythia8 with +1% Charged Hadron scale substructure 
+    kChScaledown    =10,              //* Pythia8 with -1% Charged Hadron scale substructure 
+    kNScaleup       =11,              //* Pythia8 with +3% Neutral Hadron scale substructure 
+    kNScaledown     =12,              //* Pythia8 with -3% Neutral Hadron scale substructure 
+    kAltMC          =13,               //* HERWIG7 
+    kResponse       =14
 }sys_index;
+
 static const SystematicsTreatment_pp sys_list[] =  
 {
-    kData       ,
-    kNominal    ,
-    kPhoPurity  ,
-    kJERup      ,
-    kJERdown    ,
-    kJECup      ,
-    kJECdown    ,
-    kPFScaleup  ,
-    kPFScaledown,
-    kAltMC      ,
-    kResponse 
+    kData           ,
+    kNominal        ,
+    kPhoPurity      ,
+    kJERup          ,
+    kJERdown        ,
+    kJECup          ,
+    kJECdown        ,
+    kPScaleup       ,
+    kPScaledown     ,
+    kChScaleup      ,
+    kChScaledown    ,
+    kNScaleup       ,
+    kNScaledown     ,
+    kAltMC          ,
+    kResponse      
 };
 static const TString sys_label[] = 
 {
-    "Data"          ,
-    "Pythia8_nom"   ,
-    "ABCD_purity"   ,
-    "JER_up"        ,
-    "JER_down"      ,
-    "JEC_up"        ,
-    "JEC_down"      ,
-    "PFScale_up"    ,
-    "PFScale_down"  ,
-    "AltMC"         ,
-    "response"
+    "Data"           ,
+    "Pythia8_nom"    ,
+    "ABCD_purity"    ,
+    "JER_up"         ,
+    "JER_down"       ,
+    "JEC_up"         ,
+    "JEC_down"       ,
+    "PScale_up"      ,
+    "PScale_down"    ,
+    "ChScale_up"     ,
+    "ChScale_down"   ,
+    "NScale_up"      ,
+    "NScale_down"    ,
+    "AltMC"          ,
+    "response"      
 };
 void Fill_hist_sys(TTree*, TTree*,TestsTreatment );
 
@@ -122,7 +135,7 @@ void SetHistErrZero(TH2D* hist2D){
     }
 }
 
-void RooUnfold_bharad_sys_pp(TestsTreatment input_test_index = kBottomline){
+void RooUnfold_bharad_sys_pp(TestsTreatment input_test_index = kNoTest){
 
     // gSystem->Load("libRooUnfold.so");
     
@@ -150,10 +163,22 @@ void RooUnfold_bharad_sys_pp(TestsTreatment input_test_index = kBottomline){
     TTree* in_JECup_tree            = (TTree*)input_file->Get(Form("sys_tree_%s",sys_label[sys_index].Data()));
     sys_index = kJECdown;
     TTree* in_JECdown_tree          = (TTree*)input_file->Get(Form("sys_tree_%s",sys_label[sys_index].Data()));
-    sys_index = kPFScaleup;
-    TTree* in_PFScaleup_tree        = (TTree*)input_file->Get(Form("sys_tree_%s",sys_label[sys_index].Data()));
-    sys_index = kPFScaledown;
-    TTree* in_PFScaledown_tree      = (TTree*)input_file->Get(Form("sys_tree_%s",sys_label[sys_index].Data()));
+    // sys_index = kPFScaleup;
+    // TTree* in_PFScaleup_tree        = (TTree*)input_file->Get(Form("sys_tree_%s",sys_label[sys_index].Data()));
+    // sys_index = kPFScaledown;
+    // TTree* in_PFScaledown_tree      = (TTree*)input_file->Get(Form("sys_tree_%s",sys_label[sys_index].Data()));
+    sys_index = kPScaleup;
+    TTree* in_PScaleup_tree        = (TTree*)input_file->Get(Form("sys_tree_%s",sys_label[sys_index].Data()));
+    sys_index = kPScaledown;
+    TTree* in_PScaledown_tree      = (TTree*)input_file->Get(Form("sys_tree_%s",sys_label[sys_index].Data()));
+    sys_index = kChScaleup;
+    TTree* in_ChScaleup_tree        = (TTree*)input_file->Get(Form("sys_tree_%s",sys_label[sys_index].Data()));
+    sys_index = kChScaledown;
+    TTree* in_ChScaledown_tree      = (TTree*)input_file->Get(Form("sys_tree_%s",sys_label[sys_index].Data()));
+    sys_index = kNScaleup;
+    TTree* in_NScaleup_tree        = (TTree*)input_file->Get(Form("sys_tree_%s",sys_label[sys_index].Data()));
+    sys_index = kNScaledown;
+    TTree* in_NScaledown_tree      = (TTree*)input_file->Get(Form("sys_tree_%s",sys_label[sys_index].Data()));
     
     
 
@@ -245,15 +270,39 @@ void RooUnfold_bharad_sys_pp(TestsTreatment input_test_index = kBottomline){
         fout->Close();
         std::cout<<"\nOutput File : "<<"Unfold_"+cent_string+label+"_"+test_label[input_test_index]+"_"+sys_label[sys_index]+".root" <<"  created \n";
 
-        sys_index=kPFScaleup;
+        sys_index=kPScaleup;
         fout = new TFile(out_path+"Unfold_"+cent_string+label+"_"+test_label[input_test_index]+"_"+sys_label[sys_index]+".root","RECREATE");
-        Fill_hist_sys((TTree*)in_data_tree->CloneTree(),(TTree*)in_PFScaleup_tree->CloneTree(),input_test_index);
+        Fill_hist_sys((TTree*)in_data_tree->CloneTree(),(TTree*)in_PScaleup_tree->CloneTree(),input_test_index);
         fout->Close();
         std::cout<<"\nOutput File : "<<"Unfold_"+cent_string+label+"_"+test_label[input_test_index]+"_"+sys_label[sys_index]+".root" <<"  created \n";
 
-        sys_index=kPFScaledown;
+        sys_index=kPScaledown;
         fout = new TFile(out_path+"Unfold_"+cent_string+label+"_"+test_label[input_test_index]+"_"+sys_label[sys_index]+".root","RECREATE");
-        Fill_hist_sys((TTree*)in_data_tree->CloneTree(),(TTree*)in_PFScaledown_tree->CloneTree(),input_test_index);
+        Fill_hist_sys((TTree*)in_data_tree->CloneTree(),(TTree*)in_PScaledown_tree->CloneTree(),input_test_index);
+        fout->Close();
+        std::cout<<"\nOutput File : "<<"Unfold_"+cent_string+label+"_"+test_label[input_test_index]+"_"+sys_label[sys_index]+".root" <<"  created \n";
+        
+        sys_index=kChScaleup;
+        fout = new TFile(out_path+"Unfold_"+cent_string+label+"_"+test_label[input_test_index]+"_"+sys_label[sys_index]+".root","RECREATE");
+        Fill_hist_sys((TTree*)in_data_tree->CloneTree(),(TTree*)in_ChScaleup_tree->CloneTree(),input_test_index);
+        fout->Close();
+        std::cout<<"\nOutput File : "<<"Unfold_"+cent_string+label+"_"+test_label[input_test_index]+"_"+sys_label[sys_index]+".root" <<"  created \n";
+
+        sys_index=kChScaledown;
+        fout = new TFile(out_path+"Unfold_"+cent_string+label+"_"+test_label[input_test_index]+"_"+sys_label[sys_index]+".root","RECREATE");
+        Fill_hist_sys((TTree*)in_data_tree->CloneTree(),(TTree*)in_ChScaledown_tree->CloneTree(),input_test_index);
+        fout->Close();
+        std::cout<<"\nOutput File : "<<"Unfold_"+cent_string+label+"_"+test_label[input_test_index]+"_"+sys_label[sys_index]+".root" <<"  created \n";
+
+        sys_index=kNScaleup;
+        fout = new TFile(out_path+"Unfold_"+cent_string+label+"_"+test_label[input_test_index]+"_"+sys_label[sys_index]+".root","RECREATE");
+        Fill_hist_sys((TTree*)in_data_tree->CloneTree(),(TTree*)in_NScaleup_tree->CloneTree(),input_test_index);
+        fout->Close();
+        std::cout<<"\nOutput File : "<<"Unfold_"+cent_string+label+"_"+test_label[input_test_index]+"_"+sys_label[sys_index]+".root" <<"  created \n";
+
+        sys_index=kNScaledown;
+        fout = new TFile(out_path+"Unfold_"+cent_string+label+"_"+test_label[input_test_index]+"_"+sys_label[sys_index]+".root","RECREATE");
+        Fill_hist_sys((TTree*)in_data_tree->CloneTree(),(TTree*)in_NScaledown_tree->CloneTree(),input_test_index);
         fout->Close();
         std::cout<<"\nOutput File : "<<"Unfold_"+cent_string+label+"_"+test_label[input_test_index]+"_"+sys_label[sys_index]+".root" <<"  created \n";
 
@@ -377,7 +426,7 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
             const int bin_det_girth =  5;
             const int bin_true_girth = 6;
 
-            Double_t xjmin_det =0.4;//0.4;
+            Double_t xjmin_det =0.8;
             Double_t xjmin_true=0.0;
 
             Double_t xjmax_det =3;//5

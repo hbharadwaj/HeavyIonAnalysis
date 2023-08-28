@@ -27,7 +27,7 @@ std::vector<int> max_cent = {69, 189, 189, 49, 189};
 // std::vector<int> min_cent = { 0,  60,   0,  0,  40};
 // std::vector<int> max_cent = {60, 180, 180, 40, 180};
 const std::size_t ncent = 5;//min_cent.size();
-TString label="Data_2018_jets"; // "Substructure_up_jets";//"QCDPhoton_jets"; // "Data_2018_jets";//
+TString label="QCDPhoton_jets"; // "Substructure_up_jets";//"QCDPhoton_jets"; // "Data_2018_jets";//
 TString output_path = "./OutputPlots/"; // Uncertainty/ OutputPlots
 
 std::vector<double> rho_weight = {0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.1237833 ,0.2448678 ,0.4851410 ,0.5496915 ,0.5527335 ,0.5450190 ,0.5239799 ,0.5008505 ,0.5195929 ,0.5332869 ,0.5166109 ,0.5155024 ,0.5280507 ,0.6157440 ,1.0460693 ,1.5848926 ,1.6505300 ,1.6796490 ,1.6854259 ,1.7155044 ,1.7169375 ,1.6923578 ,1.7101517 ,1.7219163 ,1.7913101 ,2.0315394 ,3.3030708 ,9.9789515 ,69.3535614 ,766.6729736 ,208048.4375000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000};
@@ -406,8 +406,8 @@ void plot_jet(){
             Double_t xjmin_det=0.4;
             Double_t xjmin_true=0.0;//0.0;
 
-            Double_t xjmax_det=3;
-            Double_t xjmax_true=3;
+            Double_t xjmax_det=3.0;
+            Double_t xjmax_true=3.0;
 
             Double_t Rgmax_det=0.2;
             Double_t Rgmax_true=0.3;
@@ -445,20 +445,21 @@ void plot_jet(){
 
         for (std::size_t i = 0; i < ncent; ++i) {
             int nbins = 20;
+            // h_mcMomPID_lead[i] = new TH1D(Form("h_mcMomPID_lead_%zu", i), Form("h_mcMomPID_lead_%zu;Photon Parent Parton PID;Events", i),60,-29,30);
             h_true_pho_Et[i] = new TH1D(Form("h_true_pho_Et_%zu", i), Form("h_true_pho_Et_%zu;True #gamma E_{T};Norm. Events", i), 50, 100, 300);
             h_true_jet_pt[i] = new TH1D(Form("h_true_jet_pt_%zu", i), Form("h_true_jet_pt_%zu;True Recoil Jet p_{T};Norm. Events", i), 50, 30, 200);
-            h_true_xJ[i] = new TH1D(Form("h_true_xJ_%zu", i), Form("h_true_xJ_%zu;True x_{J};Norm. Events", i), 40, 0, 2);
+            h_true_xJ[i] = new TH1D(Form("h_true_xJ_%zu", i), Form("h_true_xJ_%zu;True x_{J};Norm. Events", i), 30, 0, 3);
             h_true_Rg[i] = new TH1D(Form("h_true_Rg_%zu", i), Form("h_true_Rg_%zu;True R_{g};Norm. Events", i),bin_true_Rg,Rg_true_edges);//20, 0.0001, 0.25);
-            h_true_angu[i] = new TH1D(Form("h_true_angu_%zu", i), Form("h_true_angu_%zu;True Angularity;Norm. Events", i),bin_true_angu,angu_true_edges);//20, 0, 0.12);
+            h_true_angu[i] = new TH1D(Form("h_true_angu_%zu", i), Form("h_true_angu_%zu;True Girth;Norm. Events", i),bin_true_angu,angu_true_edges);//20, 0, 0.12);
 
             hweight[i] = new TH1D(Form("hweight_%zu", i), Form("hweight_%zu;hweight;Norm. Events", i), 1, 0, 99999);
             hweight_q[i] = new TH1D(Form("hweight_q_%zu", i), Form("hweight_q_%zu;hweight_q;Norm. Events", i), 1, 0, 99999);
             hweight_g[i] = new TH1D(Form("hweight_g_%zu", i), Form("hweight_g_%zu;hweight_g;Norm. Events", i), 1, 0, 99999);
 
             h_jetpt_weight[i]=new TH2D(Form("h_jetpt_weight_%zu",i),Form("h_jetpt_weight_%zu;Jet pT;Event weights",i),25, 0, 250,50,0,2000.0);
-            h_angu_weight[i]=new TH2D(Form("h_angu_weight_%zu",i),Form("h_angu_weight_%zu;Angularity;Event weights",i),nbins, 0, 0.12,50,0,2000.0);
+            h_angu_weight[i]=new TH2D(Form("h_angu_weight_%zu",i),Form("h_angu_weight_%zu;Girth;Event weights",i),nbins, 0, 0.12,50,0,2000.0);
             h_Rg_weight[i]=new TH2D(Form("h_Rg_weight_%zu",i),Form("h_Rg_weight_%zu;R_{g};Event weights",i),nbins, 0.0001, 0.25,50,0,2000.0);
-            h_jetpt_angu[i]=new TH2D(Form("h_jetpt_angu_%zu",i),Form("h_jetpt_angu_%zu;Jet pT;Angularity",i),25, 0, 250,nbins, 0, 0.12);
+            h_jetpt_angu[i]=new TH2D(Form("h_jetpt_angu_%zu",i),Form("h_jetpt_angu_%zu;Jet pT;Girth",i),25, 0, 250,nbins, 0, 0.12);
 
             h_weight_rho[i] = new TH2D(Form("h_weight_rho_%zu", i), Form("h_weight_rho_%zu;rho;Event weights", i), 50, 0, 250,50,0,2000.0);
 
@@ -490,38 +491,38 @@ void plot_jet(){
             hdphi_all[i] = new TH1D(Form("hdphi_all_%zu", i), Form("hdphi_all_%zu;#Delta #phi;Events", i), nbins, 0, 3.2);
             hxJ_all[i] = new TH1D(Form("hxJ_all_%zu", i), Form("hxJ_all_%zu;All Recoil Jet p_{T}/Photon E_{T};Events", i), nbins, 0, 2.0);
             hRg_all[i] = new TH1D(Form("hRg_all_%zu", i), Form("hRg_all_%zu;R_{g};Events", i), nbins, 0.0001, 0.25);
-            hangu_all[i] = new TH1D(Form("hangu_all_%zu", i), Form("hangu_all_%zu;Angularity(girth);Events", i), nbins, 0, 0.12);
+            hangu_all[i] = new TH1D(Form("hangu_all_%zu", i), Form("hangu_all_%zu;Girth;Events", i), nbins, 0, 0.12);
             hktdyn_all[i] = new TH1D(Form("hktdyn_all_%zu", i), Form("hktdyn_all_%zu;dyn k_{T};Events", i), nkt_bins, kt_edges);
 
             hdphi_lead[i] = new TH1D(Form("hdphi_lead_%zu", i), Form("hdphi_lead_%zu;#Delta #phi;1/N_{jet} dN/d#Delta #phi", i), nbins, 0, 3.2);
-            hxJ_lead[i] = new TH1D(Form("hxJ_lead_%zu", i), Form("hxJ_lead_%zu;Lead Recoil Jet p_{T}/Photon E_{T};1/N_{jet} dN/dp_{T,Jet}", i), nbins, 0, 2.0);
+            hxJ_lead[i] = new TH1D(Form("hxJ_lead_%zu", i), Form("hxJ_lead_%zu;Lead Recoil Jet p_{T}/Photon E_{T};1/N_{jet} dN/dp_{T,Jet}", i), nbins, 0.4, 2.0);
             hRg_lead[i] = new TH1D(Form("hRg_lead_%zu", i), Form("hRg_lead_%zu;R_{g};1/N_{jet} dN/dR_{g}", i), nbins, 0.0001, 0.25);
-            hangu_lead[i] = new TH1D(Form("hangu_lead_%zu", i), Form("hangu_lead_%zu;Angularity(girth);1/N_{jet} dN/dAngularity", i), nbins, 0, 0.12);
+            hangu_lead[i] = new TH1D(Form("hangu_lead_%zu", i), Form("hangu_lead_%zu;Girth;1/N_{jet} dN/dGirth", i), nbins, 0, 0.12);
             hktdyn_lead[i] = new TH1D(Form("hktdyn_lead_%zu", i), Form("hktdyn_lead_%zu;dyn k_{T};1/N_{jet} dN/dk_{T}", i), nkt_bins, kt_edges);
             hrefparton_lead[i] = new TH1D(Form("hrefparton_lead_%zu", i), Form("hrefparton_lead_%zu;Ref Parton PID;Events", i),60,-29,30);
             hzg_lead[i] = new TH1D(Form("hzg_lead_%zu", i), Form("hzg_lead_%zu;zg;1/N_{jet} dN/dzg", i), nbins, 0.2, 0.51);
 
             hxJ_lead_true[i] = new TH1D(Form("hxJ_lead_true_%zu", i), Form("hxJ_lead_true_%zu;True Lead Recoil Jet p_{T}/Photon E_{T};1/N_{jet} dN/dp_{T,Jet}", i), nbins, 0, 2.0);
             hRg_lead_true[i] = new TH1D(Form("hRg_lead_true_%zu", i), Form("hRg_lead_true_%zu;True R_{g};1/N_{jet} dN/dR_{g}", i), nbins, 0.0001, 0.25);
-            hangu_lead_true[i] = new TH1D(Form("hangu_lead_true_%zu", i), Form("hangu_lead_true_%zu;True Angularity(girth);1/N_{jet} dN/dAngularity", i), nbins, 0, 0.12);
+            hangu_lead_true[i] = new TH1D(Form("hangu_lead_true_%zu", i), Form("hangu_lead_true_%zu;True Girth;1/N_{jet} dN/dGirth", i), nbins, 0, 0.12);
             hktdyn_lead_true[i] = new TH1D(Form("hktdyn_lead_true_%zu", i), Form("hktdyn_lead_true_%zu;True dyn k_{T};1/N_{jet} dN/dk_{T}", i), nkt_bins, kt_edges);
             hzg_lead_true[i] = new TH1D(Form("hzg_lead_true_%zu", i), Form("hzg_lead_true_%zu;True zg;1/N_{jet} dN/dzg", i), nbins, 0.2, 0.51);
 
             h_Rg_xJ[i]=new TH2D(Form("h_Rg_xJ_%zu",i),Form("h_Rg_xJ_%zu;R_{g};x_{#gamma,jet}",i),18,0.0001,0.3,30,0,3.0);
-            h_angu_xJ[i]=new TH2D(Form("h_angu_xJ_%zu",i),Form("h_angu_xJ_%zu;Angularity(girth);x_{#gamma,jet}",i),16,0,0.12,30,0,3.0);
+            h_angu_xJ[i]=new TH2D(Form("h_angu_xJ_%zu",i),Form("h_angu_xJ_%zu;Girth;x_{#gamma,jet}",i),16,0,0.12,30,0,3.0);
             h_ktdyn_xJ[i]=new TH2D(Form("h_ktdyn_xJ_%zu",i),Form("h_ktdyn_xJ_%zu;dyn k_{T};x_{#gamma,jet}",i),20,0,20,30,0,3.0);
 
             h_xJ_xJ[i]=new TH2D(Form("h_xJ_xJ_%zu",i),Form("h_xJ_xJ_%zu;x_{#gamma,jet} Reco;x_{#gamma,jet} True",i),30,0,3.0,30,0,3.0);
             h_Rg_Rg[i]=new TH2D(Form("h_Rg_Rg_%zu",i),Form("h_Rg_Rg_%zu;R_{g} Reco;R_{g} True",i),18,0.0001,0.3,18,0.0001,0.3);
-            h_angu_angu[i]=new TH2D(Form("h_angu_angu_%zu",i),Form("h_angu_angu_%zu;Angularity Reco;Angularity True",i),16,0,0.12,16,0,0.12);
+            h_angu_angu[i]=new TH2D(Form("h_angu_angu_%zu",i),Form("h_angu_angu_%zu;Girth Reco;Girth True",i),16,0,0.12,16,0,0.12);
             h_ktdyn_ktdyn[i]=new TH2D(Form("h_ktdyn_ktdyn_%zu",i),Form("h_ktdyn_ktdyn_%zu;dyn k_{T} Reco;dyn k_{T} True",i),20,0,20,20,0,20);
 
             h_xJ_l0p4_Rg_Rg[i]=new TH2D(Form("h_xJ_l0p4_Rg_Rg_%zu",i),Form("h_xJ_l0p4_Rg_Rg_%zu;R_{g} Reco;R_{g} True",i),bin_det_Rg,Rg_det_edges,bin_true_Rg,Rg_true_edges);
-            h_xJ_l0p4_angu_angu[i]=new TH2D(Form("h_xJ_l0p4_angu_angu_%zu",i),Form("h_xJ_l0p4_angu_angu_%zu;Angularity Reco;Angularity True",i),bin_det_angu,angu_det_edges,bin_true_angu,angu_true_edges);
+            h_xJ_l0p4_angu_angu[i]=new TH2D(Form("h_xJ_l0p4_angu_angu_%zu",i),Form("h_xJ_l0p4_angu_angu_%zu;Girth Reco;Girth True",i),bin_det_angu,angu_det_edges,bin_true_angu,angu_true_edges);
             h_xJ_l0p4_dynkt_dynkt[i]=new TH2D(Form("h_xJ_l0p4_dynkt_dynkt_%zu",i),Form("h_xJ_l0p4_dynkt_dynkt_%zu;dyn k_{T} Reco;dyn k_{T} True",i),bin_det_dynkt,dynkt_det_edges,bin_true_dynkt,dynkt_true_edges);
 
             h_xJ_g0p4_Rg_Rg[i]=new TH2D(Form("h_xJ_g0p4_Rg_Rg_%zu",i),Form("h_xJ_g0p4_Rg_Rg_%zu;R_{g} Reco;R_{g} True",i),bin_det_Rg,Rg_det_edges,bin_true_Rg,Rg_true_edges);
-            h_xJ_g0p4_angu_angu[i]=new TH2D(Form("h_xJ_g0p4_angu_angu_%zu",i),Form("h_xJ_g0p4_angu_angu_%zu;Angularity Reco;Angularity True",i),bin_det_angu,angu_det_edges,bin_true_angu,angu_true_edges);
+            h_xJ_g0p4_angu_angu[i]=new TH2D(Form("h_xJ_g0p4_angu_angu_%zu",i),Form("h_xJ_g0p4_angu_angu_%zu;Girth Reco;Girth True",i),bin_det_angu,angu_det_edges,bin_true_angu,angu_true_edges);
             h_xJ_g0p4_dynkt_dynkt[i]=new TH2D(Form("h_xJ_g0p4_dynkt_dynkt_%zu",i),Form("h_xJ_g0p4_dynkt_dynkt_%zu;dyn k_{T} Reco;dyn k_{T} True",i),bin_det_dynkt,dynkt_det_edges,bin_true_dynkt,dynkt_true_edges);
 
             // --- Bkg Histograms
@@ -535,12 +536,12 @@ void plot_jet(){
 
             hbkg_xJ_all[i] = new TH1D(Form("hbkg_xJ_all_%zu", i), Form("hbkg_xJ_all_%zu;All Recoil Jet p_{T}/Photon E_{T};Events", i), nbins, 0, 2.0);
             hbkg_Rg_all[i] = new TH1D(Form("hbkg_Rg_all_%zu", i), Form("hbkg_Rg_all_%zu;R_{g};Events", i), nbins, 0.0001, 0.25);
-            hbkg_angu_all[i] = new TH1D(Form("hbkg_angu_all_%zu", i), Form("hbkg_angu_all_%zu;Angularity(girth);Events", i), nbins, 0, 0.12);
+            hbkg_angu_all[i] = new TH1D(Form("hbkg_angu_all_%zu", i), Form("hbkg_angu_all_%zu;Girth;Events", i), nbins, 0, 0.12);
             hbkg_ktdyn_all[i] = new TH1D(Form("hbkg_ktdyn_all_%zu", i), Form("hbkg_ktdyn_all_%zu;dyn k_{T};Events", i), nkt_bins, kt_edges);
 
             hbkg_xJ_lead[i] = new TH1D(Form("hbkg_xJ_lead_%zu", i), Form("hbkg_xJ_lead_%zu;Lead Recoil Jet p_{T}/Photon E_{T};1/N_{jet} dN/dp_{T,Jet}", i), nbins, 0, 2.0);
             hbkg_Rg_lead[i] = new TH1D(Form("hbkg_Rg_lead_%zu", i), Form("hbkg_Rg_lead_%zu;R_{g};1/N_{jet} dN/dR_{g}", i), nbins, 0.0001, 0.25);
-            hbkg_angu_lead[i] = new TH1D(Form("hbkg_angu_lead_%zu", i), Form("hbkg_angu_lead_%zu;Angularity(girth);1/N_{jet} dN/dAngularity", i),nbins, 0, 0.12);
+            hbkg_angu_lead[i] = new TH1D(Form("hbkg_angu_lead_%zu", i), Form("hbkg_angu_lead_%zu;Girth;1/N_{jet} dN/dGirth", i),nbins, 0, 0.12);
             hbkg_ktdyn_lead[i] = new TH1D(Form("hbkg_ktdyn_lead_%zu", i), Form("hbkg_ktdyn_lead_%zu;dyn k_{T};1/N_{jet} dN/dk_{T}", i), nkt_bins, kt_edges);
             hbkg_zg_lead[i] = new TH1D(Form("hbkg_zg_lead_%zu", i), Form("hbkg_zg_lead_%zu;zg;1/N_{jet} dN/dzg", i), nbins, 0.2, 0.51);
 
@@ -556,13 +557,13 @@ void plot_jet(){
 
             hbkg_Rg_xJ_det[i]=new TH2D(Form("hbkg_Rg_xJ_det_%zu",i),Form("hbkg_Rg_xJ_det_%zu;R_{g};x_{#gamma,jet}",i),bin_det_Rg,Rg_det_edges,bin_det_xj,xJ_det_edges);
 
-            h_angu_xJ_det[i]=new TH2D(Form("h_angu_xJ_det_%zu",i),Form("h_angu_xJ_det_%zu;Angularity(girth);x_{#gamma,jet}",i),bin_det_angu,angu_det_edges,bin_det_xj,xJ_det_edges);
-            h_angu_xJ_mc_true[i]=new TH2D(Form("h_angu_xJ_mc_true_%zu",i),Form("h_angu_xJ_mc_true_%zu;Angularity(girth);x_{#gamma,jet}",i),bin_true_angu,angu_true_edges,bin_true_xj,xJ_true_edges);
-            h_angu_xJ_mc_truef[i]=new TH2D(Form("h_angu_xJ_mc_truef_%zu",i),Form("h_angu_xJ_mc_truef_%zu;Angularity(girth);x_{#gamma,jet}",i),bin_true_angu,angu_true_edges,bin_true_xj,xJ_true_edges);
+            h_angu_xJ_det[i]=new TH2D(Form("h_angu_xJ_det_%zu",i),Form("h_angu_xJ_det_%zu;Girth;x_{#gamma,jet}",i),bin_det_angu,angu_det_edges,bin_det_xj,xJ_det_edges);
+            h_angu_xJ_mc_true[i]=new TH2D(Form("h_angu_xJ_mc_true_%zu",i),Form("h_angu_xJ_mc_true_%zu;Girth;x_{#gamma,jet}",i),bin_true_angu,angu_true_edges,bin_true_xj,xJ_true_edges);
+            h_angu_xJ_mc_truef[i]=new TH2D(Form("h_angu_xJ_mc_truef_%zu",i),Form("h_angu_xJ_mc_truef_%zu;Girth;x_{#gamma,jet}",i),bin_true_angu,angu_true_edges,bin_true_xj,xJ_true_edges);
             h_angu_xJ_pur_num[i]=new TH2D(Form("h_angu_xJ_pur_num_%zu",i),Form("h_angu_xJ_pur_num_%zu;R_{g};x_{#gamma,jet}",i),bin_det_angu,angu_det_edges,bin_det_xj,xJ_det_edges);
             h_angu_xJ_pur_den[i]=new TH2D(Form("h_angu_xJ_pur_den_%zu",i),Form("h_angu_xJ_pur_den_%zu;R_{g};x_{#gamma,jet}",i),bin_det_angu,angu_det_edges,bin_det_xj,xJ_det_edges);
 
-            hbkg_angu_xJ_det[i]=new TH2D(Form("hbkg_angu_xJ_det_%zu",i),Form("hbkg_angu_xJ_det_%zu;Angularity(girth);x_{#gamma,jet}",i),bin_det_angu,angu_det_edges,bin_det_xj,xJ_det_edges);
+            hbkg_angu_xJ_det[i]=new TH2D(Form("hbkg_angu_xJ_det_%zu",i),Form("hbkg_angu_xJ_det_%zu;Girth;x_{#gamma,jet}",i),bin_det_angu,angu_det_edges,bin_det_xj,xJ_det_edges);
 
             h_dynkt_xJ_det[i]=new TH2D(Form("h_dynkt_xJ_det_%zu",i),Form("h_dynkt_xJ_det_%zu;dynkt;x_{#gamma,jet}",i),bin_det_dynkt,dynkt_det_edges,bin_det_xj,xJ_det_edges);
             h_dynkt_xJ_mc_true[i]=new TH2D(Form("h_dynkt_xJ_mc_true_%zu",i),Form("h_dynkt_xJ_mc_true_%zu;dynkt;x_{#gamma,jet}",i),bin_true_dynkt,dynkt_true_edges,bin_true_xj,xJ_true_edges);
@@ -582,8 +583,8 @@ void plot_jet(){
     const float min_jet_pt = 0.4;        // Changed to xJ >0.4
     const float purity_values[ncent] =  {0.774996,0.891456,0.805383,0.757357,0.872783};//{0.829,0.894,0.843,0.809,0.898};// ABCD Purity - {0.823,0.883,0.837,0.803,0.887};
     // const float purity_values[ncent] ={0.83,0.89,0.84,0.81,0.90};// ABCD Purity - {0.82,0.88,0.84,0.80,0.89};
-    const float orig_qg[ncent] = {0.634,0.632};//{0.634,0.632,0.6325,0.633,0.633};   // Quark Fraction
-    const float fit_qg[ncent] = {0.485,0.528};//{0.485,0.528,0.496,0.472,0.541}; // From angu - {0.483,0.533,0.494,0.467,0.529};
+    const float orig_qg[ncent] = {0.634,0.632,0.6325,0.633,0.633};   // Quark Fraction
+    const float fit_qg[ncent] = {0.485,0.528,0.496,0.472,0.541}; // From angu - {0.483,0.533,0.494,0.467,0.529};
 
     float max_xJ = 0;
     float nsel = 0;
@@ -612,6 +613,13 @@ void plot_jet(){
             scale*=weight*weight_pthat*weight_cent*weight_rho*weight_vz;
             if(pho_genMatchedIndex<0) continue;
             if(abs(mcPID)!=22) continue;
+            if(!(abs(mcMomPID) <= 22 || mcMomPID == -999) ) continue;
+            if(!(mcCalIsoDR04 < 5)) continue;
+
+            // if(!(abs(mcMomPID) < 8) ) continue; // Photons from quark
+            // if(!(mcMomPID == -999)) continue; // True Direct photon
+            // if(!(abs(mcMomPID) <= 8) ) continue;     // Fragmentation photons -> photons with parent quark
+
         }
         
         for (std::size_t i = 0; i < ncent; ++i) {
@@ -623,6 +631,30 @@ void plot_jet(){
             h_true_pho_Et[i]->Fill(mcEt,scale);
             }
             if(mcEt>min_pho_et){
+
+                // int flagHoverE=1;   
+                // int flagSigmaEtaEta=1;
+                // int flagIso=1;
+
+                // int flagIso_sideband=1;
+
+                // // Final signal and background region flags
+                // int flagsig=0;
+                // int flagbkg=0;
+
+                // if(phoHoverE<=cut_HoverE) flagHoverE = 0;
+                // if(phoSigmaIEtaIEta_2012<=cut_SIEIE) flagSigmaEtaEta = 0;
+                // if(SumCalIso<=cut_SumIso) flagIso = 0;
+
+                // if(SumCalIso>10 && SumCalIso<=20) flagIso_sideband = 0; 
+
+                
+                // if(!flagHoverE && !eleRej && !flagIso && !flagSigmaEtaEta) flagsig = 1;
+                // // if(!flagHoverE && !eleRej && !flagSigmaEtaEta && !flagIso_sideband) flagbkg = 1; // Iso Sideband as Bkg
+                // if(!flagHoverE && !eleRej && !flagIso && flagSigmaEtaEta) flagbkg = 1;           // High SIEIE as Bkg
+
+                // if(!flagsig) continue;
+
                 int jet_index = -1;
                 float jet_det_pt_max = -1;
                 float jet_pt_max = -1;
@@ -648,7 +680,7 @@ void plot_jet(){
                     }
                     float true_xJ = refpt[ijet]/mcEt;
                     float xJ = jetPtCorrected/phoEtCorrected;
-                    // if(true_xJ<0.4) continue;
+                    // if(true_xJ<min_jet_pt) continue;
                     float dphi = abs(TVector2::Phi_mpi_pi(mcPhi-refphi[ijet]));// ROOT::Math::VectorUtil::Phi_mpi_pi(phoPhi,jtphi[ijet]);
                     if(dphi>2*TMath::Pi()/3){
                         if(jet_pt_max<refpt[ijet]){
@@ -872,10 +904,10 @@ void plot_jet(){
             
             if(jet_index==-1) continue;
             if(i==0){
-                nsel++; // Total Number of selected events
-                if(flagsig) max_xJ++;
+                // nsel++; // Total Number of selected events
+                if(flagsig && jet_xJ_max>=min_jet_pt) nsel++;// max_xJ++;
                 if(jet_true_index_gen>=0){
-                    // if(allgenmatchindex[jet_true_index_gen]==jet_index) max_xJ++; // Number of events with mismatch jet pT
+                    if(allgenmatchindex[jet_true_index_gen]==jet_index) max_xJ++; // Number of events with mismatch jet pT
                     // if(jet_true_index!=jet_index) max_xJ++;
                     // if(allgenmatchindex[jet_true_index_gen]==jet_index && recoil_jet_index.size()==2) max_xJ++;
                 }
@@ -943,9 +975,10 @@ void plot_jet(){
                 h_jet_eta[i]->Fill(jteta[jet_index],scale_jet);
                 h_jet_phi[i]->Fill(jtphi[jet_index],scale_jet);
                 h_eta_phi_jet[i]->Fill(jteta[jet_index],jtphi[jet_index],scale_jet);
-
-                if(jet_xJ_max>0.4){
-                hxJ_lead[i]->Fill(jet_xJ_max,scale_jet);
+                
+                
+                if(jet_xJ_max>=min_jet_pt){
+                    hxJ_lead[i]->Fill(jet_xJ_max,scale_jet);
                 if(jet_Rg_max>0){
                     hRg_lead[i]->Fill(jet_Rg_max,scale);
                 }
@@ -1172,8 +1205,8 @@ void plot_jet(){
                 // hbkg_ktdyn_lead[i]->Fill(jtdynkt[jet_index],scale_jet);
                 // hbkg_zg_lead[i]->Fill(zg_temp,scale_jet);
 
-                if(jet_xJ_max>0.4){
                 hbkg_xJ_lead[i]->Fill(jet_xJ_max,scale_jet);
+                if(jet_xJ_max>=min_jet_pt){
                 if(jet_Rg_max>0){
                     hbkg_Rg_lead[i]->Fill(jet_Rg_max,scale);
                 }
@@ -1289,10 +1322,10 @@ void plot_jet(){
         //     hangu_lead[i]->Scale(1.0/hangu_lead[i]->Integral());
         //     hktdyn_lead[i]->Scale(1.0/hktdyn_lead[i]->Integral());
         // }
-        else{
-            h_Rg_xJ_pur_num[i]->Divide(h_Rg_xJ_pur_num[i],h_Rg_xJ_pur_den[i],1,1,"B");
-            h_Rg_xJ_det[i]->Multiply(h_Rg_xJ_pur_num[i]);
-        }
+        // else{
+        //     h_Rg_xJ_pur_num[i]->Divide(h_Rg_xJ_pur_num[i],h_Rg_xJ_pur_den[i],1,1,"B");
+        //     h_Rg_xJ_det[i]->Multiply(h_Rg_xJ_pur_num[i]);
+        // }
         
     }
     // -------- End Purity Subtraction
@@ -1494,11 +1527,11 @@ void plot_jet(){
         // Plot_hist({hangu_all[ind1],hangu_all[ind2],hangu_all[ind3]},{Form("Cent. %d-%d%%",min_cent_val[ind1]/2,max_cent_val[ind1]/2),Form("Cent. %d-%d%%",min_cent_val[ind2]/2,max_cent_val[ind2]/2),Form("Cent. %d-%d%%",min_cent_val[ind3]/2,max_cent_val[ind3]/2),"angu_all"},"right_norm",sel);
         // Plot_hist({hktdyn_all[ind1],hktdyn_all[ind2],hktdyn_all[ind3]},{Form("Cent. %d-%d%%",min_cent_val[ind1]/2,max_cent_val[ind1]/2),Form("Cent. %d-%d%%",min_cent_val[ind2]/2,max_cent_val[ind2]/2),Form("Cent. %d-%d%%",min_cent_val[ind3]/2,max_cent_val[ind3]/2),"ktdyn_all"},"rightlog_norm",sel);
         
-        sel = {Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,min_jet_pt),"|#eta|<1.44, Cent. 0-30%"};
+        sel = {"","",Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,min_jet_pt),"|#eta|<1.44, Cent. 0-30%"};
         overlay({hdphi_all[0],hdphi_lead[0]},{"All Recoil Jets","Leading Recoil Jet","#Delta #phi","Norm. Events","dphi_all_lead"},"leftlog_norm_label",sel);
         overlay({hxJ_all[0],hxJ_lead[0]},{"All Recoil Jets","Leading Recoil Jet","xJ","Norm. Events","xJ_all_lead"},"right_norm_label",sel);
         overlay({hRg_all[0],hRg_lead[0]},{"All Recoil Jets","Leading Recoil Jet","R_{g}","Norm. Events","Rg_all_lead"},"right_norm_label",sel);
-        overlay({hangu_all[0],hangu_lead[0]},{"All Recoil Jets","Leading Recoil Jet","Angularity","Norm. Events","angu_all_lead"},"right_norm_label",sel);
+        overlay({hangu_all[0],hangu_lead[0]},{"All Recoil Jets","Leading Recoil Jet","Girth","Norm. Events","angu_all_lead"},"right_norm_label",sel);
         overlay({hktdyn_all[0],hktdyn_lead[0]},{"All Recoil Jets","Leading Recoil Jet","dyn k_{T}","Norm. Events","ktdyn_all_lead"},"rightlog_norm_label",sel);
         Plot_hist({hzg_lead[0]},{"Leading Recoil Jet","zg","Norm. Events","zg_all_lead"},"right_norm_label",sel);
 
@@ -1650,7 +1683,7 @@ void Plot_hist(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt
     TLatex latex;
     latex.SetTextSize(0.035);
     if(label.Contains("Data"))
-        latex.DrawLatexNDC(0.12,0.92,"CMS #it{#bf{Preliminary}} PbPb 1.6967nb^{-1}(5.02 TeV)");
+        latex.DrawLatexNDC(0.12,0.92,"CMS #it{#bf{Preliminary}} PbPb 1.7 nb^{-1}(5.02 TeV)");
     else
         latex.DrawLatexNDC(0.12,0.92,"CMS #it{#bf{Preliminary Simulation}}");
 
@@ -1736,7 +1769,7 @@ void Plot_hist2D(std::vector<TH2D*> hist,std::vector<TString> histname,TString d
         TLatex latex;
         latex.SetTextSize(0.035);
         if(label.Contains("Data"))
-            latex.DrawLatexNDC(0.12,0.92,"CMS #it{#bf{Preliminary}} PbPb 1.6967nb^{-1}(5.02 TeV)");
+            latex.DrawLatexNDC(0.12,0.92,"CMS #it{#bf{Preliminary}} PbPb 1.7 nb^{-1}(5.02 TeV)");
         else
             latex.DrawLatexNDC(0.12,0.92,"CMS #it{#bf{Preliminary Simulation}}");
 
@@ -1932,7 +1965,7 @@ void overlay(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt,s
     TLatex latex;
     latex.SetTextSize(0.035);
     if(label.Contains("Data"))
-        latex.DrawLatexNDC(0.12,0.92,"CMS #it{#bf{Preliminary}} PbPb 1.6967nb^{-1}(5.02 TeV)");
+        latex.DrawLatexNDC(0.12,0.92,"CMS #it{#bf{Preliminary}} PbPb 1.7 nb^{-1}(5.02 TeV)");
     else
         latex.DrawLatexNDC(0.12,0.92,"CMS #it{#bf{Preliminary Simulation}}");
 

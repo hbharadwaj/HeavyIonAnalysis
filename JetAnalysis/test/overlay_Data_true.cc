@@ -45,7 +45,7 @@ void overlay_Data_true(std::vector<TString>file_list,std::vector<TString>label_l
     const char *mkDIR = makedir.Data();
     gSystem->Exec(mkDIR);
 
-    TFile *f_out = new TFile(out_filepath, "recreate");
+    TFile *f_out = new TFile(output_path+out_filepath, "recreate");
     TDirectory *target = gDirectory;
 
     label = label_list.back();
