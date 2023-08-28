@@ -34,7 +34,7 @@ const std::vector<int> max_cent_val = {60, 180, 180, 40, 180};
 
 const std::vector<int> min_cent = { 9,  69,   9,  9,  49};   // Centrality nominal
 const std::vector<int> max_cent = {69, 189, 189, 49, 189};
-const std::size_t ncent = 5;//min_cent.size();
+const std::size_t ncent = 1;//min_cent.size();
 
 const std::vector<float> min_pt = {100};
 const std::vector<float> max_pt = {9999};
@@ -414,11 +414,13 @@ void TemplatePlot(TString label,std::size_t i, std::size_t j, float purity, floa
 
     TLatex latex;
     latex.SetTextSize(0.042);
-    latex.DrawLatexNDC(0.12,0.92,"CMS #it{#bf{Preliminary}} #bf{PbPb 1.7nb^{-1} (5.02 TeV)}"); //pp 300.6pb^{-1}
+    latex.DrawLatexNDC(0.12,0.92,"CMS #it{#bf{Preliminary}} #bf{pp 300.6 pb^{-1} (5.02 TeV)}"); // PbPb 1.69 nb^{-1}
     leg_y1-=0.06;
     latex.DrawLatexNDC(leg_x1,leg_y1,Form("Quark Fraction : %.3f", purity)); // ,orig_purity
     leg_y1-=0.06;
     latex.DrawLatexNDC(leg_x1,leg_y1,Form("Cent. %.0f - %.0f%%", min_cent_val[i]/2.0, max_cent_val[i]/2.0));
+    leg_y1-=0.06;
+    latex.DrawLatexNDC(leg_x1,leg_y1,Form("x_{J}>0.8"));
     // mySmallText(0.55,0.5,1,Form("Cent. %.0f - %.0f%%", min_cent_val[i]/2, max_cent_val[i]/2));
     // mySmallText(0.55,0.4,1,Form("Quark Fraction : %.3f", purity)); 
     // mySmallText(0.55,0.4,1,Form("%.0f < E_{T}^{#gamma} <%.0f", min_pt[j], max_pt[j]));

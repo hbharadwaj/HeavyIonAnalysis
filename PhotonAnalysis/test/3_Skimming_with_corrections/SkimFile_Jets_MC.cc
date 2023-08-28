@@ -41,14 +41,14 @@
 using namespace std;
 
 const int NCUTOFF = 4;
-const float CUTOFF[NCUTOFF] = {0,50,80,170};     // 120
-const float CUTOFF_MAX[NCUTOFF] = {50,80,170,0}; // 120
+const float CUTOFF[NCUTOFF] = {0,80,120,170};     // 120
+const float CUTOFF_MAX[NCUTOFF] = {80,120,170,0}; // 120
 // const float CUTOFF[NCUTOFF] = {30,50,80,120,170};
 Double_t scale[NCUTOFF]; 
-TString input_dir  = "/data_CMS/cms/bharikri/2023_NTuples_Apr_All_gen_jets/PbPb/Pythia8_NOMINAL/pthat_";// "/data_CMS/cms/bharikri/2023_NTuples/PbPb/Pythia8_NOMINAL/pthat_";
+TString input_dir  = "/data_CMS/cms/bharikri/2023_NTuples_Jul_Decorrelated_PF/PbPb/Pythia8_Photon_down/pthat_";// "/data_CMS/cms/bharikri/2023_NTuples/PbPb/Pythia8_NOMINAL/pthat_";
 TString input_tree = "_Filter30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree";
-std::vector<TString> pthat_samples = {"30","50","80","170"}; // ,"120"
-TString label = "NOMINAL_Filter30";
+std::vector<TString> pthat_samples = {"50","80","120","170"}; // ,"120"
+TString label = "Photon_down_Filter30";
 TString output_dir = "/home/llr/cms/bharikri/Projects/Photon_Analysis/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/PhotonAnalysis/test/3_Skimming_with_corrections/";
 
 TString input_pho_tree     = "_Filter30/HiForestAOD_*.root/ggHiNtuplizerGED/EventTree";
@@ -154,11 +154,11 @@ void SkimFile_Jets_MC(){
    //  weight_recursive();
 
     scale[0]=1; 
-    scale[1]=0.241781054;  // for Filter30
-    scale[2]=0.067689456;  // for Filter30
-    scale[3]=0.004929120;  // for Filter30
-    // scale[4]=1;
-    // scale[5]=1; 
+    scale[1]=0.225387431;  // for Filter30
+    scale[2]=0.054033267;  // for Filter30
+    scale[3]=0.012610934;  // for Filter30
+    scale[4]=1.0;
+    scale[5]=1; 
 
     LoopWriteToFile();
 

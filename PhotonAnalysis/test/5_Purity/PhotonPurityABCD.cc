@@ -153,7 +153,7 @@ int PhotonPurity(const TString skim_data, const TString label) {
 
   const float orig_purity_values[ncent][npt] = {0};//{{0.819},{0.791},{0.899},{0.737},{0.838},{0.903},{0.895}};// {{0.938}};
 
-  const TCut eta_cut = "(abs(phoEta) < 1.44) && phoSigmaIEtaIEta_2012>0.002 && !(phoEta<-1.39 && phoPhi<-0.9 && phoPhi>-1.6)";
+  const TCut eta_cut = "(abs(phoEta) < 1.442) && phoSigmaIEtaIEta_2012>0.002 && !(phoEta<-1.39 && phoPhi<-0.9 && phoPhi>-1.6)";
   const TCut ele_cut = "!eleRej && phoHoverE<0.119947";
 
   const TCut reg_A = "phoSigmaIEtaIEta_2012<=0.010392 && (SumCalIso) <= 2.099277";

@@ -21,7 +21,7 @@ ARGS = parser.parse_args()
 SAMPLES = {}  # list of MC samples to submit -> Make a list for pthat80Filter30, unfilter, Filter30 and Filter 50
 SAMPLES.update(PbPbSamples.mc2018_samples_Unfilter)
 SAMPLES.update(PbPbSamples.mc2018_samples_Filter_30)
-# SAMPLES.update(PbPbSamples.mc2018_samples_Filter_50)
+SAMPLES.update(PbPbSamples.mc2018_samples_Filter_50)
 # SAMPLES.update(PbPbSamples.mc2018_samples_pthat15)
 # SAMPLES.update(PbPbSamples.mc2018_samples_pthat80Filter30)
 

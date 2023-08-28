@@ -36,7 +36,8 @@ process.HiForest.HiForestVersion = cms.string(version)
 process.source = cms.Source("PoolSource",
     duplicateCheckMode = cms.untracked.string("noDuplicateCheck"),
     fileNames = cms.untracked.vstring(
-        "file:/data_CMS/cms/lcunquei/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/JetAnalysis/test/data_test/546D19B5-D2FB-1D4C-90A1-AF7AEC8EC413.root"
+        # "file:/data_CMS/cms/lcunquei/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/JetAnalysis/test/data_test/546D19B5-D2FB-1D4C-90A1-AF7AEC8EC413.root"
+        "root://cms-xrd-global.cern.ch///store/himc/HINPbPbAutumn18DR/QCDPhoton_pThat-120_TuneCP5_HydjetDrumMB_5p02TeV_Pythia8/AODSIM/mva98_103X_upgrade2018_realistic_HI_v11-v2/110000/001CCAC5-9C19-D44B-9D07-0547CB83A7C5.root"
         ),
     )
 

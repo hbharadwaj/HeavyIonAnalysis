@@ -486,12 +486,18 @@ ggHiNtuplizer::ggHiNtuplizer(const edm::ParameterSet& ps) :
       tree_->Branch("pfpIso4subSC",&pfpIso4subSC_);
       tree_->Branch("pfpIso5subSC",&pfpIso5subSC_);
 
-      // modified by hbharadwaj adding the footprint for Charged Hadron
+      // modified by hbharadwaj adding the footprint for Charged and Neutral Hadron
       tree_->Branch("pfcIso1FPsubUE",&pfcIso1FPsubUE_);
       tree_->Branch("pfcIso2FPsubUE",&pfcIso2FPsubUE_);
       tree_->Branch("pfcIso3FPsubUE",&pfcIso3FPsubUE_);
       tree_->Branch("pfcIso4FPsubUE",&pfcIso4FPsubUE_);
       tree_->Branch("pfcIso5FPsubUE",&pfcIso5FPsubUE_);
+
+      tree_->Branch("pfnIso1FPsubUE",&pfnIso1FPsubUE_);
+      tree_->Branch("pfnIso2FPsubUE",&pfnIso2FPsubUE_);
+      tree_->Branch("pfnIso3FPsubUE",&pfnIso3FPsubUE_);
+      tree_->Branch("pfnIso4FPsubUE",&pfnIso4FPsubUE_);
+      tree_->Branch("pfnIso5FPsubUE",&pfnIso5FPsubUE_);
       
       // photon pf isolation UE-subtracted and cone excluded
       tree_->Branch("pfcIso1subUE",&pfcIso1subUE_);
@@ -967,6 +973,12 @@ void ggHiNtuplizer::analyze(const edm::Event& e, const edm::EventSetup& es)
       pfcIso3FPsubUE_.clear();
       pfcIso4FPsubUE_.clear();
       pfcIso5FPsubUE_.clear();
+
+      pfnIso1FPsubUE_.clear();
+      pfnIso2FPsubUE_.clear();
+      pfnIso3FPsubUE_.clear();
+      pfnIso4FPsubUE_.clear();
+      pfnIso5FPsubUE_.clear();
 
       pfcIso1subUE_.clear();
       pfcIso2subUE_.clear();
@@ -1914,6 +1926,12 @@ void ggHiNtuplizer::fillPhotons(const edm::Event& e, const edm::EventSetup& es, 
       pfcIso3FPsubUE_.push_back( pfIso.getPfIsoSubUE(*pho, reco::PFCandidate::h, 0.3, 0.0, 0.0, 0, pfIsoCalculator::noRemoval, particlesInIsoMap, true));
       pfcIso4FPsubUE_.push_back( pfIso.getPfIsoSubUE(*pho, reco::PFCandidate::h, 0.4, 0.0, 0.0, 0, pfIsoCalculator::noRemoval, particlesInIsoMap, true));
       pfcIso5FPsubUE_.push_back( pfIso.getPfIsoSubUE(*pho, reco::PFCandidate::h, 0.5, 0.0, 0.0, 0, pfIsoCalculator::noRemoval, particlesInIsoMap, true));
+
+      pfnIso1FPsubUE_.push_back( pfIso.getPfIsoSubUE(*pho, reco::PFCandidate::h0, 0.1, 0.0, 0.0, 0, pfIsoCalculator::noRemoval, particlesInIsoMap, true));
+      pfnIso2FPsubUE_.push_back( pfIso.getPfIsoSubUE(*pho, reco::PFCandidate::h0, 0.2, 0.0, 0.0, 0, pfIsoCalculator::noRemoval, particlesInIsoMap, true));
+      pfnIso3FPsubUE_.push_back( pfIso.getPfIsoSubUE(*pho, reco::PFCandidate::h0, 0.3, 0.0, 0.0, 0, pfIsoCalculator::noRemoval, particlesInIsoMap, true));
+      pfnIso4FPsubUE_.push_back( pfIso.getPfIsoSubUE(*pho, reco::PFCandidate::h0, 0.4, 0.0, 0.0, 0, pfIsoCalculator::noRemoval, particlesInIsoMap, true));
+      pfnIso5FPsubUE_.push_back( pfIso.getPfIsoSubUE(*pho, reco::PFCandidate::h0, 0.5, 0.0, 0.0, 0, pfIsoCalculator::noRemoval, particlesInIsoMap, true));
 
       pfcIso1subUE_.push_back( pfIso.getPfIsoSubUE(*pho, reco::PFCandidate::h, 0.1, 0.0, 0.0, 0, pfIsoCalculator::removePFcand, particlesInIsoMap, true));
       pfcIso2subUE_.push_back( pfIso.getPfIsoSubUE(*pho, reco::PFCandidate::h, 0.2, 0.0, 0.0, 0, pfIsoCalculator::removePFcand, particlesInIsoMap, true));
