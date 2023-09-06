@@ -3,7 +3,7 @@
 # Type: Embedded Monte Carlo
 # Input: AOD
 
-cleanJets = True
+cleanJets = False
 
 import FWCore.ParameterSet.Config as cms
 process = cms.Process('HiForest')
@@ -37,7 +37,7 @@ process.source = cms.Source("PoolSource",
     duplicateCheckMode = cms.untracked.string("noDuplicateCheck"),
     fileNames = cms.untracked.vstring(
         # "file:/data_CMS/cms/lcunquei/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/JetAnalysis/test/data_test/546D19B5-D2FB-1D4C-90A1-AF7AEC8EC413.root"
-        "root://cms-xrd-global.cern.ch///store/himc/HINPbPbAutumn18DR/QCDPhoton_pThat-120_TuneCP5_HydjetDrumMB_5p02TeV_Pythia8/AODSIM/mva98_103X_upgrade2018_realistic_HI_v11-v2/110000/001CCAC5-9C19-D44B-9D07-0547CB83A7C5.root"
+        "/store/himc/HINPbPbAutumn18DR/QCDPhoton_pThat-15_TuneCP5_HydjetDrumMB_5p02TeV_Pythia8/AODSIM/mva98_103X_upgrade2018_realistic_HI_v11-v1/60000/006745A8-5CCE-A946-BF24-BC13E84B229C.root"
         ),
     )
 
@@ -100,14 +100,14 @@ process.TFileService = cms.Service("TFileService",
 # Jets
 #############################
 # jet reco sequence
-process.load('HeavyIonsAnalysis.JetAnalysis.fullJetSequence_pponAA_MIX_cff')
+#process.load('HeavyIonsAnalysis.JetAnalysis.fullJetSequence_pponAA_MIX_cff')
 
-process.load('HeavyIonsAnalysis.JetAnalysis.hiFJRhoAnalyzer_cff')
-process.load("HeavyIonsAnalysis.JetAnalysis.pfcandAnalyzer_cfi")
-process.pfcandAnalyzer.doTrackMatching  = cms.bool(True)
+#process.load('HeavyIonsAnalysis.JetAnalysis.hiFJRhoAnalyzer_cff')
+#process.load("HeavyIonsAnalysis.JetAnalysis.pfcandAnalyzer_cfi")
+#process.pfcandAnalyzer.doTrackMatching  = cms.bool(True)
 
-from HeavyIonsAnalysis.Configuration.CommonFunctions_cff import overrideJEC_MC_PbPb5020_2018
-process = overrideJEC_MC_PbPb5020_2018(process)
+#from HeavyIonsAnalysis.Configuration.CommonFunctions_cff import overrideJEC_MC_PbPb5020_2018
+#process = overrideJEC_MC_PbPb5020_2018(process)
 
 ###############################################################################
 
@@ -218,8 +218,8 @@ process.ana_step = cms.Path(
     process.centralityBin +
     process.hiEvtAnalyzer +
     #process.HiGenParticleAna +
-    process.genSignalSequence +
-    process.jetSequence+ 
+    #process.genSignalSequence +
+    #process.jetSequence+ 
     #process.hiPuRhoR3Analyzer + 
     process.correctedElectrons +
     #process.ggHiNtuplizer +
