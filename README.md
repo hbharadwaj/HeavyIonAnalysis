@@ -18,7 +18,7 @@ cd HeavyIonsAnalysis/PhotonAnalysis/test/
 # Analysis folders and scripts in order are here. 
 # To create a test NTuple
 cd crabJobs/
-cmsRun runForestAOD_pponAA_MIX_103X_subs_gamma.py
+cmsRun runForestAOD_pponAA_MIX_103X_subs_gamma_ECAL.py
 
 ```
 
