@@ -16,13 +16,13 @@
 
 const int bin_det_xj=1;
 const int bin_true_xj=2;//2;
-const float xjmin_det = 0.4;
+const float xjmin_det = 0.8;
 const float min_pho_et = 100.0;
 bool flag_invert = false;
 
 const float min_cent_val = 0;
 const float max_cent_val = 30;
-TString label="Jul_31_PbPb_2018_sys_Decorrelate_PF";
+TString label="Jul_31_PbPb_2018_sys_Decorrelate_PF_xJ_gp8";
 TString output_path = "./Unfolded_Plots/";
 TString centstring = Form("Cent. %.0f-%.0f%%",min_cent_val,max_cent_val);
 TString dir_cent_string = Form("%.0f_%.0f_",min_cent_val,max_cent_val);
@@ -128,7 +128,7 @@ void Plot_hist2D(std::vector<TH2D*> hist,std::vector<TString> histname,TString d
 
 void plot_sys(TString in_file,TString in_test_label);
 
-void plot_sys_inverted_PbPb(TString file_label="",TString in_test_label="Data"){
+void plot_sys_inverted_PbPb(TString file_label="",TString in_test_label="Trivial"){
     if(file_label=="")file_label=label;
 
     TString file_path = Form("/home/llr/cms/bharikri/Projects/Photon_Analysis/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/JetAnalysis/test/Unfolding/OutputDir/Unfold_%.0f_%.0f_%s",min_cent_val,max_cent_val,label.Data());

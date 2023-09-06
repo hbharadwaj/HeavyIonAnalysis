@@ -34,7 +34,7 @@ using "\n";
 const int bin_det_xj=1;
 const int bin_true_xj=2;
 
-TString label = "Jul_31_pp_2017_sys_Decorrelate_PF_xJ_gp8";
+TString label = "Jul_31_pp_2017_sys_Decorrelate_PF";
 TString in_path = "/home/llr/cms/bharikri/Projects/ppHiForest/CMSSW_9_4_10/src/HeavyIonsAnalysis/JetAnalysis/test/Analysis/";
 TString in_file = in_path+"Uncertainty/Output_Jul_31_pp_2017_sys_Decorrelate_PF.root";
 TString out_path = "/home/llr/cms/bharikri/Projects/Photon_Analysis/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/JetAnalysis/test/Unfolding/OutputDir_pp/";
@@ -135,7 +135,7 @@ void SetHistErrZero(TH2D* hist2D){
     }
 }
 
-void RooUnfold_bharad_sys_pp(TestsTreatment input_test_index = kNoTest){
+void RooUnfold_bharad_sys_pp(TestsTreatment input_test_index = kTrivial){
 
     // gSystem->Load("libRooUnfold.so");
     
@@ -426,7 +426,7 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
             const int bin_det_girth =  5;
             const int bin_true_girth = 6;
 
-            Double_t xjmin_det =0.8;
+            Double_t xjmin_det =0.4;
             Double_t xjmin_true=0.0;
 
             Double_t xjmax_det =3;//5
