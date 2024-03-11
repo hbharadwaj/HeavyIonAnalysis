@@ -1,3 +1,5 @@
+// overlay_theory({"Overlay_theory/Theory_graph/HYBRID_Elastic_Wake_0_Rg_xJ_gp8.root","Overlay_theory/Theory_graph/HYBRID_Elastic_Wake_1_Rg_xJ_gp8.root","Overlay_theory/Theory_graph/HYBRID_NoElastic_Wake_0_Rg_xJ_gp8.root","Overlay_theory/Theory_graph/HYBRID_NoElastic_Wake_1_Rg_xJ_gp8.root"},{"Elastic NoWake","Elastic Wake","NoElastic NoWake","NoElastic Wake"},"Uncertainty/OutputCombined_Jul_31_Decorrelate_PF/Data_0_30_Jul_31_PbPb_2018_sys_Decorrelate_PF_xJ_gp8_Data_Rg_unfold_X.root","Data_0_30_Jul_31_PbPb_2018_sys_Decorrelate_PF_xJ_gp8_Data_Rg_unfold_X","~/pp_analysis/Analysis/Uncertainty/OutputCombined_Jul_31_Decorrelate_PF/pp_Data_Jul_31_pp_2017_sys_Decorrelate_PF_xJ_gp8_Data_Rg_unfold_X.root","pp_Data_Jul_31_pp_2017_sys_Decorrelate_PF_xJ_gp8_Data_Rg_unfold_X","PbPb_pp_0_30_Jul_31_Rg_xJ_gp8_Preliminary","Rg_xJ_gp8")
+
 #include "TPad.h"
 #include "TLatex.h"
 #include "TLine.h"
