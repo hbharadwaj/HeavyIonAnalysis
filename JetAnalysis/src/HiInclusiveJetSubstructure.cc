@@ -351,23 +351,25 @@ void HiInclusiveJetSubstructure::analyze(const Event& iEvent,const EventSetup& i
     jets_.nref++;
   }
 
-  // poor man's matching, someone fix please
-  for(int igen = 0 ; igen < jets_.nallgen; ++igen){
-    // const reco::GenJet & genjet = (*genjets)[igen];
-    // if(genjet.pt() < jetPtMin_) continue;
+  if(isMC_){
+    // poor man's matching, someone fix please
+    for(int igen = 0 ; igen < jets_.nallgen; ++igen){
+      // const reco::GenJet & genjet = (*genjets)[igen];
+      // if(genjet.pt() < jetPtMin_) continue;
 
-    // find matching patJet if there is one
-    jets_.allgenmatchindex[igen] = -1;
+      // find matching patJet if there is one
+      jets_.allgenmatchindex[igen] = -1;
 
-    for(int ijet = 0 ; ijet < jets_.nref; ++ijet){
+      for(int ijet = 0 ; ijet < jets_.nref; ++ijet){
 
-      double deltaPt = fabs(jets_.allgenpt[igen]-jets_.refpt[ijet]); //Note: precision of this ~ .0001, so cut .01
-      double deltaEta = fabs(jets_.allgeneta[igen]-jets_.refeta[ijet]); //Note: precision of this is  ~.0000001, but keep it low, .0001 is well below cone size and typical pointing resolution
-      double deltaPhi = fabs(reco::deltaPhi(jets_.allgenphi[igen], jets_.refphi[ijet])); //Note: precision of this is  ~.0000001, but keep it low, .0001 is well below cone size and typical pointing resolution
+        double deltaPt = fabs(jets_.allgenpt[igen]-jets_.refpt[ijet]); //Note: precision of this ~ .0001, so cut .01
+        double deltaEta = fabs(jets_.allgeneta[igen]-jets_.refeta[ijet]); //Note: precision of this is  ~.0000001, but keep it low, .0001 is well below cone size and typical pointing resolution
+        double deltaPhi = fabs(reco::deltaPhi(jets_.allgenphi[igen], jets_.refphi[ijet])); //Note: precision of this is  ~.0000001, but keep it low, .0001 is well below cone size and typical pointing resolution
 
-      if(deltaPt < 0.01 && deltaEta < .0001 && deltaPhi < .0001){
-          jets_.allgenmatchindex[igen] = (int)ijet;
-        break;
+        if(deltaPt < 0.01 && deltaEta < .0001 && deltaPhi < .0001){
+            jets_.allgenmatchindex[igen] = (int)ijet;
+          break;
+        }
       }
     }
   }
@@ -429,29 +431,31 @@ void HiInclusiveJetSubstructure::IterativeDeclusteringRec(double groom_type, dou
     // Geometrical PF Candidate x Jet Constituent Matching - Added by Bharadwaj - Apr 2023
     // poor man's matching, someone fix please
     std::vector<int> vec_jet_consituent_type;
-    
-    for(auto it = daughters.begin(); it!=daughters.end(); ++it){   
-      int temp_index = -1;
-      float mindR2 = 99999999;  
-      for (const auto& pfcand : *pfCandidates) {
-        // if(std::count(vec_PF_jtconst_index.begin(), vec_PF_jtconst_index.end(), it)!=0) continue;
-        float deta = fabs((**it).eta() - pfcand.eta());
-        if(deta>0.01) continue;
-        float dphi = fabs(reco::deltaPhi((**it).phi(),pfcand.phi())); 
-        if(dphi>0.001) continue;
-        float dR2 = deta*deta + dphi*dphi;
-        if(dR2<mindR2){
-          mindR2 = dR2;
-          temp_index = pfcand.particleId();
+
+    if(isMC_){
+      for(auto it = daughters.begin(); it!=daughters.end(); ++it){   
+        int temp_index = -1;
+        float mindR2 = 99999999;  
+        for (const auto& pfcand : *pfCandidates) {
+          // if(std::count(vec_PF_jtconst_index.begin(), vec_PF_jtconst_index.end(), it)!=0) continue;
+          float deta = fabs((**it).eta() - pfcand.eta());
+          if(deta>0.01) continue;
+          float dphi = fabs(reco::deltaPhi((**it).phi(),pfcand.phi())); 
+          if(dphi>0.001) continue;
+          float dR2 = deta*deta + dphi*dphi;
+          if(dR2<mindR2){
+            mindR2 = dR2;
+            temp_index = pfcand.particleId();
+          }
+          // if(pfcand.particleId()== reco::PFCandidate::h)
+          //     std::cout<<"\t Type = Charged Hadron"<<"\n";
+          // if(pfcand.particleId()== reco::PFCandidate::h0)
+          //     std::cout<<"\t Type = Neutral Hadron"<<"\n";
+          // if(pfcand.particleId()== reco::PFCandidate::gamma)
+          //     std::cout<<"\t Type = Photon"<<"\n";
         }
-        // if(pfcand.particleId()== reco::PFCandidate::h)
-        //     std::cout<<"\t Type = Charged Hadron"<<"\n";
-        // if(pfcand.particleId()== reco::PFCandidate::h0)
-        //     std::cout<<"\t Type = Neutral Hadron"<<"\n";
-        // if(pfcand.particleId()== reco::PFCandidate::gamma)
-        //     std::cout<<"\t Type = Photon"<<"\n";
+        vec_jet_consituent_type.push_back(temp_index);
       }
-      vec_jet_consituent_type.push_back(temp_index);
     }
 
     int i_jetconst = -1;
@@ -468,14 +472,16 @@ void HiInclusiveJetSubstructure::IterativeDeclusteringRec(double groom_type, dou
       float Photon_Scale  = 1.00; 
       float Neutral_Scale = 1.00; // 1.03; // 0.97;
       float PFEnergy_Scale = 1.00;
-      if(vec_jet_consituent_type[i_jetconst]==reco::PFCandidate::h0){
-        PFEnergy_Scale = Neutral_Scale;
-      }
-      else if(vec_jet_consituent_type[i_jetconst]==reco::PFCandidate::h){
-        PFEnergy_Scale = Charged_Scale;
-      }
-      else if(vec_jet_consituent_type[i_jetconst]==reco::PFCandidate::gamma){
-        PFEnergy_Scale = Photon_Scale;
+      if(isMC_){
+        if(vec_jet_consituent_type[i_jetconst]==reco::PFCandidate::h0){
+          PFEnergy_Scale = Neutral_Scale;
+        }
+        else if(vec_jet_consituent_type[i_jetconst]==reco::PFCandidate::h){
+          PFEnergy_Scale = Charged_Scale;
+        }
+        else if(vec_jet_consituent_type[i_jetconst]==reco::PFCandidate::gamma){
+          PFEnergy_Scale = Photon_Scale;
+        }
       }
 
       float temp_px =    (**it).px()*PFEnergy_Scale;

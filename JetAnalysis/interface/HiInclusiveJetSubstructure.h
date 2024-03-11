@@ -193,6 +193,9 @@ private:
     float   jtdynkt[MAXJETS];
     float   jtangu[MAXJETS];
 
+    float   jtpt_CA_nom[MAXJETS];
+    float   jtpt_CA_shift[MAXJETS];
+
     std::vector<std::vector<float>> jtSubJetPt;
     std::vector<std::vector<float>> jtSubJetEta;
     std::vector<std::vector<float>> jtSubJetPhi;

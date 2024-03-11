@@ -45,10 +45,10 @@ const float CUTOFF[NCUTOFF] = {0,80,120,170};     // 120
 const float CUTOFF_MAX[NCUTOFF] = {80,120,170,0}; // 120
 // const float CUTOFF[NCUTOFF] = {30,50,80,120,170};
 Double_t scale[NCUTOFF]; 
-TString input_dir  = "/data_CMS/cms/bharikri/2023_NTuples_Jul_Decorrelated_PF/PbPb/Pythia8_Photon_down/pthat_";// "/data_CMS/cms/bharikri/2023_NTuples/PbPb/Pythia8_NOMINAL/pthat_";
+TString input_dir  = "/data_CMS/cms/bharikri/2024_Jan_NTuples_PF_JES_check/PbPb/Pythia8_Photon_down/pthat_";// "/data_CMS/cms/bharikri/2023_NTuples/PbPb/Pythia8_NOMINAL/pthat_";
 TString input_tree = "_Filter30/HiForestAOD_*.root/hiEvtAnalyzer/HiTree";
-std::vector<TString> pthat_samples = {"50","80","120","170"}; // ,"120"
-TString label = "Photon_down_Filter30";
+std::vector<TString> pthat_samples = {"80"}; // "50","120","170"
+TString label = "Photon_down_pthat80_Filter30";
 TString output_dir = "/home/llr/cms/bharikri/Projects/Photon_Analysis/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/PhotonAnalysis/test/3_Skimming_with_corrections/";
 
 TString input_pho_tree     = "_Filter30/HiForestAOD_*.root/ggHiNtuplizerGED/EventTree";
@@ -154,9 +154,9 @@ void SkimFile_Jets_MC(){
    //  weight_recursive();
 
     scale[0]=1; 
-    scale[1]=0.225387431;  // for Filter30
-    scale[2]=0.054033267;  // for Filter30
-    scale[3]=0.012610934;  // for Filter30
+    scale[1]=1.0;  // for Filter30
+    scale[2]=1.0;  // for Filter30
+    scale[3]=1.0;  // for Filter30
     scale[4]=1.0;
     scale[5]=1; 
 
@@ -273,6 +273,10 @@ void LoopWriteToFile(){
    Float_t jet_rg[500];
    Float_t jet_dynkt[500];
    Float_t jet_angu[500];
+
+   Float_t jet_pt_CA_nom[500];
+   Float_t jet_pt_CA_shift[500];
+
    Int_t nref=0;
    Float_t ref_pt[500];
    Float_t ref_eta[500];
@@ -327,6 +331,9 @@ void LoopWriteToFile(){
    data.SetBranchAddress("refangu", &ref_angu); 
    data.SetBranchAddress("refparton_pt", &ref_parton_pt);
    data.SetBranchAddress("refparton_flavor", &ref_parton_flavor);
+
+   data.SetBranchAddress("jtpt_CA_nom", &jet_pt_CA_nom);
+   data.SetBranchAddress("jtpt_CA_shift", &jet_pt_CA_shift);
 
    data.SetBranchAddress("nallgen",&nallgen); 
    data.SetBranchAddress("allgenmatchindex",&allgenmatch_index); 
@@ -717,6 +724,9 @@ void LoopWriteToFile(){
    Float_t train_ref_xJ[500]={-1};
    Float_t train_ref_parton_pt[500]={-1};
    Int_t train_ref_parton_flavor[500]={-1};
+
+   Float_t train_jet_pt_CA_nom[500]={-1};
+   Float_t train_jet_pt_CA_shift[500]={-1};
    
    Int_t train_nallgen = 0;
    Int_t train_allgen_matchindex[500]={-1};
@@ -748,6 +758,9 @@ void LoopWriteToFile(){
    jet_tree->Branch("refxJ", &train_ref_xJ,"refxJ[nref]/F");
    jet_tree->Branch("refparton_pt", &train_ref_parton_pt,"refparton_pt [nref]/F");
    jet_tree->Branch("refparton_flavor", &train_ref_parton_flavor,"refparton_flavor[nref]/I");
+
+   jet_tree->Branch("jtpt_CA_nom", &train_jet_pt_CA_nom,"jtpt_CA_nom[nref]/F");
+   jet_tree->Branch("jtpt_CA_shift", &train_jet_pt_CA_shift,"jtpt_CA_shift[nref]/F");
 
    jet_tree->Branch("nallgen", &train_nallgen);
    jet_tree->Branch("allgenmatchindex", &train_allgen_matchindex,"allgenmatchindex[nallgen]/I");
@@ -884,6 +897,9 @@ void LoopWriteToFile(){
          float dEta = jet_eta[ijet] - phoEta->at(pho_index);
          float dPhi = RelativePhi(jet_phi[ijet],phoPhi->at(pho_index));
          // if(sqrt(dEta*dEta + dPhi*dPhi)<0.5) continue;
+
+         train_jet_pt_CA_nom[train_nref] = jet_pt_CA_nom[ijet];
+         train_jet_pt_CA_shift[train_nref] = jet_pt_CA_shift[ijet];
 
          train_jet_pt[train_nref] = jet_pt[ijet];
          train_jet_eta[train_nref] = jet_eta[ijet];
