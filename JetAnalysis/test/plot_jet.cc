@@ -27,8 +27,9 @@ std::vector<int> max_cent = {69, 189, 189, 49, 189};
 // std::vector<int> min_cent = { 0,  60,   0,  0,  40};
 // std::vector<int> max_cent = {60, 180, 180, 40, 180};
 const std::size_t ncent = 5;//min_cent.size();
-TString label="QCDPhoton_jets"; // "Substructure_up_jets";//"QCDPhoton_jets"; // "Data_2018_jets";//
-TString output_path = "./OutputPlots/"; // Uncertainty/ OutputPlots
+TString label="PbPb_NOMINAL_jets";//"Charged_up_pthat80_Filter30_jets_PF_JES_check";//"QCDPhoton_jets"; // "Substructure_up_jets";//"QCDPhoton_jets"; // "Data_2018_jets";//
+// 
+TString output_path = "./OutputPlots/PF_JES_check/"; // Uncertainty/ OutputPlots
 
 std::vector<double> rho_weight = {0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.1237833 ,0.2448678 ,0.4851410 ,0.5496915 ,0.5527335 ,0.5450190 ,0.5239799 ,0.5008505 ,0.5195929 ,0.5332869 ,0.5166109 ,0.5155024 ,0.5280507 ,0.6157440 ,1.0460693 ,1.5848926 ,1.6505300 ,1.6796490 ,1.6854259 ,1.7155044 ,1.7169375 ,1.6923578 ,1.7101517 ,1.7219163 ,1.7913101 ,2.0315394 ,3.3030708 ,9.9789515 ,69.3535614 ,766.6729736 ,208048.4375000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000};
 std::vector<double> vz_weight = {1.5167011 ,0.8576906 ,0.9099118 ,1.1778998 ,1.1266822 ,0.9996321 ,1.3267114 ,1.2380642 ,1.2732384 ,1.2615132 ,1.2169536 ,1.2407824 ,1.2066655 ,1.1912715 ,1.1439103 ,1.1035628 ,1.0853250 ,1.0363530 ,1.0335017 ,1.0064293 ,0.9933138 ,0.9838185 ,0.9721337 ,0.9481471 ,0.9393314 ,0.9090054 ,0.9006600 ,0.8941706 ,0.8812072 ,0.8448598 ,0.8381445 ,0.7948514 ,0.7870941 ,0.7165342 ,0.6406508 ,0.7594909 ,0.7076170 ,0.6397762 ,0.5146740 ,0.6004016 ,0.4577079};
@@ -142,6 +143,9 @@ void plot_jet(){
         Float_t jtdynkt[500]={-1};
         Float_t jtangu[500]={-1};
 
+        Float_t jtpt_CA_nom[500]={-1};
+        Float_t jtpt_CA_shift[500]={-1};
+
         Float_t refpt[500]={-1};
         Float_t refeta[500]={-1};
         Float_t refphi[500]={-1};
@@ -174,6 +178,12 @@ void plot_jet(){
         if(jet_tree.GetBranch("refparton_flavor")){
             jet_tree.SetBranchAddress("refparton_pt", &refparton_pt);
             jet_tree.SetBranchAddress("refparton_flavor", &refparton_flavor);
+        }
+
+        if(jet_tree.GetBranch("jtpt_CA_nom")){
+
+            jet_tree.SetBranchAddress("jtpt_CA_nom", &jtpt_CA_nom);
+            jet_tree.SetBranchAddress("jtpt_CA_shift", &jtpt_CA_shift);
         }
 
         if(jet_tree.GetBranch("allgenmatchindex")){
@@ -303,6 +313,9 @@ void plot_jet(){
         TH1D* h_jet_pt[ncent];
         TH1D* h_jet_eta[ncent];
         TH1D* h_jet_phi[ncent];
+
+        TH1D* h_jet_pt_CA_shift[ncent];
+        TH1D* h_jet_pt_corr_sf[ncent];
 
         TH1D* hres_jetpt[ncent];
         TH1D* hres_xJ[ncent];
@@ -483,6 +496,9 @@ void plot_jet(){
             h_jet_eta[i] = new TH1D(Form("h_jet_eta_%zu", i), Form("h_jet_eta_%zu;Recoil Jet #eta;Norm. Events", i), 50, -2.0, 2.0);
             h_jet_phi[i] = new TH1D(Form("h_jet_phi_%zu", i), Form("h_jet_phi_%zu;Recoil Jet #phi;Norm. Events", i), 30, -3.14, 3.14);
 
+            h_jet_pt_CA_shift[i] = new TH1D(Form("h_jet_pt_CA_shift_%zu", i), Form("h_jet_pt_CA_shift_%zu;CA jet p_{T}^{PF scale shift}/p_{T}^{nominal};Events", i),128, 0.97,1.03);//22,jet_pt_edges); //25, 0, 250);
+            h_jet_pt_corr_sf[i] = new TH1D(Form("h_jet_pt_corr_sf_%zu", i), Form("h_jet_pt_corr_sf_%zu;jet p_{t} uncertainty;Events", i),128, 0, 0.1);
+
             hres_jetpt[i] = new TH1D(Form("hres_jetpt_%zu", i), Form("hres_jetpt_%zu;(Jet Reco p_{T} - True p_{T})/True p_{T};Events", i), 64, -1, 1);
             hres_xJ[i] = new TH1D(Form("hres_xJ_%zu", i), Form("hres_xJ_%zu;(Reco x_{J} - True x_{J})/True x_{J};Events", i), 64, -1, 1);
             hres_Rg[i] = new TH1D(Form("hres_Rg_%zu", i), Form("hres_Rg_%zu;(Reco R_{g} - True R_{g})/True R_{g};Events", i), 64, -1, 1);
@@ -601,6 +617,7 @@ void plot_jet(){
     resolution_sf = JME::JetResolutionScaleFactor("/grid_mnt/vol_home/llr/cms/bharikri/Projects/Photon_Analysis/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/JetAnalysis/test/Uncertainty/JER/Autumn18_RunD_V7b_MC_SF_AK4PF.txt");
 
     Int_t nEv=jet_tree.GetEntries();
+    std::cout<<"Total events = "<<nEv<<"\n";
     for(int iEntry=0; iEntry<nEv; iEntry++){
         jet_tree.GetEntry(iEntry);
         float scale =1.0;
@@ -713,6 +730,8 @@ void plot_jet(){
                     // hxJ_true[i]->Fill(refpt[jet_index]/mcEt,scale);
                     // hRg_true[i]->Fill(jet_true_Rg_max,scale);
                     // hangu_true[i]->Fill(refangu[jet_index],scale);
+
+                    // h_jet_pt_CA_shift[i]->Fill(jtpt_CA_shift[jet_index]/jtpt_CA_nom[jet_index],scale);
                     
                     /*
                     if(refpt[jet_index]>60 && refpt[jet_index]<80){
@@ -777,6 +796,9 @@ void plot_jet(){
             int jet_index=-1;
             int jet_true_index=-1;
             int jet_true_index_gen=-1;
+
+            float jet_pt_corr_sf = -1;
+
             float jet_pt_max=-1;
             float jet_true_pt_max=-1;
             float jet_true_pt_gen=-1;
@@ -813,6 +835,14 @@ void plot_jet(){
                 float jetPtCorrected = jtpt[ijet];
 
                 if(!label.Contains("Data")){
+                //* JEC
+                jecUnc->setJetEta(jteta[ijet]);
+                jecUnc->setJetPt(jtpt[ijet]);
+                float jtpt_unc = jecUnc->getUncertainty(true);
+                float jtpt_corr = 1+( 0*jtpt_unc);
+                jetPtCorrected *= jtpt_corr;
+                jet_pt_corr_sf =jtpt_unc;
+
                 //* JER
                 JME::JetParameters parameters_1;
                 parameters_1.setJetPt(refpt[ijet]);
@@ -823,6 +853,7 @@ void plot_jet(){
                 if(sf<=1) sf=1.0;
                 float corr_sf = 1+gRandom->Gaus(0,std::sqrt(0.06*0.06 + (0.8*0.8/refpt[ijet])))*std::sqrt(sf*sf-1); // std::sqrt(0.06*0.06 + (0.8*0.8/jetPtCorrected))
                 jetPtCorrected*=corr_sf;
+                // jet_pt_corr_sf = corr_sf;
                 }
 
                 // std::cout<<"i = "<<iEntry<<"   pT:"<<jetPtCorrected<<"   Resolution: "<<sim_resolution<<"   SF:"<<sf<<std::endl;
@@ -1006,6 +1037,9 @@ void plot_jet(){
                     //     }
                     //     hres_angu[i]->Fill((jtangu[jet_index]-refangu[jet_index])/refangu[jet_index],scale_jet);
                     // }   
+
+                    h_jet_pt_CA_shift[i]->Fill(jtpt_CA_shift[jet_index]/jtpt_CA_nom[jet_index],scale);
+                    h_jet_pt_corr_sf[i]->Fill(jet_pt_corr_sf,scale);
            
                     //* Rg Efficiency for gen-reco matching
                     if(jet_true_Rg_gen<=0) jet_true_Rg_gen = -0.025;
@@ -1372,6 +1406,9 @@ void plot_jet(){
         h_jet_eta[i]->Write("",TObject::kOverwrite);
         h_jet_phi[i]->Write("",TObject::kOverwrite);
 
+        h_jet_pt_CA_shift[i]->Write("",TObject::kOverwrite);
+        h_jet_pt_corr_sf[i]->Write("",TObject::kOverwrite);
+
         hres_jetpt[i]->Write("",TObject::kOverwrite);
         hres_xJ[i]->Write("",TObject::kOverwrite);
         hres_Rg[i]->Write("",TObject::kOverwrite);
@@ -1534,6 +1571,9 @@ void plot_jet(){
         overlay({hangu_all[0],hangu_lead[0]},{"All Recoil Jets","Leading Recoil Jet","Girth","Norm. Events","angu_all_lead"},"right_norm_label",sel);
         overlay({hktdyn_all[0],hktdyn_lead[0]},{"All Recoil Jets","Leading Recoil Jet","dyn k_{T}","Norm. Events","ktdyn_all_lead"},"rightlog_norm_label",sel);
         Plot_hist({hzg_lead[0]},{"Leading Recoil Jet","zg","Norm. Events","zg_all_lead"},"right_norm_label",sel);
+
+        Plot_hist({h_jet_pt_CA_shift[0]},{Form("#splitline{Charged up }{#sigma = %4.4f, #mu = %4.4f }",h_jet_pt_CA_shift[0]->GetRMS(),h_jet_pt_CA_shift[0]->GetMean()),"jet_pt_CA_shift"},"left",sel);
+        Plot_hist({h_jet_pt_corr_sf[0]},{Form("#splitline{Nominal}{#sigma = %4.4f, #mu = %4.4f }",h_jet_pt_corr_sf[0]->GetRMS(),h_jet_pt_corr_sf[0]->GetMean()),"jet_pt_corr_sf"},"right",sel);
 
         sel = {Form("#gamma p_{T}>%.0f, x_{J}>%.1f",min_pho_et,min_jet_pt),"|#eta|<1.44"};
         Plot_hist({hdphi_all[0],hdphi_all[1]},{Form("Cent. %d-%d%%",min_cent_val[0]/2,max_cent_val[0]/2),Form("Cent. %d-%d%%",min_cent_val[1]/2,max_cent_val[1]/2),"dphi_all_cent"},"leftflowlognorm",sel);
