@@ -10,9 +10,9 @@
 
 const float min_cent_val = 0;
 const float max_cent_val = 30;
-const float min_xJ = 0.8;
-TString label="Jul_31_PbPb_2018_sys_Decorrelate_PF_xJ_gp8"+TString("_Data");
-TString varname = "Rg";
+const float min_xJ = 0.4;
+TString label="Jul_31_PbPb_2018_sys_Decorrelate_PF"+TString("_Data");
+TString varname = "girth";
 TString output_path = "OutputCombined/";
 TCanvas c;
 TLegend *l1;
@@ -327,8 +327,31 @@ void plot_combine(TString hname,TString file="", TString label_in="", TString ou
             Double_t erry_Pythia_prior_a = fabs(hinput[17]->GetBinContent(j)-hinput[0]->GetBinContent(j));   // q/g Modified
             Double_t erry_Pythia_prior_b = fabs(hinput[18]->GetBinContent(j)-hinput[0]->GetBinContent(j));  // q/g Modified
 
-        Double_t erry_uncorr_up = TMath::Sqrt(erry_reg_a*erry_reg_a + erry_purity_a*erry_purity_a + erry_JEC_a*erry_JEC_a + erry_JER_a*erry_JER_a + erry_response_a*erry_response_a + erry_photon_a*erry_photon_a + erry_charged_a*erry_charged_a + erry_neutral_a*erry_neutral_a + erry_cent_a*erry_cent_a + erry_Pythia_prior_a*erry_Pythia_prior_a); // 
-        Double_t erry_uncorr_do = TMath::Sqrt(erry_reg_b*erry_reg_b + erry_purity_b*erry_purity_b + erry_JEC_b*erry_JEC_b + erry_JER_b*erry_JER_b + erry_response_b*erry_response_b + erry_photon_b*erry_photon_b + erry_charged_b*erry_charged_b + erry_neutral_b*erry_neutral_b + erry_cent_b*erry_cent_b + erry_Pythia_prior_b*erry_Pythia_prior_b); //  
+        Double_t erry_uncorr_up = TMath::Sqrt(
+            erry_reg_a*erry_reg_a 
+            + erry_purity_a*erry_purity_a 
+            + erry_JEC_a*erry_JEC_a 
+            + erry_JER_a*erry_JER_a 
+            + erry_response_a*erry_response_a 
+            + erry_photon_a*erry_photon_a 
+            + erry_charged_a*erry_charged_a 
+            + erry_neutral_a*erry_neutral_a 
+            + erry_cent_a*erry_cent_a 
+            + erry_Pythia_prior_a*erry_Pythia_prior_a
+        ); // 
+        
+        Double_t erry_uncorr_do = TMath::Sqrt(
+            erry_reg_b*erry_reg_b 
+            + erry_purity_b*erry_purity_b 
+            + erry_JEC_b*erry_JEC_b 
+            + erry_JER_b*erry_JER_b 
+            + erry_response_b*erry_response_b 
+            + erry_photon_b*erry_photon_b 
+            + erry_charged_b*erry_charged_b 
+            + erry_neutral_b*erry_neutral_b 
+            + erry_cent_b*erry_cent_b 
+            + erry_Pythia_prior_b*erry_Pythia_prior_b
+        ); //  
 
         // Double_t erry_uncorr_up = TMath::Sqrt(erry_photon_a*erry_photon_a + erry_charged_a*erry_charged_a + erry_neutral_a*erry_neutral_a);//TMath::Sqrt(erry_reg_a*erry_reg_a + erry_purity_a*erry_purity_a + erry_JEC_a*erry_JEC_a + erry_JER_a*erry_JER_a + erry_response_a*erry_response_a + erry_photon_a*erry_photon_a + erry_charged_a*erry_charged_a + erry_neutral_a*erry_neutral_a + erry_herwig_a*erry_herwig_a);
         // Double_t erry_uncorr_do = TMath::Sqrt(erry_photon_b*erry_photon_b + erry_charged_b*erry_charged_b + erry_neutral_b*erry_neutral_b);//TMath::Sqrt(erry_reg_b*erry_reg_b + erry_purity_b*erry_purity_b + erry_JEC_b*erry_JEC_b + erry_JER_b*erry_JER_b + erry_response_b*erry_response_b + erry_photon_b*erry_photon_b + erry_charged_b*erry_charged_b + erry_neutral_b*erry_neutral_b + erry_herwig_b*erry_herwig_b);
@@ -336,7 +359,7 @@ void plot_combine(TString hname,TString file="", TString label_in="", TString ou
         Double_t toterr_up = TMath::Sqrt(erry_stat_a*erry_stat_a + erry_uncorr_up*erry_uncorr_up);
         Double_t toterr_do = TMath::Sqrt(erry_stat_b*erry_stat_b + erry_uncorr_do*erry_uncorr_do);
 
-        float den_val= hinput[0]->GetBinContent(j);
+        Double_t den_val= hinput[0]->GetBinContent(j);
         if(den_val==0) den_val=999999999;
         herr_nom->SetBinContent(j,erry_stat_a/(den_val));
         herr_unfoldm1->SetBinContent(j,erry_reg_a/den_val);
@@ -378,9 +401,9 @@ void plot_combine(TString hname,TString file="", TString label_in="", TString ou
         errtot_do[j] = toterr_do;
     }
 
-    auto stat_uncert = new TGraphAsymmErrors(hinput[0]->GetNbinsX()+2,vec_x,vec_y,errx_up,errx_do,errstat_up,errstat_do);
-    auto sys_uncert = new TGraphAsymmErrors(hinput[0]->GetNbinsX()+2,vec_x,vec_y,errx_up,errx_do,erry_up,erry_do);
-    auto tot_uncert = new TGraphAsymmErrors(hinput[0]->GetNbinsX()+2,vec_x,vec_y,errx_up,errx_do,errtot_up,errtot_do);
+    auto stat_uncert = new TGraphAsymmErrors(hinput[0]->GetNbinsX()+2,vec_x,vec_y,errx_do,errx_up,errstat_do,errstat_up);
+    auto sys_uncert = new TGraphAsymmErrors(hinput[0]->GetNbinsX()+2,vec_x,vec_y,errx_do,errx_up,erry_do,erry_up);
+    auto tot_uncert = new TGraphAsymmErrors(hinput[0]->GetNbinsX()+2,vec_x,vec_y,errx_do,errx_up,errtot_do,errtot_up);
 
     herr_nom->Write("herr_nom_output",TObject::kWriteDelete);
     herr_unfoldm1->Write("herr_unfoldm1_output",TObject::kWriteDelete);
