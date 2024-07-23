@@ -27,9 +27,10 @@ std::vector<int> max_cent = {69, 189, 189, 49, 189};
 // std::vector<int> min_cent = { 0,  60,   0,  0,  40};
 // std::vector<int> max_cent = {60, 180, 180, 40, 180};
 const std::size_t ncent = 5;//min_cent.size();
-TString label="PbPb_NOMINAL_jets";//"Charged_up_pthat80_Filter30_jets_PF_JES_check";//"QCDPhoton_jets"; // "Substructure_up_jets";//"QCDPhoton_jets"; // "Data_2018_jets";//
+const float epsilon = 0.0000001; // Floating point comparison with const gives errors.
+TString label="PbPb_NOMINAL_jets";//"PbPb_NOMINAL_jets";//"Charged_up_pthat80_Filter30_jets_PF_JES_check";//"QCDPhoton_jets"; // "Substructure_up_jets";//"QCDPhoton_jets"; // "Data_2018_jets";//
 // 
-TString output_path = "./OutputPlots/PF_JES_check/"; // Uncertainty/ OutputPlots
+TString output_path = "./OutputPlots/"; // Uncertainty/ OutputPlots
 
 std::vector<double> rho_weight = {0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.1237833 ,0.2448678 ,0.4851410 ,0.5496915 ,0.5527335 ,0.5450190 ,0.5239799 ,0.5008505 ,0.5195929 ,0.5332869 ,0.5166109 ,0.5155024 ,0.5280507 ,0.6157440 ,1.0460693 ,1.5848926 ,1.6505300 ,1.6796490 ,1.6854259 ,1.7155044 ,1.7169375 ,1.6923578 ,1.7101517 ,1.7219163 ,1.7913101 ,2.0315394 ,3.3030708 ,9.9789515 ,69.3535614 ,766.6729736 ,208048.4375000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000 ,0.0000000};
 std::vector<double> vz_weight = {1.5167011 ,0.8576906 ,0.9099118 ,1.1778998 ,1.1266822 ,0.9996321 ,1.3267114 ,1.2380642 ,1.2732384 ,1.2615132 ,1.2169536 ,1.2407824 ,1.2066655 ,1.1912715 ,1.1439103 ,1.1035628 ,1.0853250 ,1.0363530 ,1.0335017 ,1.0064293 ,0.9933138 ,0.9838185 ,0.9721337 ,0.9481471 ,0.9393314 ,0.9090054 ,0.9006600 ,0.8941706 ,0.8812072 ,0.8448598 ,0.8381445 ,0.7948514 ,0.7870941 ,0.7165342 ,0.6406508 ,0.7594909 ,0.7076170 ,0.6397762 ,0.5146740 ,0.6004016 ,0.4577079};
@@ -39,6 +40,46 @@ void Plot_hist(std::vector<TH1D*>,std::vector<TString> ,TString opt="label",std:
 void Plot_hist2D(std::vector<TH2D*> hist,std::vector<TString> histname,TString dopt="colz",std::vector<TString> eopt={"end"});
 
 void overlay(std::vector<TH1D*>,std::vector<TString> ,TString opt="label",std::vector<TString> eopt={"end"});
+
+
+void get_qfrac(float in_min_xJ,float in_min_cent,float in_max_cent,float &out_orig_frac, float &out_fit_frac){ 
+    // Function to Find the original and Fit quark fraction -> Used to obtain an Alternative MC sample for response matrix uncertainty
+    const int ncent = 5; // {(0,30),(30,90),(0,90),(0,20),(20,90)}
+    // Using girth fits as default
+    //* For xJ>0.4
+    const float orig_qg_xJ_gp4[ncent] = {0.64618801,0.64211212,0.64554824,0.64738018,0.64362583};//{0.57889581,0.58154138,0.57951658,0.57672473,0.58561608};//{0.634,0.632,0.6325,0.633,0.633};   // Quark Fraction
+    const float fit_qg_xJ_gp4[ncent]  = {0.540366,0.510047,0.5347,0.521102,0.558531};//{0.446405,0.439685,0.439685,0.431104,0.46912}; //              {0.485,0.528,0.496,0.472,0.541}; // From angu - {0.483,0.533,0.494,0.467,0.529};
+    //* For xJ>0.8
+    const float orig_qg_xJ_gp8[ncent] = {0.74436974,0.74859597,0.74695384,0.74436960,0.74871224}; //{0.634,0.632,0.6325,0.633,0.633};   // Quark Fraction
+    const float fit_qg_xJ_gp8[ncent]  = {0.899833,0.702648,0.859849,0.894501,0.79605}; //              {0.485,0.528,0.496,0.472,0.541}; // From angu - {0.483,0.533,0.494,0.467,0.529};
+
+    if((in_min_xJ-0.4)<epsilon){
+        if((in_min_cent- 0)<epsilon && (in_max_cent-30)<epsilon) out_orig_frac =orig_qg_xJ_gp4[0]; out_fit_frac =fit_qg_xJ_gp4[0];  return;
+        if((in_min_cent-30)<epsilon && (in_max_cent-90)<epsilon) out_orig_frac =orig_qg_xJ_gp4[1]; out_fit_frac =fit_qg_xJ_gp4[1];  return;
+        if((in_min_cent- 0)<epsilon && (in_max_cent-90)<epsilon) out_orig_frac =orig_qg_xJ_gp4[2]; out_fit_frac =fit_qg_xJ_gp4[2];  return;
+        if((in_min_cent- 0)<epsilon && (in_max_cent-20)<epsilon) out_orig_frac =orig_qg_xJ_gp4[3]; out_fit_frac =fit_qg_xJ_gp4[3];  return;
+        if((in_min_cent-20)<epsilon && (in_max_cent-90)<epsilon) out_orig_frac =orig_qg_xJ_gp4[4]; out_fit_frac =fit_qg_xJ_gp4[4];  return;
+    }
+    else if((in_min_xJ-0.8)<epsilon){
+        if((in_min_cent- 0)<epsilon && (in_max_cent-30)<epsilon) out_orig_frac =orig_qg_xJ_gp8[0]; out_fit_frac =fit_qg_xJ_gp8[0];  return;
+        if((in_min_cent-30)<epsilon && (in_max_cent-90)<epsilon) out_orig_frac =orig_qg_xJ_gp8[1]; out_fit_frac =fit_qg_xJ_gp8[1];  return;
+        if((in_min_cent- 0)<epsilon && (in_max_cent-90)<epsilon) out_orig_frac =orig_qg_xJ_gp8[2]; out_fit_frac =fit_qg_xJ_gp8[2];  return;
+        if((in_min_cent- 0)<epsilon && (in_max_cent-20)<epsilon) out_orig_frac =orig_qg_xJ_gp8[3]; out_fit_frac =fit_qg_xJ_gp8[3];  return;
+        if((in_min_cent-20)<epsilon && (in_max_cent-90)<epsilon) out_orig_frac =orig_qg_xJ_gp8[4]; out_fit_frac =fit_qg_xJ_gp8[4];  return;
+    }
+    else{
+        std::cout<<"Using Default xJ>0.4 Quark fraction fitting"<<std::endl;
+        if((in_min_cent- 0)<epsilon && (in_max_cent-30)<epsilon) out_orig_frac =orig_qg_xJ_gp4[0]; out_fit_frac =fit_qg_xJ_gp4[0];  return;
+        if((in_min_cent-30)<epsilon && (in_max_cent-90)<epsilon) out_orig_frac =orig_qg_xJ_gp4[1]; out_fit_frac =fit_qg_xJ_gp4[1];  return;
+        if((in_min_cent- 0)<epsilon && (in_max_cent-90)<epsilon) out_orig_frac =orig_qg_xJ_gp4[2]; out_fit_frac =fit_qg_xJ_gp4[2];  return;
+        if((in_min_cent- 0)<epsilon && (in_max_cent-20)<epsilon) out_orig_frac =orig_qg_xJ_gp4[3]; out_fit_frac =fit_qg_xJ_gp4[3];  return;
+        if((in_min_cent-20)<epsilon && (in_max_cent-90)<epsilon) out_orig_frac =orig_qg_xJ_gp4[4]; out_fit_frac =fit_qg_xJ_gp4[4];  return;
+    }
+    
+    std::cout<<"Quark Fraction error"<<std::endl;
+    return;
+}
+
 
 void plot_jet(){
     gROOT->SetBatch();
@@ -307,6 +348,8 @@ void plot_jet(){
         TH1D* hrho[ncent];
         TH1D* hvz[ncent];
 
+        TH1D* h_pho_Et[ncent];
+
         TH2D* h_eta_phi_gamma[ncent];
         TH2D* h_eta_phi_jet[ncent];
 
@@ -335,6 +378,9 @@ void plot_jet(){
         TH1D* hktdyn_lead[ncent];
         TH1D* hzg_lead[ncent];
         TH1D* hrefparton_lead[ncent];
+
+        TH1D* h_Rg_det[ncent];
+        TH1D* h_angu_det[ncent];
 
         TH1D* hxJ_lead_true[ncent];
         TH1D* hRg_lead_true[ncent];
@@ -380,6 +426,14 @@ void plot_jet(){
         TH1D* hbkg_ktdyn_lead[ncent];
         TH1D* hbkg_zg_lead[ncent];
 
+        TH1D* hbkg_Rg_det[ncent];
+        TH1D* hbkg_angu_det[ncent];
+
+        TH1D* h_Rg_pur_num[ncent];
+        TH1D* h_Rg_pur_den[ncent];
+        TH1D* h_angu_pur_num[ncent];
+        TH1D* h_angu_pur_den[ncent];
+
         // Unfolding Plots
 
         TH2D* h_Rg_xJ_det[ncent];
@@ -416,7 +470,7 @@ void plot_jet(){
             const int bin_det_dynkt=3;
             const int bin_true_dynkt=5;
 
-            Double_t xjmin_det=0.4;
+            Double_t xjmin_det=0.8;
             Double_t xjmin_true=0.0;//0.0;
 
             Double_t xjmax_det=3.0;
@@ -484,6 +538,8 @@ void plot_jet(){
             hrho[i] = new TH1D(Form("hrho_%zu", i), Form("hrho_%zu;rho;Norm. Events", i), 50, 0, 250);
             hvz[i] = new TH1D(Form("hvz_%zu", i), Form("hrho_%zu;vz;Norm. Events", i), 40, -20, 20);
 
+            h_pho_Et[i] = new TH1D(Form("h_pho_Et_%zu", i), Form("h_pho_Et_%zu;#gamma E_{T};Norm. Events", i), 50, 100, 300);
+
             h_eta_phi_gamma[i]=new TH2D(Form("h_eta_phi_gamma_%zu",i),Form("h_eta_phi_gamma_%zu;#gamma #eta;#gamma #phi",i),50,-1.44,1.44,30,-3.14,3.14);
             h_eta_phi_jet[i]=new TH2D(Form("h_eta_phi_jet_%zu",i),Form("h_eta_phi_jet_%zu;Leading Jet #eta;Leading #phi",i),50,-2.0,2.0,30,-3.14,3.14);
 
@@ -502,7 +558,7 @@ void plot_jet(){
             hres_jetpt[i] = new TH1D(Form("hres_jetpt_%zu", i), Form("hres_jetpt_%zu;(Jet Reco p_{T} - True p_{T})/True p_{T};Events", i), 64, -1, 1);
             hres_xJ[i] = new TH1D(Form("hres_xJ_%zu", i), Form("hres_xJ_%zu;(Reco x_{J} - True x_{J})/True x_{J};Events", i), 64, -1, 1);
             hres_Rg[i] = new TH1D(Form("hres_Rg_%zu", i), Form("hres_Rg_%zu;(Reco R_{g} - True R_{g})/True R_{g};Events", i), 64, -1, 1);
-            hres_angu[i] = new TH1D(Form("hres_angu_%zu", i), Form("hres_angu_%zu;(Reco Angu - True Angu)/True Angu;Events", i), 64, -1, 1);
+            hres_angu[i] = new TH1D(Form("hres_angu_%zu", i), Form("hres_angu_%zu;(Reco Girth - True Girth)/True Girth;Events", i), 64, -1, 1);
 
             hdphi_all[i] = new TH1D(Form("hdphi_all_%zu", i), Form("hdphi_all_%zu;#Delta #phi;Events", i), nbins, 0, 3.2);
             hxJ_all[i] = new TH1D(Form("hxJ_all_%zu", i), Form("hxJ_all_%zu;All Recoil Jet p_{T}/Photon E_{T};Events", i), nbins, 0, 2.0);
@@ -517,6 +573,9 @@ void plot_jet(){
             hktdyn_lead[i] = new TH1D(Form("hktdyn_lead_%zu", i), Form("hktdyn_lead_%zu;dyn k_{T};1/N_{jet} dN/dk_{T}", i), nkt_bins, kt_edges);
             hrefparton_lead[i] = new TH1D(Form("hrefparton_lead_%zu", i), Form("hrefparton_lead_%zu;Ref Parton PID;Events", i),60,-29,30);
             hzg_lead[i] = new TH1D(Form("hzg_lead_%zu", i), Form("hzg_lead_%zu;zg;1/N_{jet} dN/dzg", i), nbins, 0.2, 0.51);
+
+            h_Rg_det[i] = new TH1D(Form("h_Rg_det_%zu", i), Form("h_Rg_det_%zu;R_{g};1/N_{jet} dN/dR_{g}", i), bin_det_Rg,Rg_det_edges);
+            h_angu_det[i] = new TH1D(Form("h_angu_det_%zu", i), Form("h_angu_det_%zu;Girth;1/N_{jet} dN/dGirth", i), bin_det_angu,angu_det_edges);
 
             hxJ_lead_true[i] = new TH1D(Form("hxJ_lead_true_%zu", i), Form("hxJ_lead_true_%zu;True Lead Recoil Jet p_{T}/Photon E_{T};1/N_{jet} dN/dp_{T,Jet}", i), nbins, 0, 2.0);
             hRg_lead_true[i] = new TH1D(Form("hRg_lead_true_%zu", i), Form("hRg_lead_true_%zu;True R_{g};1/N_{jet} dN/dR_{g}", i), nbins, 0.0001, 0.25);
@@ -560,6 +619,15 @@ void plot_jet(){
             hbkg_angu_lead[i] = new TH1D(Form("hbkg_angu_lead_%zu", i), Form("hbkg_angu_lead_%zu;Girth;1/N_{jet} dN/dGirth", i),nbins, 0, 0.12);
             hbkg_ktdyn_lead[i] = new TH1D(Form("hbkg_ktdyn_lead_%zu", i), Form("hbkg_ktdyn_lead_%zu;dyn k_{T};1/N_{jet} dN/dk_{T}", i), nkt_bins, kt_edges);
             hbkg_zg_lead[i] = new TH1D(Form("hbkg_zg_lead_%zu", i), Form("hbkg_zg_lead_%zu;zg;1/N_{jet} dN/dzg", i), nbins, 0.2, 0.51);
+            
+            hbkg_Rg_det[i] = new TH1D(Form("hbkg_Rg_det_%zu", i), Form("hbkg_Rg_det_%zu;R_{g};1/N_{jet} dN/dR_{g}", i), bin_det_Rg,Rg_det_edges);
+            hbkg_angu_det[i] = new TH1D(Form("hbkg_angu_det_%zu", i), Form("hbkg_angu_det_%zu;Girth;1/N_{jet} dN/dGirth", i), bin_det_angu,angu_det_edges);
+
+            h_Rg_pur_num[i]=new TH1D(Form("h_Rg_pur_num_%zu",i),Form("h_Rg_pur_num_%zu;R_{g};1/N_{jet} dN/dR_{g}",i),bin_det_Rg,Rg_det_edges);
+            h_Rg_pur_den[i]=new TH1D(Form("h_Rg_pur_den_%zu",i),Form("h_Rg_pur_den_%zu;R_{g};1/N_{jet} dN/dR_{g}",i),bin_det_Rg,Rg_det_edges);
+
+            h_angu_pur_num[i]=new TH1D(Form("h_angu_pur_num_%zu",i),Form("h_angu_pur_num_%zu;Girth;1/N_{jet} dN/dg",i),bin_det_angu,angu_det_edges);
+            h_angu_pur_den[i]=new TH1D(Form("h_angu_pur_den_%zu",i),Form("h_angu_pur_den_%zu;Girth;1/N_{jet} dN/dg",i),bin_det_angu,angu_det_edges);
 
             // ---- Unfolding Histograms
 
@@ -593,14 +661,15 @@ void plot_jet(){
     // Event Loop
 
     const float min_pho_et = 100;
+    const float max_pho_et = 500;
     const float cut_HoverE = 0.119947;//0.137168;  // 0.0696672;
     const float cut_SIEIE  = 0.010392;//0.0103766; // 0.00983515;
     const float cut_SumIso = 2.099277;//1.45486;   // 1.33546;
     const float min_jet_pt = 0.4;        // Changed to xJ >0.4
-    const float purity_values[ncent] =  {0.774996,0.891456,0.805383,0.757357,0.872783};//{0.829,0.894,0.843,0.809,0.898};// ABCD Purity - {0.823,0.883,0.837,0.803,0.887};
+    const float purity_values[ncent] = {0.775483,0.891535,0.805743,0.757821,0.873123};//{0.829,0.894,0.843,0.809,0.898};// ABCD Purity - {0.823,0.883,0.837,0.803,0.887};
     // const float purity_values[ncent] ={0.83,0.89,0.84,0.81,0.90};// ABCD Purity - {0.82,0.88,0.84,0.80,0.89};
-    const float orig_qg[ncent] = {0.634,0.632,0.6325,0.633,0.633};   // Quark Fraction
-    const float fit_qg[ncent] = {0.485,0.528,0.496,0.472,0.541}; // From angu - {0.483,0.533,0.494,0.467,0.529};
+    const float orig_qg[ncent] = {0.64618801,0.64211212,0.64554824,0.64738018,0.64362583};//{0.634,0.632,0.6325,0.633,0.633};   // Quark Fraction
+    const float fit_qg[ncent] =  {0.540366,0.510047,0.5347,0.521102,0.558531};//{0.485,0.528,0.496,0.472,0.541}; // From angu - {0.483,0.533,0.494,0.467,0.529};
 
     float max_xJ = 0;
     float nsel = 0;
@@ -750,6 +819,7 @@ void plot_jet(){
             if(phoSCEta<-1.39 && phoPhi<-0.9 && phoPhi>-1.6) continue;         
             if(!(fabs(phoSCEta)<1.442)) continue;
             if(!(phoEtCorrected>min_pho_et)) continue;
+            if(!(phoEtCorrected<max_pho_et)) continue;
             // if(!L1_SingleEG21_BptxAND) continue;    // TRIGGERS APPLIED AT NTUPLIZER
             if(!HLT_HIGEDPhoton40_v1) continue;
             // if(rho<150) continue;
@@ -781,6 +851,7 @@ void plot_jet(){
             if(!flagsig && !flagbkg) continue;
 
             if(flagsig){
+                h_pho_Et[i]->Fill(phoEtCorrected,scale);
                 hnPhosel[i]->Fill(1,scale);
                 h_eta_phi_gamma[i]->Fill(phoSCEta,phoSCPhi,scale);
             }
@@ -904,7 +975,7 @@ void plot_jet(){
                         jet_true_index = ijet;  
                     }
 
-                    if(flagsig && xJ>0.4){
+                    if(flagsig && xJ>min_jet_pt){
                         recoil_jet_index.push_back(ijet);
 
                         hdphi_all[i]->Fill(dphi,scale);
@@ -918,7 +989,7 @@ void plot_jet(){
                         hangu_all[i]->Fill(jtangu[ijet],scale);
                         hktdyn_all[i]->Fill(jtdynkt[ijet],scale);
                     }
-                    if(flagbkg && xJ>0.4){
+                    if(flagbkg && xJ>min_jet_pt){
 
                         hbkg_xJ_all[i]->Fill(xJ,scale);
                         if(jtrg[ijet]>0){
@@ -933,16 +1004,7 @@ void plot_jet(){
                 }
             }
             
-            if(jet_index==-1) continue;
-            if(i==0){
-                // nsel++; // Total Number of selected events
-                if(flagsig && jet_xJ_max>=min_jet_pt) nsel++;// max_xJ++;
-                if(jet_true_index_gen>=0){
-                    if(allgenmatchindex[jet_true_index_gen]==jet_index) max_xJ++; // Number of events with mismatch jet pT
-                    // if(jet_true_index!=jet_index) max_xJ++;
-                    // if(allgenmatchindex[jet_true_index_gen]==jet_index && recoil_jet_index.size()==2) max_xJ++;
-                }
-            }
+            if(jet_index==-1) continue;            
             
             float weight_jet = 1.0;
             float scale_jet = scale;
@@ -965,12 +1027,23 @@ void plot_jet(){
                     // if(!(refparton_flavor[jet_index]==21)) continue; // Gluon only
                     // if((refparton_flavor[jet_index]>-9 && refparton_flavor[jet_index]<9)) continue;       // Not Quark 
                     // if(!(refparton_flavor[jet_index]>-9 && refparton_flavor[jet_index]<9)) continue; // continue if Not Quark -> Quark only
+                if(jet_xJ_max>=min_jet_pt){
                 if(refparton_flavor[jet_index]>-9 && refparton_flavor[jet_index]<9)    hweight_q[i]->Fill(1,scale_jet); // Quark only
                 if(!(refparton_flavor[jet_index]>-9 && refparton_flavor[jet_index]<9)) hweight_g[i]->Fill(1,scale_jet); // Not Quark
+                }
             
                 // if(!(refparton_flavor[jet_index]>-9 && refparton_flavor[jet_index]<9)) scale_jet*= (1-fit_qg[i])/(1-orig_qg[i]);          // Not Quark  0.95/(1-orig_qg[i]);
                 // if(refparton_flavor[jet_index]>-9 && refparton_flavor[jet_index]<9)    scale_jet*= fit_qg[i]/orig_qg[i];                  // Quark Only  0.05/orig_qg[i]; 
                 
+            }
+            if(i==0){
+                // nsel++; // Total Number of selected events
+                if(flagsig && jet_xJ_max>=min_jet_pt) nsel++;// max_xJ++;
+                if(jet_true_index_gen>=0){
+                    if(allgenmatchindex[jet_true_index_gen]==jet_index) max_xJ++; // Number of events with mismatch jet pT
+                    // if(jet_true_index!=jet_index) max_xJ++;
+                    // if(allgenmatchindex[jet_true_index_gen]==jet_index && recoil_jet_index.size()==2) max_xJ++;
+                }
             }
             // if(scale_jet>1500) continue;
             // if(i==0)
@@ -1085,42 +1158,45 @@ void plot_jet(){
                         && jet_Rg_max>=Rgmin_det && jet_Rg_max<Rgmax_det){
                             if(jet_Rg_max<=0) jet_Rg_max = -0.025;
                             h_Rg_xJ_pur_den[i]->Fill(jet_Rg_max,jet_xJ_max,scale_jet);
+                            h_Rg_pur_den[i]->Fill(jet_Rg_max,scale_jet);
 
                             if(allgenmatchindex[jet_true_index_gen]==jet_index && fabs(allgenpt[jet_true_index_gen]-refpt[jet_index]<0.01) &&
                             jet_true_xJ_gen>=xjmin_true && jet_true_xJ_gen<xjmax_true 
                             && jet_true_Rg_gen>=Rgmin_true && jet_true_Rg_gen<Rgmax_true){
                                 if(jet_true_Rg_max<=0) jet_true_Rg_max = -0.025;
                                 h_Rg_xJ_pur_num[i]->Fill(jet_Rg_max,jet_xJ_max,scale_jet);
+                                h_Rg_pur_num[i]->Fill(jet_Rg_max,scale_jet);
                             }
                     }
-                        //* Original Filling the Rg Response
-                        if(allgenmatchindex[jet_true_index_gen]==jet_index && fabs(allgenpt[jet_true_index_gen]-refpt[jet_index]<0.01) &&
-                        jet_true_xJ_max>=xjmin_true && jet_true_xJ_max<xjmax_true 
-                        && jet_true_Rg_max>=Rgmin_true && jet_true_Rg_max<Rgmax_true){
-                            if(jet_true_Rg_max<=0) jet_true_Rg_max = -0.025;
-                            // h_Rg_xJ_mc_truef[i]->Fill(jet_true_Rg_max,jet_true_xJ_max,scale_jet);
+                    //* Original Filling the Rg Response
+                    if(allgenmatchindex[jet_true_index_gen]==jet_index && fabs(allgenpt[jet_true_index_gen]-refpt[jet_index]<0.01) &&
+                    jet_true_xJ_max>=xjmin_true && jet_true_xJ_max<xjmax_true 
+                    && jet_true_Rg_max>=Rgmin_true && jet_true_Rg_max<Rgmax_true){
+                        if(jet_true_Rg_max<=0) jet_true_Rg_max = -0.025;
+                        // h_Rg_xJ_mc_truef[i]->Fill(jet_true_Rg_max,jet_true_xJ_max,scale_jet);
 
-                            if(jet_xJ_max>=xjmin_det && jet_xJ_max<xjmax_det 
-                            && jet_Rg_max>=Rgmin_det && jet_Rg_max<Rgmax_det){
-                                if(jet_Rg_max<=0) jet_Rg_max = -0.025;
+                        if(jet_xJ_max>=xjmin_det && jet_xJ_max<xjmax_det 
+                        && jet_Rg_max>=Rgmin_det && jet_Rg_max<Rgmax_det){
+                            if(jet_Rg_max<=0) jet_Rg_max = -0.025;
 
-                                // h_Rg_xJ_mc_true[i]->Fill(jet_true_Rg_max,jet_true_xJ_max,scale_jet);
-                                h_Rg_xJ_det[i]->Fill(jet_Rg_max,jet_xJ_max,scale_jet);//scale_jet
+                            // h_Rg_xJ_mc_true[i]->Fill(jet_true_Rg_max,jet_true_xJ_max,scale_jet);
+                            h_Rg_xJ_det[i]->Fill(jet_Rg_max,jet_xJ_max,scale_jet);//scale_jet
+                            h_Rg_det[i]->Fill(jet_Rg_max,scale);
 
-                                var_xJ_det = jet_xJ_max;
-                                var_Rg_det = jet_Rg_max;
-                                var_angu_det = jtangu[jet_index];
-                                var_dynkt_det = jtdynkt[jet_index];
-                                var_xJ_true = jet_true_xJ_max;
-                                var_Rg_true = jet_true_Rg_max;
-                                var_angu_true = refangu[jet_index];
-                                var_dynkt_true = refdynkt[jet_index];
-                                var_hiBin = hiBin;
-                                var_phoEtCorrected = phoEtCorrected;
-                                var_weightFinal = scale_jet;
-                                tree_xj_Rg->Fill();
-                            }
+                            var_xJ_det = jet_xJ_max;
+                            var_Rg_det = jet_Rg_max;
+                            var_angu_det = jtangu[jet_index];
+                            var_dynkt_det = jtdynkt[jet_index];
+                            var_xJ_true = jet_true_xJ_max;
+                            var_Rg_true = jet_true_Rg_max;
+                            var_angu_true = refangu[jet_index];
+                            var_dynkt_true = refdynkt[jet_index];
+                            var_hiBin = hiBin;
+                            var_phoEtCorrected = phoEtCorrected;
+                            var_weightFinal = scale_jet;
+                            tree_xj_Rg->Fill();
                         }
+                    }
 
                     if(jet_true_Rg_max<=0) jet_true_Rg_max = -0.025;
                         h_Rg_xJ_mc_truef[i]->Fill(jet_true_Rg_max,jet_true_xJ_max,scale_jet);
@@ -1143,14 +1219,14 @@ void plot_jet(){
                     // }
 
                     if(jet_xJ_max>=xjmin_det && jet_xJ_max<xjmax_det 
-                        && jet_Rg_max>=Rgmin_det && jet_Rg_max<Rgmax_det){
-                            if(jet_Rg_max<=0) jet_Rg_max = -0.025;
-                            h_Rg_xJ_pur_den[i]->Fill(jet_Rg_max,jet_xJ_max,scale_jet);
+                        && jtangu[jet_index]>=angumin_det && jtangu[jet_index]<angumax_det){
+                            h_angu_xJ_pur_den[i]->Fill(jtangu[jet_index],jet_xJ_max,scale_jet);
+                            h_angu_pur_den[i]->Fill(jtangu[jet_index],scale_jet);
 
                             if(jet_true_xJ_max>=xjmin_true && jet_true_xJ_max<xjmax_true 
-                            && jet_true_Rg_max>=Rgmin_true && jet_true_Rg_max<Rgmax_true){
-                                if(jet_true_Rg_max<=0) jet_true_Rg_max = -0.025;
-                                h_Rg_xJ_pur_num[i]->Fill(jet_Rg_max,jet_xJ_max,scale_jet);
+                            && refangu[jet_index]>=angumin_true && refangu[jet_index]<angumax_true){
+                                h_angu_xJ_pur_num[i]->Fill(jtangu[jet_index],jet_xJ_max,scale_jet);
+                                h_angu_pur_num[i]->Fill(jtangu[jet_index],scale_jet);
                             }
                     }
 
@@ -1169,6 +1245,7 @@ void plot_jet(){
 
                             // h_angu_xJ_mc_true[i]->Fill(refangu[jet_index],jet_true_xJ_max,scale_jet);
                             h_angu_xJ_det[i]->Fill(jtangu[jet_index],jet_xJ_max,scale_jet);//scale_jet
+                            h_angu_det[i]->Fill(jtangu[jet_index],scale_jet);//scale_jet
 
                             var_xJ_det = jet_xJ_max;
                             var_Rg_det = jet_Rg_max;
@@ -1215,10 +1292,12 @@ void plot_jet(){
                         && jet_Rg_max>=Rgmin_det && jet_Rg_max<Rgmax_det){
                         if(jet_Rg_max<=0) jet_Rg_max = -0.025;
                         h_Rg_xJ_det[i]->Fill(jet_Rg_max,jet_xJ_max,scale_jet);
+                        h_Rg_det[i]->Fill(jet_Rg_max,scale_jet);
                     }
                     if(jet_xJ_max>=xjmin_det && jet_xJ_max<xjmax_det 
                         && jtangu[jet_index]>=angumin_det && jtangu[jet_index]<=angumax_det){
                         h_angu_xJ_det[i]->Fill(jtangu[jet_index],jet_xJ_max,scale_jet);
+                        h_angu_det[i]->Fill(jtangu[jet_index],scale_jet);
                     }
                     if(jet_xJ_max>=xjmin_det && jet_xJ_max<xjmax_det 
                         && jtdynkt[jet_index]>=dynktmin_det && jtdynkt[jet_index]<=dynktmax_det){
@@ -1256,10 +1335,12 @@ void plot_jet(){
                     && jet_Rg_max>=Rgmin_det && jet_Rg_max<Rgmax_det){
                     if(jet_Rg_max<=0) jet_Rg_max = -0.025;
                     hbkg_Rg_xJ_det[i]->Fill(jet_Rg_max,jet_xJ_max,scale_jet);
+                    hbkg_Rg_det[i]->Fill(jet_Rg_max,scale_jet);
                 }
                 if(jet_xJ_max>=xjmin_det && jet_xJ_max<xjmax_det 
                     && jtangu[jet_index]>=angumin_det && jtangu[jet_index]<=angumax_det){
-                    hbkg_Rg_xJ_det[i]->Fill(jtangu[jet_index],jet_xJ_max,scale_jet);
+                    hbkg_angu_xJ_det[i]->Fill(jtangu[jet_index],jet_xJ_max,scale_jet);
+                    hbkg_angu_det[i]->Fill(jtangu[jet_index],scale_jet);
                 }
                 if(jet_xJ_max>=xjmin_det && jet_xJ_max<xjmax_det 
                     && jtdynkt[jet_index]>=dynktmin_det && jtdynkt[jet_index]<=dynktmax_det){
@@ -1315,6 +1396,8 @@ void plot_jet(){
             h_Rg_xJ_det[i]->Scale(1.0/purity_values[i]);
             h_angu_xJ_det[i]->Scale(1.0/purity_values[i]);
             h_dynkt_xJ_det[i]->Scale(1.0/purity_values[i]);
+            h_Rg_det[i]->Scale(1.0/purity_values[i]);
+            h_angu_det[i]->Scale(1.0/purity_values[i]);
 
             // hbkg_jet_pt[i]->Scale((1-purity_values[i])/purity_values[i]);
             // hbkg_jet_eta[i]->Scale((1-purity_values[i])/purity_values[i]);
@@ -1332,6 +1415,8 @@ void plot_jet(){
             hbkg_Rg_xJ_det[i]->Scale((1-purity_values[i])/purity_values[i]);
             hbkg_angu_xJ_det[i]->Scale((1-purity_values[i])/purity_values[i]);
             hbkg_dynkt_xJ_det[i]->Scale((1-purity_values[i])/purity_values[i]);
+            hbkg_Rg_det[i]->Scale((1-purity_values[i])/purity_values[i]);
+            hbkg_angu_det[i]->Scale((1-purity_values[i])/purity_values[i]);
 
             // h_jet_pt[i]->Add(hbkg_jet_pt[i],-1);
             // h_jet_eta[i]->Add(hbkg_jet_eta[i],-1);
@@ -1349,6 +1434,8 @@ void plot_jet(){
             h_Rg_xJ_det[i]->Add(hbkg_Rg_xJ_det[i],-1);
             h_angu_xJ_det[i]->Add(hbkg_Rg_xJ_det[i],-1);
             h_dynkt_xJ_det[i]->Add(hbkg_Rg_xJ_det[i],-1);
+            h_Rg_det[i]->Add(hbkg_Rg_det[i],-1);
+            h_angu_det[i]->Add(hbkg_Rg_det[i],-1);
         }
         // else{
         //     hxJ_lead[i]->Scale(1.0/hxJ_lead[i]->Integral());
@@ -1356,10 +1443,20 @@ void plot_jet(){
         //     hangu_lead[i]->Scale(1.0/hangu_lead[i]->Integral());
         //     hktdyn_lead[i]->Scale(1.0/hktdyn_lead[i]->Integral());
         // }
-        // else{
-        //     h_Rg_xJ_pur_num[i]->Divide(h_Rg_xJ_pur_num[i],h_Rg_xJ_pur_den[i],1,1,"B");
-        //     h_Rg_xJ_det[i]->Multiply(h_Rg_xJ_pur_num[i]);
-        // }
+        else{
+            h_Rg_xJ_pur_num[i]->Divide(h_Rg_xJ_pur_num[i],h_Rg_xJ_pur_den[i],1,1,"B");
+            // h_Rg_xJ_det[i]->Multiply(h_Rg_xJ_pur_num[i]);
+
+            h_angu_xJ_pur_num[i]->Divide(h_angu_xJ_pur_num[i],h_angu_xJ_pur_den[i],1,1,"B");
+            // h_angu_xJ_det[i]->Multiply(h_angu_xJ_pur_num[i]);
+
+            h_Rg_pur_num[i]->Divide(h_Rg_pur_num[i],h_Rg_pur_den[i],1,1,"B");
+            // h_Rg_det[i]->Multiply(h_Rg_pur_num[i]);
+
+            h_angu_pur_num[i]->Divide(h_angu_pur_num[i],h_angu_pur_den[i],1,1,"B");
+            // h_angu_det[i]->Multiply(h_angu_pur_num[i]);
+
+        }
         
     }
     // -------- End Purity Subtraction
@@ -1396,6 +1493,8 @@ void plot_jet(){
 
         h_weight_rho[i]->Write("",TObject::kOverwrite);
 
+        h_pho_Et[i]->Write("",TObject::kOverwrite);        
+
         h_eta_phi_gamma[i]->Write("",TObject::kOverwrite);
         h_eta_phi_jet[i]->Write("",TObject::kOverwrite);
 
@@ -1427,6 +1526,9 @@ void plot_jet(){
         hktdyn_lead[i]->Write("",TObject::kOverwrite);
         hrefparton_lead[i]->Write("",TObject::kOverwrite);
         hzg_lead[i]->Write("",TObject::kOverwrite);
+
+        h_Rg_det[i]->Write("",TObject::kOverwrite);
+        h_angu_det[i]->Write("",TObject::kOverwrite);
 
         hxJ_lead_true[i]->Write("",TObject::kOverwrite);
         hRg_lead_true[i]->Write("",TObject::kOverwrite);
@@ -1465,33 +1567,38 @@ void plot_jet(){
         hbkg_zg_lead[i]->Write("",TObject::kOverwrite);
 
         h_Rg_xJ_det[i]->Write("",TObject::kOverwrite);      //* Current Binning xJ -> 0,0.4,3.0 -> Projecting [0.4,3.0]
-        h_Rg_xJ_det[i]->ProjectionY(Form("h_xJ_det_%zu",i))->Write("",TObject::kOverwrite);
-        h_Rg_xJ_det[i]->ProjectionX(Form("h_Rg_det_%zu",i),1,1)->Write("",TObject::kOverwrite);
+        h_Rg_xJ_det[i]->ProjectionY(Form("hProj_xJ_det_%zu",i))->Write("",TObject::kOverwrite);
+        h_Rg_xJ_det[i]->ProjectionX(Form("hProj_Rg_det_%zu",i),1,1)->Write("",TObject::kOverwrite);
         h_Rg_xJ_mc_true[i]->Write("",TObject::kOverwrite);
         h_Rg_xJ_mc_truef[i]->Write("",TObject::kOverwrite);
-        h_Rg_xJ_mc_truef[i]->ProjectionX(Form("h_Rg_truef_%zu",i),2,2)->Write("",TObject::kOverwrite);
-        h_Rg_xJ_mc_true[i]->ProjectionX(Form("h_Rg_true_%zu",i),2,2)->Write("",TObject::kOverwrite);
+        h_Rg_xJ_mc_truef[i]->ProjectionX(Form("hProj_Rg_truef_%zu",i),2,2)->Write("",TObject::kOverwrite);
+        h_Rg_xJ_mc_true[i]->ProjectionX(Form("hProj_Rg_true_%zu",i),2,2)->Write("",TObject::kOverwrite);
 
-        h_Rg_xJ_mc_truef[i]->ProjectionY(Form("h_xJ_truef_%zu",i),2,2)->Write("",TObject::kOverwrite);
-        h_Rg_xJ_mc_true[i]->ProjectionY(Form("h_xJ_true_%zu",i),2,2)->Write("",TObject::kOverwrite);
+        h_Rg_xJ_mc_truef[i]->ProjectionY(Form("hProj_xJ_truef_%zu",i),2,2)->Write("",TObject::kOverwrite);
+        h_Rg_xJ_mc_true[i]->ProjectionY(Form("hProj_xJ_true_%zu",i),2,2)->Write("",TObject::kOverwrite);
 
         hbkg_Rg_xJ_det[i]->Write("",TObject::kOverwrite);
 
         h_angu_xJ_det[i]->Write("",TObject::kOverwrite);
-        h_angu_xJ_det[i]->ProjectionX(Form("h_angu_det_%zu",i),1,1)->Write("",TObject::kOverwrite);
+        h_angu_xJ_det[i]->ProjectionX(Form("hProj_angu_det_%zu",i),1,1)->Write("",TObject::kOverwrite);
         h_angu_xJ_mc_true[i]->Write("",TObject::kOverwrite);
         h_angu_xJ_mc_truef[i]->Write("",TObject::kOverwrite);
-        h_angu_xJ_mc_truef[i]->ProjectionX(Form("h_angu_truef_%zu",i),2,2)->Write("",TObject::kOverwrite);
-        h_angu_xJ_mc_true[i]->ProjectionX(Form("h_angu_true_%zu",i),2,2)->Write("",TObject::kOverwrite);
+        h_angu_xJ_mc_truef[i]->ProjectionX(Form("hProj_angu_truef_%zu",i),2,2)->Write("",TObject::kOverwrite);
+        h_angu_xJ_mc_true[i]->ProjectionX(Form("hProj_angu_true_%zu",i),2,2)->Write("",TObject::kOverwrite);
 
         hbkg_angu_xJ_det[i]->Write("",TObject::kOverwrite);
 
         h_dynkt_xJ_det[i]->Write("",TObject::kOverwrite);
-        h_dynkt_xJ_det[i]->ProjectionX(Form("h_dynkt_det_%zu",i),1,1)->Write("",TObject::kOverwrite);
+        h_dynkt_xJ_det[i]->ProjectionX(Form("hProj_dynkt_det_%zu",i),1,1)->Write("",TObject::kOverwrite);
         h_dynkt_xJ_mc_true[i]->Write("",TObject::kOverwrite);
         h_dynkt_xJ_mc_truef[i]->Write("",TObject::kOverwrite);
 
         hbkg_dynkt_xJ_det[i]->Write("",TObject::kOverwrite);
+
+        h_Rg_xJ_pur_num[i]->Write("",TObject::kOverwrite);
+        h_angu_xJ_pur_num[i]->Write("",TObject::kOverwrite);
+        h_Rg_pur_num[i]->Write("",TObject::kOverwrite);
+        h_angu_pur_num[i]->Write("",TObject::kOverwrite);
     }
     /*
     float S = hdphi_all[0]->Integral(hdphi_all[0]->FindBin(2*TMath::Pi()/3),hdphi_all[0]->GetNbinsX()+2);
@@ -1520,6 +1627,8 @@ void plot_jet(){
         // Plot_hist2D({h_eta_phi_gamma[0],h_eta_phi_jet[0]},{"Gamma_eta_phi_0_30","Jet_eta_phi_0_30"},"colz",{"Cent. 0-30%"});
         // Plot_hist2D({h_eta_phi_gamma[1],h_eta_phi_jet[1]},{"Gamma_eta_phi_30_90","Jet_eta_phi_30_90"},"colz",{"Cent. 30-90%"});
         // Plot_hist2D({h_jetpt_weight[0],h_angu_weight[0],h_Rg_weight[0]},{"JetpT_weight_0_30","Angu_weight_0_30","Rg_weight_0_30"},"text_colz_flow",{"Cent. 0-30%"});
+
+        Plot_hist({h_pho_Et[0]},{Form("Cent. %d-%d%%",min_cent_val[0]/2,max_cent_val[0]/2),"h_pho_Et"},"right_norm_leg",{"","",Form("#gamma p_{T}>%.0f",min_pho_et),Form("H/E>%.3f",cut_HoverE),Form("#sigma_{i#eta i#eta}>%.3f",cut_SIEIE),Form("#Sigma_{det-iso}>%.3f",cut_SumIso),"|#eta|<1.44, Cent. 0-30%"});
         
         if(!label.Contains("Data")){
             // Plot_hist2D({h_xJ_xJ[0],h_Rg_Rg[0],h_angu_angu[0],h_ktdyn_ktdyn[0]},{"xJ_xJ_0_30","Rg_Rg_0_30","Angu_Angu_0_30","Ktdyn_Ktdyn_0_30"},"colz",{Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,min_jet_pt),"|#eta|<1.44, Cent. 0-30%","endlog"});
@@ -1570,17 +1679,20 @@ void plot_jet(){
         overlay({hRg_all[0],hRg_lead[0]},{"All Recoil Jets","Leading Recoil Jet","R_{g}","Norm. Events","Rg_all_lead"},"right_norm_label",sel);
         overlay({hangu_all[0],hangu_lead[0]},{"All Recoil Jets","Leading Recoil Jet","Girth","Norm. Events","angu_all_lead"},"right_norm_label",sel);
         overlay({hktdyn_all[0],hktdyn_lead[0]},{"All Recoil Jets","Leading Recoil Jet","dyn k_{T}","Norm. Events","ktdyn_all_lead"},"rightlog_norm_label",sel);
-        Plot_hist({hzg_lead[0]},{"Leading Recoil Jet","zg","Norm. Events","zg_all_lead"},"right_norm_label",sel);
+        // Plot_hist({hzg_lead[0]},{"Leading Recoil Jet","zg","Norm. Events","zg_all_lead"},"right_norm_label",sel);
 
-        Plot_hist({h_jet_pt_CA_shift[0]},{Form("#splitline{Charged up }{#sigma = %4.4f, #mu = %4.4f }",h_jet_pt_CA_shift[0]->GetRMS(),h_jet_pt_CA_shift[0]->GetMean()),"jet_pt_CA_shift"},"left",sel);
-        Plot_hist({h_jet_pt_corr_sf[0]},{Form("#splitline{Nominal}{#sigma = %4.4f, #mu = %4.4f }",h_jet_pt_corr_sf[0]->GetRMS(),h_jet_pt_corr_sf[0]->GetMean()),"jet_pt_corr_sf"},"right",sel);
+        // Plot_hist({h_jet_pt_CA_shift[0]},{Form("#splitline{Charged up }{#sigma = %4.4f, #mu = %4.4f }",h_jet_pt_CA_shift[0]->GetRMS(),h_jet_pt_CA_shift[0]->GetMean()),"jet_pt_CA_shift"},"left",sel);
+        // Plot_hist({h_jet_pt_corr_sf[0]},{Form("#splitline{Nominal}{#sigma = %4.4f, #mu = %4.4f }",h_jet_pt_corr_sf[0]->GetRMS(),h_jet_pt_corr_sf[0]->GetMean()),"jet_pt_corr_sf"},"right",sel);
 
         sel = {Form("#gamma p_{T}>%.0f, x_{J}>%.1f",min_pho_et,min_jet_pt),"|#eta|<1.44"};
         Plot_hist({hdphi_all[0],hdphi_all[1]},{Form("Cent. %d-%d%%",min_cent_val[0]/2,max_cent_val[0]/2),Form("Cent. %d-%d%%",min_cent_val[1]/2,max_cent_val[1]/2),"dphi_all_cent"},"leftflowlognorm",sel);
 
         // Signal Leading Recoil Jet
-        // sel = {Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,min_jet_pt),"|#eta|<1.44",Form("H/E<%6.4f",cut_HoverE),Form("SumIso<%6.4f",cut_SumIso),Form("#sigma_{#eta#eta}<%6.4f",cut_SIEIE)};
-        // sel.push_back("Sig Reg - Corrected");    
+        sel = {" ","|#eta|<1.44",Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,min_jet_pt),Form("H/E<%6.4f",cut_HoverE),Form("SumIso<%6.4f",cut_SumIso),Form("#sigma_{#eta#eta}<%6.4f",cut_SIEIE)};
+        sel.push_back("Sig Reg - Corrected");    
+        Plot_hist({h_Rg_det[0]},{"Leading Recoil Jet","R_{g}","Norm. Events","Rg_det_corrected"},"right_norm_width_label_leg",sel);
+        Plot_hist({h_angu_det[0]},{"Leading Recoil Jet","Girth","Norm. Events","angu_det_corrected"},"right_norm_width_label_leg",sel);
+        
         // Plot_hist({hdphi_lead[ind1],hdphi_lead[ind2],hdphi_lead[ind3]},{Form("Cent. %d-%d%%",min_cent_val[ind1]/2,max_cent_val[ind1]/2),Form("Cent. %d-%d%%",min_cent_val[ind2]/2,max_cent_val[ind2]/2),Form("Cent. %d-%d%%",min_cent_val[ind3]/2,max_cent_val[ind3]/2),"dphi_lead"},"leftflowlog_norm",sel);
         // Plot_hist({hxJ_lead[ind1],hxJ_lead[ind2],hxJ_lead[ind3]},{Form("Cent. %d-%d%% #mu = %4.2f",min_cent_val[ind1]/2,max_cent_val[ind1]/2,hxJ_lead[ind1]->GetMean()),Form("Cent. %d-%d%% #mu = %4.2f",min_cent_val[ind2]/2,max_cent_val[ind2]/2,hxJ_lead[ind2]->GetMean()),Form("Cent. %d-%d%% #mu = %4.2f",min_cent_val[ind3]/2,max_cent_val[ind3]/2,hxJ_lead[ind3]->GetMean()),"xJ_lead"},"rightflow_norm",sel);
         // Plot_hist({hRg_lead[ind1],hRg_lead[ind2],hRg_lead[ind3]},{Form("Cent. %d-%d%%",min_cent_val[ind1]/2,max_cent_val[ind1]/2),Form("Cent. %d-%d%%",min_cent_val[ind2]/2,max_cent_val[ind2]/2),Form("Cent. %d-%d%%",min_cent_val[ind3]/2,max_cent_val[ind3]/2),"Rg_lead"},"rightflow_norm",sel);

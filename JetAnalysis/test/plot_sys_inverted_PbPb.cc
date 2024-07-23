@@ -16,13 +16,13 @@
 
 const int bin_det_xj=1;
 const int bin_true_xj=2;//2;
-const float xjmin_det = 0.8;
+const float xjmin_det = 0.4;
 const float min_pho_et = 100.0;
 bool flag_invert = false;
 
 const float min_cent_val = 0;
 const float max_cent_val = 30;
-TString label="Jul_31_PbPb_2018_sys_Decorrelate_PF_xJ_gp8";
+TString label="2024_Apr_PbPb_2018_sys_xJ_gp4_HEPDATA";
 TString output_path = "./Unfolded_Plots/";
 TString centstring = Form("Cent. %.0f-%.0f%%",min_cent_val,max_cent_val);
 TString dir_cent_string = Form("%.0f_%.0f_",min_cent_val,max_cent_val);
@@ -35,7 +35,7 @@ enum TestsTreatment {       // Unfolding tests -> Bottomline, Trivial, Split, Cr
     kNoTest        =0,      // Loop Over All Systematic Uncertainties 
     kTrivial       =1,      // Trivial Test -> Full Nominal MC as Both Data and Response
     kSplitNominal  =2,      // Split Nominal Test -> Split Nominal MC into independent samples
-    kBottomline    =3,      // TODO: Bottomline Test -> Data with Nominal MC, //? Check adding covariance matrix
+    kBottomline    =3,      // Bottomline Test -> Data with Nominal MC
     kCrossfold     =4,      // CrossFolding Test -> Nominal with Alt and vice-versa
     kSplitAltMC    =5       // Split Alt Test -> Split Alt MC into independent samples
 };
@@ -128,7 +128,7 @@ void Plot_hist2D(std::vector<TH2D*> hist,std::vector<TString> histname,TString d
 
 void plot_sys(TString in_file,TString in_test_label);
 
-void plot_sys_inverted_PbPb(TString file_label="",TString in_test_label="Trivial"){
+void plot_sys_inverted_PbPb(TString file_label="",TString in_test_label="Data"){
     if(file_label=="")file_label=label;
 
     TString file_path = Form("/home/llr/cms/bharikri/Projects/Photon_Analysis/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/JetAnalysis/test/Unfolding/OutputDir/Unfold_%.0f_%.0f_%s",min_cent_val,max_cent_val,label.Data());
@@ -300,6 +300,22 @@ void plot_sys(TString in_file,TString in_test_label){
 
         }
 
+        // Bayesian Covariance matrix sliced
+        int nbins_det = h_Bayesian_Refolded_X[iter_ref]->GetNbinsX();
+        int nbins_true= h_Bayesian_Unfolded_X[iter_ref]->GetNbinsX();
+        TH2D *h_Bayesian_Covariance_in;
+        TH2D *h_Bayesian_Covariance_out = new TH2D("h_Bayesian_Covariance_out","h_Bayesian_Covariance_out;Bin Number;Bin Number",nbins_det,0,nbins_det,nbins_det,0,nbins_det);
+        if(test_index==kNoTest){
+            h_Bayesian_Covariance_in = (TH2D*)input_file->Get(Form("%s/%s/%s_CovarianceMatrix_%s_xJ_%d",test_label[test_index].Data(),"DAgostini",test_label[test_index].Data(),var_arr[ivar].Data(),iter_ref));
+            for (Int_t k = nbins_true*(bin_true_xj-1)+1; k < (h_Bayesian_Covariance_in->GetNbinsX()); k++){         // +1 to include the overflow bin
+                for (Int_t l = nbins_true*(bin_true_xj-1)+1; l < (h_Bayesian_Covariance_in->GetNbinsY()); l++){     // +1 to include the overflow bin
+                    h_Bayesian_Covariance_out->SetBinContent(k-(nbins_true*(bin_true_xj-1)+1)+1,l-(nbins_true*(bin_true_xj-1)+1)+1,h_Bayesian_Covariance_in->GetBinContent(k,l));
+                    h_Bayesian_Covariance_out->SetBinError(k-(nbins_true*(bin_true_xj-1)+1)+1,l-(nbins_true*(bin_true_xj-1)+1)+1,h_Bayesian_Covariance_in->GetBinError(k,l));
+                }
+            }
+        }
+
+
         TFile *fout;
         fout = new TFile(output_path + "OutputUnfolded_"+dir_cent_string+label+"/OutputUnfolded_"+dir_cent_string+label+file_string+"_"+var_arr[ivar]+".root", "recreate");
 
@@ -316,6 +332,7 @@ void plot_sys(TString in_file,TString in_test_label){
         h_Unfolded_True_X->Write("",TObject::kWriteDelete);
         h_Bayesian_Unfolded_X[iter_ref]->Write("unfold_X",TObject::kWriteDelete);
         h_Bayesian_Refolded_X[iter_ref]->Write("",TObject::kWriteDelete);
+        h_Bayesian_Covariance_out->Write("h_Bayesian_Covariance_out"+file_string,TObject::kWriteDelete);
 
         fout->cd();
         gDirectory->mkdir("Unfolding_Tests");
@@ -360,13 +377,13 @@ void plot_sys(TString in_file,TString in_test_label){
             Plot_hist2D({h2_Raw},{test_label[test_index]+"_Raw_X_Y"+file_string+"_"+var_arr[ivar]},"text_E_colz",sel);
             sel = {"","Covariance Matrix "+var_nam[ivar]};
             gStyle->SetPaintTextFormat("4.1f");
-            Plot_hist2D({h2_Covariance},{test_label[test_index]+"_MatCovariance"+file_string+"_"+var_arr[ivar]},"text_colz",sel);
+            Plot_hist2D({h_Bayesian_Covariance_out},{test_label[test_index]+"_BayesianCovariance"+file_string+"_"+var_arr[ivar]},"text_colz",sel);
         }
         switch(test_index){
             case kTrivial:  sel = {" ","Trivial Test"      ,centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,xjmin_det)};  break;
             case kSplitNominal:
-            case kSplitAltMC:
-                            sel = {" ","Split Test - 25/75"        ,centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,xjmin_det)};  break;  
+            case kSplitAltMC:// for xJ>0.8  10/90 // for xJ>0.4   25/75
+                            sel = {" ","Split Test - 10/90",centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,xjmin_det)};  break;  
             default:        sel = {centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,xjmin_det)};  
                             if(flag_invert){ sel.insert(sel.begin(), {" ","Matrix Inversion"});}
                             else{            sel.insert(sel.begin(), {" ","D'Agostini"});}
@@ -588,7 +605,7 @@ void Plot_hist_ratio(std::vector<TH1D*> hist,std::vector<TString> histname,TStri
     TLatex latex;
     latex.SetTextSize(0.035);
     if(label.Contains("Data"))
-        latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary}} #bf{PbPb 1.69 nb^{-1} (5.02 TeV)}");
+        latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary}} #bf{PbPb 1.7 nb^{-1} (5.02 TeV)}");
     else
         latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary Simulation}}");
 
@@ -722,7 +739,7 @@ void Plot_hist(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt
     TLatex latex;
     latex.SetTextSize(0.035);
     if(label.Contains("Data"))
-        latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary}} #bf{PbPb 1.69 nb^{-1} (5.02 TeV)}");
+        latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary}} #bf{PbPb 1.7 nb^{-1} (5.02 TeV)}");
     else
         latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary Simulation}}");
 
@@ -809,7 +826,7 @@ void Plot_hist2D(std::vector<TH2D*> hist,std::vector<TString> histname,TString d
         TLatex latex;
         latex.SetTextSize(0.035);
         if(label.Contains("Data"))
-            latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary}} #bf{PbPb 1.69 nb^{-1} (5.02 TeV)}");
+            latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary}} #bf{PbPb 1.7 nb^{-1} (5.02 TeV)}");
         else
             latex.DrawLatexNDC(0.1,0.92,"CMS #it{#bf{Preliminary Simulation}}");
 

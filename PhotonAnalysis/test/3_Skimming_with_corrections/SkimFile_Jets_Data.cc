@@ -63,7 +63,7 @@ Double_t RelativePhi(Double_t mphi,Double_t vphi) {
 void SkimFile_Jets_Data(){
 
     TString type="Data_2018";
-    TString type_dir = "/home/llr/cms/bharikri/Projects/Photon_Analysis/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/PhotonAnalysis/test/3_Skimming_with_corrections/";            
+    TString type_dir = "/home/llr/cms/bharikri/Projects/Photon_Analysis/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/PhotonAnalysis/test/3_Skimming_with_corrections/EVENTDISPLAY/";            
 
    gROOT->SetBatch();
    gErrorIgnoreLevel = kWarning;
@@ -71,11 +71,11 @@ void SkimFile_Jets_Data(){
    SetPlotStyle();
     TChain data("data"), EventTree("EventTree"), HiTree("HiTree"), skimanalysis("skimanalysis"),hltanalysis("hltanalysis");
 
-   data.Add("/data_CMS/cms/bharikri/2023_NTuples/PbPb/Data/HiForestAOD_*.root/akCs2PFJetAnalyzer_substructure/t");
-   EventTree.Add("/data_CMS/cms/bharikri/2023_NTuples/PbPb/Data/HiForestAOD_*.root/ggHiNtuplizerGED/EventTree");
-   HiTree.Add("/data_CMS/cms/bharikri/2023_NTuples/PbPb/Data/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
-   skimanalysis.Add("/data_CMS/cms/bharikri/2023_NTuples/PbPb/Data/HiForestAOD_*.root/skimanalysis/HltTree");
-   hltanalysis.Add("/data_CMS/cms/bharikri/2023_NTuples/PbPb/Data/HiForestAOD_*.root/hltanalysis/HltTree");
+   data.Add("/data_CMS/cms/bharikri/2023_NTuples_Jul_Decorrelated_PF/PbPb/Data/HiForestAOD_*.root/akCs2PFJetAnalyzer_substructure/t");
+   EventTree.Add("/data_CMS/cms/bharikri/2023_NTuples_Jul_Decorrelated_PF/PbPb/Data/HiForestAOD_*.root/ggHiNtuplizerGED/EventTree");
+   HiTree.Add("/data_CMS/cms/bharikri/2023_NTuples_Jul_Decorrelated_PF/PbPb/Data/HiForestAOD_*.root/hiEvtAnalyzer/HiTree");
+   skimanalysis.Add("/data_CMS/cms/bharikri/2023_NTuples_Jul_Decorrelated_PF/PbPb/Data/HiForestAOD_*.root/skimanalysis/HltTree");
+   hltanalysis.Add("/data_CMS/cms/bharikri/2023_NTuples_Jul_Decorrelated_PF/PbPb/Data/HiForestAOD_*.root/hltanalysis/HltTree");
 
    data.AddFriend("EventTree");
    data.AddFriend("HiTree");
@@ -117,13 +117,15 @@ void SkimFile_Jets_Data(){
    // data.SetBranchAddress("refdynkt", &ref_dynkt);
    // data.SetBranchAddress("refangu", &ref_angu);
 
+   UInt_t run=0;
+   ULong64_t evt=0;
+   UInt_t lumi=0;
    Int_t hiBin=0;
    float pthat=0;
    Float_t weight = 0;
    Float_t hiHF=0;
    Float_t alphaQCD = 0;
    Float_t qScale = 0;   
-   int lumi = 0;
    float vx = -999;
    float vy = -999;
    float vz = -999;
@@ -135,9 +137,11 @@ void SkimFile_Jets_Data(){
    Int_t HBHENoiseFilterResultRun2Tight = 0;
    Int_t HBHEIsoNoiseFilterResult  = 0;
    
+   HiTree.SetBranchAddress("run", &run);
+   HiTree.SetBranchAddress("evt", &evt);
+   HiTree.SetBranchAddress("lumi", &lumi);
    data.SetBranchAddress("hiBin", &hiBin);
    data.SetBranchAddress("hiHF", &hiHF);
-   data.SetBranchAddress("lumi",  &lumi);
    data.SetBranchAddress("vx",  &vx);
    data.SetBranchAddress("vy",  &vy);
    data.SetBranchAddress("vz",  &vz);
@@ -432,13 +436,15 @@ void SkimFile_Jets_Data(){
    jet_tree->Branch("HLT_HIGEDPhoton50_v1",&train_HLT_HIGEDPhoton50_v1);
    jet_tree->Branch("HLT_HIGEDPhoton60_v1",&train_HLT_HIGEDPhoton60_v1);
 
-   Float_t train_alphaQCD = 0;
-   Float_t train_qScale = 0;
-   Float_t train_hiHF =0;
-   Int_t train_lumi = 0;
-   Float_t train_vx = -999;
-   Float_t train_vy = -999;
-   Float_t train_vz = -999;
+   UInt_t      train_run=0;
+   ULong64_t   train_evt=0;
+   UInt_t      train_lumi=0;
+   Float_t     train_alphaQCD = 0;
+   Float_t     train_qScale = 0;
+   Float_t     train_hiHF =0;
+   Float_t     train_vx = -999;
+   Float_t     train_vy = -999;
+   Float_t     train_vz = -999;
 
    Int_t train_pHBHENoiseFilterResultProducer = 0;
    Int_t train_HBHENoiseFilterResult = 0;
@@ -447,10 +453,12 @@ void SkimFile_Jets_Data(){
    Int_t train_HBHENoiseFilterResultRun2Tight = 0;
    Int_t train_HBHEIsoNoiseFilterResult  = 0;
 
+   jet_tree->Branch("run",&train_run);
+   jet_tree->Branch("evt",&train_evt);
+   jet_tree->Branch("lumi",&train_lumi);
    jet_tree->Branch("alphaQCD",&train_alphaQCD);
    jet_tree->Branch("qScale",&train_qScale);
    jet_tree->Branch("hiHF",&train_hiHF);
-   jet_tree->Branch("lumi",&train_lumi);
    jet_tree->Branch("vx",&train_vx);
    jet_tree->Branch("vy",&train_vy);
    jet_tree->Branch("vz",&train_vz);
@@ -499,6 +507,7 @@ void SkimFile_Jets_Data(){
    for(int iEntry=0; iEntry< nEv; iEntry++){
       displayProgress(iEntry,nEv);
       data.GetEntry(iEntry);
+      HiTree.GetEntry(iEntry);
       scale =1;
 
       int pho_index=-1, genin=-1;;
@@ -634,10 +643,12 @@ void SkimFile_Jets_Data(){
       train_hiBin = hiBin;
       train_eleRej = flagEle;
       
+      train_run =  run;
+      train_evt =  evt;
+      train_lumi =  lumi;
       train_alphaQCD =  alphaQCD;
       train_qScale =  qScale;
       train_hiHF = hiHF;
-      train_lumi =  lumi;
       train_vx =  vx;
       train_vy =  vy;
       train_vz =  vz;
@@ -658,6 +669,22 @@ void SkimFile_Jets_Data(){
       jet_tree->Fill();
 
       // cout<<"i = "<< iEntry << " hiBin = "<<hiBin <<" Genin = "<<genin<<endl;
+
+      if(train_HLT_HIGEDPhoton40_v1 && train_hiBin<60){
+         if(train_phoEtCorrected>200 && (fabs(train_phoSCEta)<1.442) && train_jet_index!=-1){
+            const float cut_HoverE = 0.119947;     // 0.137168;  // 0.0696672;
+            const float cut_SIEIE  = 0.010392;    // 0.0103766; // 0.00983515;
+            const float cut_SumIso = 2.099277;      // 1.45486;   // 1.33546;
+            if(train_phoHoverE<=cut_HoverE && train_phoSigmaIEtaIEta_2012<=cut_SIEIE){
+               if(train_jet_pt[train_jet_index]/train_phoEtCorrected<0.8){
+                  float dPhi = RelativePhi(train_jet_phi[train_jet_index],train_phoSCPhi);
+                  if(fabs(dPhi)>2*TMath::Pi()/3){
+                     std::cout<<"\ni = "<< iEntry << "\t run = "<<run <<"\t lumi = "<<lumi<<"\t evt = "<<evt<<"\t    | phoEt = "<<train_phoEt<<"\t jetpt = "<<train_jet_pt[train_jet_index]<<"\t dPhi = "<<dPhi<<std::endl;
+                  }
+               }
+            }
+         }
+      }
 
    } // End Event loop
 

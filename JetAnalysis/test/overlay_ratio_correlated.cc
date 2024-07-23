@@ -18,7 +18,7 @@
 TString centstring="";
 TString label="";
 TCanvas c;
-TString output_path = "Overlay_ratio/Uncert_Breakdown/"; // 
+TString output_path = "Overlay_ratio/Uncert_Breakdown_HEPDATA/"; // 
 Bool_t flag_add_theory = false;
 
 //--------------------------------------------------------------------------------
@@ -1136,6 +1136,54 @@ TCanvas* overlay_theory(std::vector<TString>theory_list,std::vector<TString>labe
 
         herr_corr_total_up->SetTitle("Total Corr. uncert. ");
         herr_corr_total_down->SetTitle("Total Corr. uncert. ");
+
+        TH1D *hnom_ratio = new TH1D("Nominal","Nominal",herr_corr_nom->GetNbinsX()-1,herr_corr_nom->GetXaxis()->GetXbins()->GetArray());   
+
+        TH1D *h_abserr_stat =                (TH1D*)hnom_ratio->Clone("Abserr_stat");
+        TH1D *h_abserr_response_up =         (TH1D*)hnom_ratio->Clone("Abserr_response_up");
+        TH1D *h_abserr_response_do =         (TH1D*)hnom_ratio->Clone("Abserr_response_do");
+
+        TH1D *h_abserr_regularization_up =   (TH1D*)hnom_ratio->Clone("Abserr_regularization_up");
+        TH1D *h_abserr_regularization_do =   (TH1D*)hnom_ratio->Clone("Abserr_regularization_do");
+        TH1D *h_abserr_purity_up =           (TH1D*)hnom_ratio->Clone("Abserr_ABCD_up");
+        TH1D *h_abserr_purity_do =           (TH1D*)hnom_ratio->Clone("Abserr_ABCD_do");
+        TH1D *h_abserr_JEC_up =              (TH1D*)hnom_ratio->Clone("Abserr_JEC_up");
+        TH1D *h_abserr_JEC_do =              (TH1D*)hnom_ratio->Clone("Abserr_JEC_do");
+        TH1D *h_abserr_JER_up =              (TH1D*)hnom_ratio->Clone("Abserr_JER_up");
+        TH1D *h_abserr_JER_do =              (TH1D*)hnom_ratio->Clone("Abserr_JER_do");
+        TH1D *h_abserr_Photon_up =           (TH1D*)hnom_ratio->Clone("Abserr_Photon_up");
+        TH1D *h_abserr_Photon_do =           (TH1D*)hnom_ratio->Clone("Abserr_Photon_do");
+        TH1D *h_abserr_Charged_up =          (TH1D*)hnom_ratio->Clone("Abserr_Charged_up");
+        TH1D *h_abserr_Charged_do =          (TH1D*)hnom_ratio->Clone("Abserr_Charged_do");
+        TH1D *h_abserr_Neutral_up =          (TH1D*)hnom_ratio->Clone("Abserr_Neutral_up");
+        TH1D *h_abserr_Neutral_do =          (TH1D*)hnom_ratio->Clone("Abserr_Neutral_do");
+        TH1D *h_abserr_Cent_up =             (TH1D*)hnom_ratio->Clone("Abserr_Cent_up");
+        TH1D *h_abserr_Cent_do =             (TH1D*)hnom_ratio->Clone("Abserr_Cent_do");
+        TH1D *h_abserr_prior_up =            (TH1D*)hnom_ratio->Clone("Abserr_AltMC_up");
+        TH1D *h_abserr_prior_do =            (TH1D*)hnom_ratio->Clone("Abserr_AltMC_do");
+
+        h_abserr_stat->SetTitle("Statistical (sym)");
+        h_abserr_response_up->SetTitle("Response Matrix stats up (sym)");
+        h_abserr_response_do->SetTitle("Response Matrix stats do (sym)");
+
+        h_abserr_regularization_up->SetTitle("Regularization Bias up (sym)");
+        h_abserr_regularization_do->SetTitle("Regularization Bias do (sym)");
+        h_abserr_purity_up->SetTitle("#gamma Purity up (sym)");
+        h_abserr_purity_do->SetTitle("#gamma Purity do (sym)");
+        h_abserr_JEC_up->SetTitle("JEC up");
+        h_abserr_JEC_do->SetTitle("JEC do");
+        h_abserr_JER_up->SetTitle("JER up");
+        h_abserr_JER_do->SetTitle("JER do");
+        h_abserr_Photon_up->SetTitle("EGamma PF scale up 1 percent");
+        h_abserr_Photon_do->SetTitle("EGamma PF scale do 1 percent");
+        h_abserr_Charged_up->SetTitle("Charged Hadron PF scale up 1 percent");
+        h_abserr_Charged_do->SetTitle("Charged Hadron PF scale do 1 percent");
+        h_abserr_Neutral_up->SetTitle("Neutral Hadron PF scale up 3 percent");
+        h_abserr_Neutral_do->SetTitle("Neutral Hadron PF scale do 3 percent");
+        h_abserr_Cent_up->SetTitle("Centrality up");
+        h_abserr_Cent_do->SetTitle("Centrality do");
+        h_abserr_prior_up->SetTitle("Fragmentation model up (sym)");
+        h_abserr_prior_do->SetTitle("Fragmentation model do (sym)");
         
     Double_t error_PbPb_num,error_PbPb_den, error_pp_num,error_pp_den;
     Double_t PbPb_num = hPbPb_nom->IntegralAndError(0,1,error_PbPb_num,"width");
@@ -1434,6 +1482,31 @@ TCanvas* overlay_theory(std::vector<TString>theory_list,std::vector<TString>labe
 
           herr_corr_total_up->SetBinContent(j,erry_ratio_total_corr_up);
           herr_corr_total_down->SetBinContent(j,-erry_ratio_total_corr_do);
+
+          hnom_ratio->SetBinContent(j,hratio->GetBinContent(j));
+          h_abserr_stat->SetBinContent(j,hratio->GetBinError(j));
+          h_abserr_response_up->SetBinContent(j,hratio->GetBinContent(j) * TMath::Sqrt(erry_response_a_PbPb*erry_response_a_PbPb + erry_response_a_pp*erry_response_a_pp ));
+          h_abserr_response_do->SetBinContent(j,-hratio->GetBinContent(j) * TMath::Sqrt(erry_response_b_PbPb*erry_response_b_PbPb + erry_response_b_pp*erry_response_b_pp ));
+
+          h_abserr_regularization_up->SetBinContent(j,hratio->GetBinContent(j) * TMath::Sqrt(erry_reg_a_PbPb*erry_reg_a_PbPb + erry_reg_a_pp*erry_reg_a_pp));
+          h_abserr_regularization_do->SetBinContent(j,-hratio->GetBinContent(j) * TMath::Sqrt(erry_reg_b_PbPb*erry_reg_b_PbPb + erry_reg_b_pp*erry_reg_b_pp));
+          h_abserr_purity_up->SetBinContent(j,hratio->GetBinContent(j) * TMath::Sqrt(erry_purity_a_PbPb*erry_purity_a_PbPb  + erry_purity_a_pp*erry_purity_a_pp));
+          h_abserr_purity_do->SetBinContent(j,-hratio->GetBinContent(j) * TMath::Sqrt(erry_purity_b_PbPb*erry_purity_b_PbPb + erry_purity_b_pp*erry_purity_b_pp));
+          h_abserr_JEC_up->SetBinContent(j,hratio->GetBinContent(j) * TMath::Sqrt(erry_JEC_a_PbPb*erry_JEC_a_PbPb  + erry_JEC_a_pp*erry_JEC_a_pp));
+          h_abserr_JEC_do->SetBinContent(j,-hratio->GetBinContent(j) * TMath::Sqrt(erry_JEC_b_PbPb*erry_JEC_b_PbPb + erry_JEC_b_pp*erry_JEC_b_pp));
+          h_abserr_JER_up->SetBinContent(j,hratio->GetBinContent(j) * TMath::Sqrt(erry_JER_a_PbPb*erry_JER_a_PbPb  + erry_JER_a_pp*erry_JER_a_pp));
+          h_abserr_JER_do->SetBinContent(j,-hratio->GetBinContent(j) * TMath::Sqrt(erry_JER_b_PbPb*erry_JER_b_PbPb + erry_JER_b_pp*erry_JER_b_pp));
+          h_abserr_Photon_up->SetBinContent(j,hratio->GetBinContent(j) * TMath::Sqrt(erry_photon_a_PbPb*erry_photon_a_PbPb  + erry_photon_a_pp*erry_photon_a_pp));
+          h_abserr_Photon_do->SetBinContent(j,-hratio->GetBinContent(j) * TMath::Sqrt(erry_photon_b_PbPb*erry_photon_b_PbPb + erry_photon_b_pp*erry_photon_b_pp));
+          h_abserr_Charged_up->SetBinContent(j,hratio->GetBinContent(j) * TMath::Sqrt(erry_charged_a_PbPb*erry_charged_a_PbPb  + erry_charged_a_pp*erry_charged_a_pp));
+          h_abserr_Charged_do->SetBinContent(j,-hratio->GetBinContent(j) * TMath::Sqrt(erry_charged_b_PbPb*erry_charged_b_PbPb + erry_charged_b_pp*erry_charged_b_pp));
+          h_abserr_Neutral_up->SetBinContent(j,hratio->GetBinContent(j) * TMath::Sqrt(erry_neutral_a_PbPb*erry_neutral_a_PbPb  + erry_neutral_a_pp*erry_neutral_a_pp));
+          h_abserr_Neutral_do->SetBinContent(j,-hratio->GetBinContent(j) * TMath::Sqrt(erry_neutral_b_PbPb*erry_neutral_b_PbPb + erry_neutral_b_pp*erry_neutral_b_pp));
+          h_abserr_Cent_up->SetBinContent(j,hratio->GetBinContent(j) * TMath::Sqrt(erry_cent_a*erry_cent_a));
+          h_abserr_Cent_do->SetBinContent(j,-hratio->GetBinContent(j) * TMath::Sqrt(erry_cent_b*erry_cent_b));
+          h_abserr_prior_up->SetBinContent(j,hratio->GetBinContent(j) * TMath::Sqrt(erry_Pythia_prior_a*erry_Pythia_prior_a + erry_herwig_a*erry_herwig_a ));
+          h_abserr_prior_do->SetBinContent(j,-hratio->GetBinContent(j) * TMath::Sqrt(erry_Pythia_prior_b*erry_Pythia_prior_b + erry_herwig_b*erry_herwig_b ));
+
         }
         
 
@@ -1872,15 +1945,42 @@ TCanvas* overlay_theory(std::vector<TString>theory_list,std::vector<TString>labe
         h_theory[i_file]->SetFillColorAlpha(col_pal[i_file],transparency);
     }
 
-    hPbPb_nom->Write("",TObject::kOverwrite);
-    hPbPb_sys->Write("",TObject::kOverwrite);
-    hPbPb_tot->Write("",TObject::kOverwrite);
-    hpp_nom->Write("",TObject::kOverwrite);
-    hpp_sys->Write("",TObject::kOverwrite);
-    hpp_tot->Write("",TObject::kOverwrite);
-    hratio->Write("",TObject::kOverwrite);
-    hratio_sys->Write("",TObject::kOverwrite);
-    hratio_tot->Write("",TObject::kOverwrite);
+    // Write histograms to file
+
+    hPbPb_nom->Write("hPbPb_nom",TObject::kOverwrite);
+    hPbPb_sys->Write("hPbPb_sys",TObject::kOverwrite);
+    hPbPb_tot->Write("hPbPb_tot",TObject::kOverwrite);
+    hpp_nom->Write("hpp_nom",TObject::kOverwrite);
+    hpp_sys->Write("hpp_sys",TObject::kOverwrite);
+    hpp_tot->Write("hpp_tot",TObject::kOverwrite);
+    hratio->Write("hratio",TObject::kOverwrite);
+    hratio_sys->Write("hratio_sys",TObject::kOverwrite);
+    hratio_tot->Write("hratio_tot",TObject::kOverwrite);
+
+    hnom_ratio->Write("",TObject::kWriteDelete);
+    h_abserr_stat->Write("",TObject::kWriteDelete);
+    h_abserr_response_up->Write("",TObject::kWriteDelete);
+    h_abserr_response_do->Write("",TObject::kWriteDelete);
+
+    h_abserr_regularization_up->Write("",TObject::kWriteDelete);
+    h_abserr_regularization_do->Write("",TObject::kWriteDelete);
+    h_abserr_purity_up->Write("",TObject::kWriteDelete);
+    h_abserr_purity_do->Write("",TObject::kWriteDelete);
+    h_abserr_JEC_up->Write("",TObject::kWriteDelete);
+    h_abserr_JEC_do->Write("",TObject::kWriteDelete);
+    h_abserr_JER_up->Write("",TObject::kWriteDelete);
+    h_abserr_JER_do->Write("",TObject::kWriteDelete);
+    h_abserr_Photon_up->Write("",TObject::kWriteDelete);
+    h_abserr_Photon_do->Write("",TObject::kWriteDelete);
+    h_abserr_Charged_up->Write("",TObject::kWriteDelete);
+    h_abserr_Charged_do->Write("",TObject::kWriteDelete);
+    h_abserr_Neutral_up->Write("",TObject::kWriteDelete);
+    h_abserr_Neutral_do->Write("",TObject::kWriteDelete);
+    h_abserr_Cent_up->Write("",TObject::kWriteDelete);
+    h_abserr_Cent_do->Write("",TObject::kWriteDelete);
+    h_abserr_prior_up->Write("",TObject::kWriteDelete);
+    h_abserr_prior_do->Write("",TObject::kWriteDelete);
+    
 
 // Defining canvas parameters with TDR style
     int W = 800;
@@ -2251,10 +2351,10 @@ void overlay_ratio_correlated(){
     // TString varname="Rg";
 
     for(auto var:plot_cases){
-        TString file_PbPb = "Uncertainty/OutputCombined_Jul_31_Decorrelate_PF/Data_0_30_Jul_31_PbPb_2018_sys_Decorrelate_PF_";
-        TString label_PbPb = "Data_0_30_Jul_31_PbPb_2018_sys_Decorrelate_PF_"; // xJ_gp8_Data_Rg_unfold_X 
-        TString file_pp = "~/pp_analysis/Analysis/Uncertainty/OutputCombined_Jul_31_Decorrelate_PF/pp_Data_Jul_31_pp_2017_sys_Decorrelate_PF_";
-        TString label_pp="pp_Data_Jul_31_pp_2017_sys_Decorrelate_PF_"; 
+        TString file_PbPb = "Uncertainty/OutputCombined_2024_Apr_HEPDATA/Data_0_30_2024_Apr_PbPb_2018_sys_";
+        TString label_PbPb = "Data_0_30_2024_Apr_PbPb_2018_sys_"; // xJ_gp8_Data_Rg_unfold_X 
+        TString file_pp = "~/pp_analysis/Analysis/Uncertainty/OutputCombined_2024_Apr_HEPDATA/pp_Data_2024_Apr_pp_2017_sys_";
+        TString label_pp="pp_Data_2024_Apr_pp_2017_sys_"; 
         theory_list.clear();
         label_list.clear();
         for(int i=0;i<theory_case.size();i++){ 
@@ -2262,16 +2362,16 @@ void overlay_ratio_correlated(){
             label_list.push_back(theory_case_label[i]);
         }
         if(var.Contains("xJ_gp4")){
-            file_PbPb+="Data_";
-            label_PbPb+="Data_";
-            file_pp+="Data_";
-            label_pp+="Data_";
+            file_PbPb+="xJ_gp4_HEPDATA_Data_";
+            label_PbPb+="xJ_gp4_HEPDATA_Data_";
+            file_pp+="xJ_gp4_HEPDATA_Data_";
+            label_pp+="xJ_gp4_HEPDATA_Data_";
         }
         else{
-            file_PbPb+="xJ_gp8_Data_";
-            label_PbPb+="xJ_gp8_Data_";
-            file_pp+="xJ_gp8_Data_";
-            label_pp+="xJ_gp8_Data_";
+            file_PbPb+="xJ_gp8_HEPDATA_Data_";
+            label_PbPb+="xJ_gp8_HEPDATA_Data_";
+            file_pp+="xJ_gp8_HEPDATA_Data_";
+            label_pp+="xJ_gp8_HEPDATA_Data_";
         }
 
         if(var.Contains("Rg")){
@@ -2290,9 +2390,9 @@ void overlay_ratio_correlated(){
         // std::cout<<file_PbPb<<"\n";
         std::cout<<"\n";
 
-        TCanvas *c_temp = overlay_theory(theory_list,label_list,file_PbPb,label_PbPb,file_pp,label_pp,"PbPb_pp_0_30_Jul_31_Plot_Feb_15_"+var+"_ratio_all_rel",var);
+        TCanvas *c_temp = overlay_theory(theory_list,label_list,file_PbPb,label_PbPb,file_pp,label_pp,"PbPb_pp_0_30_2024_Apr_Plot_Apr_16_HEPDATA_"+var+"_ratio",var);
         // delete c_temp;
-        std::cout<<"PbPb_pp_0_30_Jul_31_Plot_Feb_15_"+var+"_ratio_all_rel has been saved\n";
+        std::cout<<"PbPb_pp_0_30_2024_Apr_Plot_Apr_16_HEPDATA_"+var+"_ratio has been saved\n";
         std::cout<<"\n-------------------------------------------\n";
         // break;
     }        

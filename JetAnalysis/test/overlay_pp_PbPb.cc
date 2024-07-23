@@ -1029,10 +1029,10 @@ void overlay_pp_PbPb(){
     // TString varname="Rg";
 
     for(auto var:plot_cases){
-        TString file_PbPb = "Uncertainty/OutputCombined_Jul_31_Decorrelate_PF/Data_0_30_Jul_31_PbPb_2018_sys_Decorrelate_PF_";
-        TString label_PbPb = "Data_0_30_Jul_31_PbPb_2018_sys_Decorrelate_PF_"; // xJ_gp8_Data_Rg_unfold_X 
-        TString file_pp = "~/pp_analysis/Analysis/Uncertainty/OutputCombined_Jul_31_Decorrelate_PF/pp_Data_Jul_31_pp_2017_sys_Decorrelate_PF_";
-        TString label_pp="pp_Data_Jul_31_pp_2017_sys_Decorrelate_PF_"; 
+        TString file_PbPb = "Uncertainty/OutputCombined_2024_Apr_HEPDATA/Data_0_30_2024_Apr_PbPb_2018_sys_";
+        TString label_PbPb = "Data_0_30_2024_Apr_PbPb_2018_sys_"; // xJ_gp8_Data_Rg_unfold_X 
+        TString file_pp = "~/pp_analysis/Analysis/Uncertainty/OutputCombined_2024_Apr_HEPDATA/pp_Data_2024_Apr_pp_2017_sys_";
+        TString label_pp="pp_Data_2024_Apr_pp_2017_sys_"; 
         // theory_list.clear();
         // label_list.clear();
         // for(int i=0;i<theory_case.size();i++){
@@ -1040,16 +1040,16 @@ void overlay_pp_PbPb(){
         //     label_list.push_back(theory_case_label[i]);
         // }
         if(var.Contains("xJ_gp4")){
-            file_PbPb+="Data_";
-            label_PbPb+="Data_";
-            file_pp+="Data_";
-            label_pp+="Data_";
+            file_PbPb+="xJ_gp4_HEPDATA_Data_";
+            label_PbPb+="xJ_gp4_HEPDATA_Data_";
+            file_pp+="xJ_gp4_HEPDATA_Data_";
+            label_pp+="xJ_gp4_HEPDATA_Data_";
         }
         else{
-            file_PbPb+="xJ_gp8_Data_";
-            label_PbPb+="xJ_gp8_Data_";
-            file_pp+="xJ_gp8_Data_";
-            label_pp+="xJ_gp8_Data_";
+            file_PbPb+="xJ_gp8_HEPDATA_Data_";
+            label_PbPb+="xJ_gp8_HEPDATA_Data_";
+            file_pp+="xJ_gp8_HEPDATA_Data_";
+            label_pp+="xJ_gp8_HEPDATA_Data_";
         }
 
         if(var.Contains("Rg")){
@@ -1068,9 +1068,9 @@ void overlay_pp_PbPb(){
         // std::cout<<file_PbPb<<"\n";
         std::cout<<"\n";
 
-        TCanvas *c_temp = overlay_uncert(file_PbPb,label_PbPb,file_pp,label_pp,"PbPb_pp_0_30_Jul_31_Plot_Mar_5_"+var+"",var);
+        TCanvas *c_temp = overlay_uncert(file_PbPb,label_PbPb,file_pp,label_pp,"PbPb_pp_0_30_2024_Apr_Plot_Apr_16_HEPDATA_"+var+"",var);
         // delete c_temp;
-        std::cout<<"PbPb_pp_0_30_Jul_31_Plot_Mar_5_"+var+" has been saved\n";
+        std::cout<<"PbPb_pp_0_30_2024_Apr_Plot_Apr_16_HEPDATA_"+var+" has been saved\n";
         std::cout<<"\n-------------------------------------------\n";
         // break;
     }        

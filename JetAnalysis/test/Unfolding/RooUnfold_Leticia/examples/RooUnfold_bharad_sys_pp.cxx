@@ -34,9 +34,9 @@ using "\n";
 const int bin_det_xj=1;
 const int bin_true_xj=2;
 
-TString label = "Jul_31_pp_2017_sys_Decorrelate_PF";
+TString label = "2024_Apr_pp_2017_sys_xJ_gp8_HEPDATA";
 TString in_path = "/home/llr/cms/bharikri/Projects/ppHiForest/CMSSW_9_4_10/src/HeavyIonsAnalysis/JetAnalysis/test/Analysis/";
-TString in_file = in_path+"Uncertainty/Output_Jul_31_pp_2017_sys_Decorrelate_PF.root";
+TString in_file = in_path+"Uncertainty/Output_2024_Apr_pp_2017_sys_xJ_gp8_HEPDATA.root";
 TString out_path = "/home/llr/cms/bharikri/Projects/Photon_Analysis/CMSSW_10_3_3_patch1/src/HeavyIonsAnalysis/JetAnalysis/test/Unfolding/OutputDir_pp/";
 TFile* fout;
 
@@ -44,7 +44,7 @@ enum TestsTreatment {       // Unfolding tests -> Bottomline, Trivial, Split, Cr
     kNoTest        =0,      // Loop Over All Systematic Uncertainties 
     kTrivial       =1,      // Trivial Test -> Full Nominal MC as Both Data and Response
     kSplitNominal  =2,      // Split Nominal Test -> Split Nominal MC into independent samples
-    kBottomline    =3,      // TODO: Bottomline Test -> Data with Nominal MC, //? Check adding covariance matrix
+    kBottomline    =3,      // Bottomline Test -> Data with Nominal MC
     kCrossfold     =4,      // CrossFolding Test -> Nominal with Alt and vice-versa
     kSplitAltMC    =5       // Split Alt Test -> Split Alt MC into independent samples
 };
@@ -135,7 +135,7 @@ void SetHistErrZero(TH2D* hist2D){
     }
 }
 
-void RooUnfold_bharad_sys_pp(TestsTreatment input_test_index = kTrivial){
+void RooUnfold_bharad_sys_pp(TestsTreatment input_test_index = kNoTest){
 
     // gSystem->Load("libRooUnfold.so");
     
@@ -426,7 +426,7 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
             const int bin_det_girth =  5;
             const int bin_true_girth = 6;
 
-            Double_t xjmin_det =0.4;
+            Double_t xjmin_det =0.8;
             Double_t xjmin_true=0.0;
 
             Double_t xjmax_det =3;//5
@@ -723,7 +723,9 @@ void Fill_hist_sys(TTree* data_tree, TTree* mc_tree,TestsTreatment in_test_index
     }
 
     // Split Test Loop
-    float split_frac=0.3; //0.15;    
+    // Nominal xJ>0.4 and xJ>0.8 -> 0.5
+    // Alt xJ>0.4 and xJ>0.8     -> 0.1
+    float split_frac=0.5;   
     
     if(in_test_index==kSplitNominal ||in_test_index==kSplitAltMC){
         Double_t data_int,data_err,mc_int,mc_err;
@@ -1099,7 +1101,7 @@ void Unfold_hist(std::vector<TH2D*> vecHist2D,RooUnfoldResponse *response, Tests
         hunf_true_Y->Write("",TObject::kWriteDelete);
         fout->cd();
     
-    // TODO: Include D'Agostini
+    // D'Agostini
 
     fout->cd(test_label[test_index]);
     gDirectory->mkdir("DAgostini");
@@ -1118,17 +1120,7 @@ void Unfold_hist(std::vector<TH2D*> vecHist2D,RooUnfoldResponse *response, Tests
 
         auto covariance = unfold.Ereco();
         // covariance.Write(Form("covariance%d",iter),TObject::kWriteDelete);
-        if(iter<100 || iter==1000){
-            // covariance.Draw();
-            TH2D covariance_hist2D(covariance);// = (TH2D*)c_temp.GetPad(0)->GetPrimitive("TMatrixDBase");
-            covariance_hist2D.SetName(Form("%s_CovarianceMatrix_%s_%d",test_label[test_index].Data(),unfold_label.Data(),iter));
-            covariance_hist2D.SetTitle(Form("%s_CovarianceMatrix_%s_%d;Bin Number;Bin Number",test_label[test_index].Data(),unfold_label.Data(),iter));
-            fout->cd();
-            fout->cd(test_label[test_index]+"/DAgostini");
-            covariance_hist2D.Write("",TObject::kWriteDelete);
-            fout->cd();
-        }
-
+        
         TH2D *htempUnf=(TH2D*)hunf->Clone("htempUnf");          
         htempUnf->SetName(Form("%s_Bayesian_Unfoldediter_%s_%d",test_label[test_index].Data(),unfold_label.Data(),iter));
 
@@ -1138,9 +1130,13 @@ void Unfold_hist(std::vector<TH2D*> vecHist2D,RooUnfoldResponse *response, Tests
         TH2D* hunf_eff_corr = (TH2D*)hunf->Clone(Form("%s_Bayesian_Unfoldediter_%s_eff_corr_%d",test_label[test_index].Data(),unfold_label.Data(),iter));
         hunf_eff_corr->Divide((TH2D*)vecHist2D[1]->Clone());   
 
-        if(iter<60 || iter==100){
+        if(iter<100 || iter==100){
             fout->cd();
             fout->cd(test_label[test_index]+"/DAgostini");
+            TH2D covariance_hist2D(covariance);// = (TH2D*)c_temp.GetPad(0)->GetPrimitive("TMatrixDBase");
+            covariance_hist2D.SetName(Form("%s_CovarianceMatrix_%s_%d",test_label[test_index].Data(),unfold_label.Data(),iter));
+            covariance_hist2D.SetTitle(Form("%s_CovarianceMatrix_%s_%d;Bin Number;Bin Number",test_label[test_index].Data(),unfold_label.Data(),iter));
+            covariance_hist2D.Write("",TObject::kWriteDelete);
             htempUnf->Write("",TObject::kWriteDelete);
             htempFold->Write("",TObject::kWriteDelete);
             hunf_eff_corr->Write("",TObject::kWriteDelete);

@@ -17,7 +17,7 @@
 TString centstring="";
 TString label="";
 // TCanvas c;
-TString output_path = "Overlay_ratio";
+TString output_path = "Overlay_ratio/no_theory/";
 Bool_t flag_add_theory = true;
 
 //--------------------------------------------------------------------------------
@@ -308,7 +308,7 @@ void setTDRStyle() {
   // tdrStyle->SetLegoInnerR(Float_t rad = 0.5);
   // tdrStyle->SetNumberContours(Int_t number = 20);
 
-  tdrStyle->SetEndErrorSize(2);
+  tdrStyle->SetEndErrorSize(6); //tdrStyle->SetEndErrorSize(2);
   // tdrStyle->SetErrorMarker(20);
   // tdrStyle->SetErrorX(0.);
   
@@ -443,7 +443,7 @@ TCanvas* overlay_theory(std::vector<TString>theory_list,std::vector<TString>labe
     setTDRStyle();
 // Read Input Files and histograms
 
-    if(theory_list.size()!=label_list.size()){ std::cout<<"Number of theory files mismatch\n"; return NULL;}
+    // if(theory_list.size()!=label_list.size()){ std::cout<<"Number of theory files mismatch\n"; return NULL;}
     
     TH1::SetDefaultSumw2();
     TH2::SetDefaultSumw2();
@@ -472,17 +472,19 @@ TCanvas* overlay_theory(std::vector<TString>theory_list,std::vector<TString>labe
     for (int i_file = 0 ; i_file<theory_list.size();i_file++){
         f_theory  = TFile::Open(theory_list[i_file]);
         TGraphAsymmErrors *h_temp = (TGraphAsymmErrors*)f_theory->Get("ratio_graph");
-        h_theory.push_back((TGraphAsymmErrors*)h_temp->Clone());
         TH1D *h_temp_bins = (TH1D*)hPbPb_nom->Clone();
         h_temp_bins->SetBinContent(0,1);
+        Double_t theory_graph_center_offset = 0;//0.002*h_temp_bins->GetBinWidth(2);
         for(int i_bin=0; i_bin<h_temp->GetN(); i_bin++){
           Double_t temp_x=1,temp_y=1;
           h_temp->GetPoint(i_bin,temp_x,temp_y);
+          // h_temp->SetPoint(i_bin,temp_x +theory_graph_center_offset*(i_file-1.5),temp_y);
           int binning_offset= 1;
           if(label.Contains("Rg")) binning_offset= 2;
           h_temp_bins->SetBinContent(i_bin+binning_offset,temp_y);
           h_temp_bins->SetBinError(i_bin+binning_offset,0);
         }
+        h_theory.push_back((TGraphAsymmErrors*)h_temp->Clone());
         hist_theory.push_back((TH1D*)h_temp_bins->Clone());
     }
 
@@ -553,7 +555,7 @@ TCanvas* overlay_theory(std::vector<TString>theory_list,std::vector<TString>labe
 
         errstat_up[j] = erry_stat_a;
         errstat_do[j] = erry_stat_b;      
-        errx_do[j] = 0.5*hratio->GetBinWidth(j);
+        errx_do[j] = 0.12*hratio->GetBinWidth(j);
         errx_up[j] = errx_do[j];
         erry_up[j] = erry_uncorr_up;
         erry_do[j] = erry_uncorr_do;
@@ -672,12 +674,12 @@ TCanvas* overlay_theory(std::vector<TString>theory_list,std::vector<TString>labe
     hpp_tot->SetMarkerSize(0);
     
     hratio->SetLineColor(kBlack);
+    hratio->SetLineWidth(1);
     hratio->SetMarkerColor(kBlack);
     hratio->SetMarkerStyle(20);
     hratio->SetMarkerSize(1.8);
     hratio->SetFillStyle(1000); 
     hratio->SetFillColorAlpha(kGray+2,transparency);
-    hratio->SetLineWidth(1);
 
     // hratio_tot->SetFillStyle(3244); // Grey Box //1001 for solid 
     hratio_tot->SetFillStyle(1000);
@@ -714,7 +716,7 @@ TCanvas* overlay_theory(std::vector<TString>theory_list,std::vector<TString>labe
     gStyle->SetHatchesLineWidth(2);
     gStyle->SetHatchesSpacing(0.8);
     for (int i_file = 0 ; i_file<theory_list.size();i_file++){
-        transparency = 0.3;
+        transparency = 0.2+0.05*i_file;
         h_theory[i_file]->SetFillStyle(1001);
         // h_theory[i_file]->SetLineStyle(1);
         h_theory[i_file]->SetLineStyle(linearray[i_file]);
@@ -727,11 +729,14 @@ TCanvas* overlay_theory(std::vector<TString>theory_list,std::vector<TString>labe
         h_theory[i_file]->SetLineColor(col_pal[i_file]);
         h_theory[i_file]->SetFillColorAlpha(col_pal[i_file],transparency);
 
-        hist_theory[i_file]->SetFillColorAlpha(col_pal[i_file],transparency);
 
+        hist_theory[i_file]->SetFillColorAlpha(col_pal[i_file],transparency);
+        hist_theory[i_file]->SetMarkerSize(0);
+        // hist_theory[i_file]->SetMarkerColorAlpha(col_pal[i_file],0.85);
+        // hist_theory[i_file]->SetMarkerStyle(mark_sty_arr[i_file]);
         hist_theory[i_file]->SetLineStyle(linearray[i_file]);
-        hist_theory[i_file]->SetLineWidth(3);
-        hist_theory[i_file]->SetLineColorAlpha(col_pal[i_file],0.9);
+        hist_theory[i_file]->SetLineWidth(5);
+        hist_theory[i_file]->SetLineColorAlpha(col_pal[i_file],0.8);
     }
 
     hPbPb_nom->Write("",TObject::kOverwrite);
@@ -806,19 +811,75 @@ TCanvas* overlay_theory(std::vector<TString>theory_list,std::vector<TString>labe
     float leg_x2;
     float leg_y2;
 
-    leg_x1 = 0.39;
-    leg_y1 = 0.6;
-    leg_x2 = 0.9;
-    leg_y2 = 0.885;
 
     TLegend *l;
-    l = new TLegend(leg_x1, leg_y1, leg_x2, leg_y2,"","brNDC");
+
+    if(label.Contains("Rg") && label.Contains("xJ_gp8")){
+        hratio->SetMinimum(0.1001);
+        hratio->SetMaximum(1.6999);
+        // hratio->SetMaximum(1.9999);
+        leg_x1 = 0.5;
+        leg_y1 = 0.6;
+        leg_x2 = 0.9;
+        leg_y2 = 0.885;
+        l = new TLegend(leg_x1, leg_y1, leg_x2, leg_y2,"","brNDC");
+    }
+    else if(label.Contains("Rg") && label.Contains("xJ_gp4")){
+        hratio->SetMinimum(0.4501);
+        hratio->SetMaximum(1.5999);
+        // hratio->SetMaximum(1.7999);
+        leg_x1 = 0.5;
+        leg_y1 = 0.6;
+        leg_x2 = 0.9;
+        leg_y2 = 0.885;
+        l = new TLegend(leg_x1, leg_y1, leg_x2, leg_y2,"","brNDC");
+    }
+    else if(label.Contains("girth") && label.Contains("xJ_gp8")){
+        // hratio->SetMinimum(0.401);
+        // hratio->SetMaximum(2.89999);
+        // hratio->SetMaximum(2.19999);
+
+        hratio->SetMinimum(0.4001);
+        hratio->SetMaximum(1.5999);
+        leg_x1 = 0.5;
+        leg_y1 = 0.6;
+        leg_x2 = 0.9;
+        leg_y2 = 0.885;
+        l = new TLegend(leg_x1, leg_y1, leg_x2, leg_y2,"","brNDC");
+    }
+    else if(label.Contains("girth") && label.Contains("xJ_gp4")){
+        hratio->SetMinimum(0.4001);
+        hratio->SetMaximum(2.2999);
+        // hratio->SetMaximum(2.39999);
+        // leg_x1 = 0.49;
+        // leg_y1 = 0.15;
+        // leg_x2 = 0.9;
+        // leg_y2 = 0.435;
+        // l = new TLegend(leg_x1, leg_y1, leg_x2, leg_y2,"","brNDC");
+        leg_x1 = 0.5;
+        leg_y1 = 0.6;
+        leg_x2 = 0.9;
+        leg_y2 = 0.885;
+        l = new TLegend(leg_x1, leg_y1, leg_x2, leg_y2,"","brNDC");
+    }
+    else{
+        hratio->SetMinimum(0.4);
+        hratio->SetMaximum(1.6);
+        // hratio->SetMaximum(1.6);
+        leg_x1 = 0.5;
+        leg_y1 = 0.6;
+        leg_x2 = 0.9;
+        leg_y2 = 0.885;
+        l = new TLegend(leg_x1, leg_y1, leg_x2, leg_y2,"","brNDC");
+    }
     l->SetFillStyle(0);
     l->SetFillColor(0);
     l->SetLineColor(0);
     // l->SetTextSize(0.04);
     // l->SetTextFont(42);
     l->SetBorderSize(0);
+    
+    l->SetMargin(0.2f);
 
     l->SetTextSize(28);
     l->SetTextFont(43);
@@ -827,14 +888,17 @@ TCanvas* overlay_theory(std::vector<TString>theory_list,std::vector<TString>labe
 
     hratio->Draw("AXIS");
     // hratio->Draw("E1P0");
-    hratio_tot->Draw("P5");
+
+    if(theory_list.size()!=0)
+      l->AddEntry((TObject*)0, label_list[0], "");
 
     for (int i_file = 0 ; i_file<theory_list.size();i_file++){
         h_theory[i_file]->Draw("5");
         // l->AddEntry(h_theory[i_file], label_list[i_file], "lf");
 
-        hist_theory[i_file]->Draw("SAME_E1_][");
-        l->AddEntry(hist_theory[i_file], label_list[i_file], "lf");
+        hist_theory[i_file]->Draw("SAME_E_][");
+        TLatex latex;
+        l->AddEntry(hist_theory[i_file], label_list[i_file+1], "lf");
     }  
 
     l->Draw();
@@ -854,31 +918,9 @@ TCanvas* overlay_theory(std::vector<TString>theory_list,std::vector<TString>labe
     line->SetLineWidth(2);
     line->Draw("SAME");
 
-    if(label.Contains("Rg") && label.Contains("xJ_gp8")){
-        hratio->SetMinimum(0.25);
-        hratio->SetMaximum(2.5999);
-        // hratio->SetMaximum(1.9999);
-    }
-    else if(label.Contains("Rg") && label.Contains("xJ_gp4")){
-        hratio->SetMinimum(0.5);
-        hratio->SetMaximum(2.2999);
-        // hratio->SetMaximum(1.7999);
-    }
-    else if(label.Contains("girth") && label.Contains("xJ_gp8")){
-        hratio->SetMinimum(0.401);
-        hratio->SetMaximum(2.89999);
-        // hratio->SetMaximum(2.19999);
-    }
-    else if(label.Contains("girth") && label.Contains("xJ_gp4")){
-        hratio->SetMinimum(0.401);
-        hratio->SetMaximum(2.79999);
-        // hratio->SetMaximum(2.39999);
-    }
-    else{
-        hratio->SetMinimum(0.4);
-        hratio->SetMaximum(1.6);
-        // hratio->SetMaximum(1.6);
-    }
+    // gStyle->SetEndErrorSize(8);
+
+    hratio_tot->Draw("P5");
     hratio->Draw("SAME_E1_][P0");
     // pad1->RedrawAxis();
 // Axis settings
@@ -1001,103 +1043,118 @@ TCanvas* overlay_theory(std::vector<TString>theory_list,std::vector<TString>labe
     latex.SetTextAngle(0);
     latex.SetTextColor(kBlack);    
     // latex.SetTextSize(0.04);    
-    latex.SetTextAlign(12); 
+    latex.SetTextAlign(12);
 
     latex.SetTextSize(28);
+    // latex.SetIndiceSize(20); 
     latex.SetTextFont(43);
 
     if(label.Contains("Rg") && label.Contains("xJ_gp8")){
-        leg_x1 = 0.39;
+        leg_x1 = 0.5;
         leg_y1 = 0.6;
         leg_x2 = 0.9;
         leg_y2 = 0.885;
-
-
-        leg_x1+=0.05;
-        leg_y1-=0.05;
+        
+        leg_x1 = 0.18;
+        leg_y1 = 0.84;
         latex.DrawLatexNDC(leg_x1,leg_y1,"Centrality: 0-30%");
         leg_y1-= 0.085;
-        latex.DrawLatexNDC(leg_x1,leg_y1,"Soft drop z_{cut} = 0.2, #beta = 0");
+        // latex.DrawLatexNDC(leg_x1,leg_y1,"Soft drop z_{cut} = 0.2, #beta = 0");
+        latex.DrawLatexNDC(leg_x1,leg_y1,"Soft drop z_{cut} = 0.2");
+        leg_y1-= 0.085;
+        leg_x1+= 0.2;
+        latex.DrawLatexNDC(leg_x1,leg_y1,"#beta = 0");
 
         
-        leg_x1 = 0.19;
-        leg_y1 = 0.86;
+        leg_x1 = 0.42;
+        leg_y1 = 0.28;
         // leg_y1-=0.05;
         latex.DrawLatexNDC(leg_x1,leg_y1,"p_{T}^{#gamma} > 100 GeV ");
         leg_y1-= 0.085;
         latex.DrawLatexNDC(leg_x1,leg_y1,"p_{T}^{jet}/p_{T}^{#gamma} > 0.8");
         leg_y1-= 0.085;
+
+        leg_x1 = 0.18;
+        leg_y1 = 0.36;
         latex.DrawLatexNDC(leg_x1,leg_y1,"|#eta_{#gamma}| < 1.44");
         leg_y1-= 0.085;
-        latex.DrawLatexNDC(leg_x1,leg_y1," |#eta_{jet}| < 2");
+        latex.DrawLatexNDC(leg_x1,leg_y1,"|#eta_{jet}| < 2");
         leg_y1-= 0.085;
         latex.DrawLatexNDC(leg_x1,leg_y1,"#Delta#varphi_{#gamma,jet} > 2#pi/3");
     }
     else if(label.Contains("Rg") && label.Contains("xJ_gp4")){
-        leg_x1 = 0.39;
+        leg_x1 = 0.5;
         leg_y1 = 0.6;
         leg_x2 = 0.9;
         leg_y2 = 0.885;
-        leg_y1-=0.05;
-        leg_x1+=0.05;
+
+        leg_x1 = 0.18;
+        leg_y1 = 0.84;
         latex.DrawLatexNDC(leg_x1,leg_y1,"Centrality: 0-30%");
         leg_y1-= 0.085;
-        latex.DrawLatexNDC(leg_x1,leg_y1,"Soft drop z_{cut} = 0.2, #beta = 0");
+        latex.DrawLatexNDC(leg_x1,leg_y1,"Soft drop z_{cut} = 0.2");
+        leg_y1-= 0.085;
+        leg_x1+= 0.2;
+        latex.DrawLatexNDC(leg_x1,leg_y1,"#beta = 0");
 
-        leg_x1 = 0.19;
-        leg_y1 = 0.86;
-
+        leg_x1 = 0.42;
+        leg_y1 = 0.28;
         // leg_y1-= 0.085;
         latex.DrawLatexNDC(leg_x1,leg_y1,"p_{T}^{#gamma} > 100 GeV ");
         leg_y1-= 0.085;
         latex.DrawLatexNDC(leg_x1,leg_y1,"p_{T}^{jet}/p_{T}^{#gamma} > 0.4");
         leg_y1-= 0.085;
+        
+        leg_x1 = 0.18;
+        leg_y1 = 0.36;
         latex.DrawLatexNDC(leg_x1,leg_y1,"|#eta_{#gamma}| < 1.44");
         leg_y1-= 0.085;
-        latex.DrawLatexNDC(leg_x1,leg_y1," |#eta_{jet}| < 2");
+        latex.DrawLatexNDC(leg_x1,leg_y1,"|#eta_{jet}| < 2");
         leg_y1-= 0.085;
         latex.DrawLatexNDC(leg_x1,leg_y1,"#Delta#varphi_{#gamma,jet} > 2#pi/3");
         
     }
     else if(label.Contains("girth") && label.Contains("xJ_gp8")){
-        leg_x1 = 0.39;
+        leg_x1 = 0.5;
         leg_y1 = 0.6;
         leg_x2 = 0.9;
         leg_y2 = 0.885;
 
+        // leg_x1 = 0.49;
+        // leg_y1 = 0.18;
         leg_x1+=0.05;
         leg_y1-=0.05;
         latex.DrawLatexNDC(leg_x1,leg_y1,"Centrality: 0-30%");
         // leg_y1-= 0.085;
         // latex.DrawLatexNDC(leg_x1,leg_y1,"Soft drop z_{cut} = 0.2, #beta = 0");
 
-        leg_x1 = 0.19;
-        leg_y1 = 0.86;
+        leg_x1 = 0.18;
+        leg_y1 = 0.45;
 
         // leg_y1-= 0.085;
         latex.DrawLatexNDC(leg_x1,leg_y1,"p_{T}^{#gamma} > 100 GeV ");
         leg_y1-= 0.085;
         latex.DrawLatexNDC(leg_x1,leg_y1,"p_{T}^{jet}/p_{T}^{#gamma} > 0.8");
         leg_y1-= 0.085;
-        latex.DrawLatexNDC(leg_x1,leg_y1,"|#eta_{#gamma}| < 1.44");
-        leg_y1-= 0.085;
-        latex.DrawLatexNDC(leg_x1,leg_y1," |#eta_{jet}| < 2");
+        latex.DrawLatexNDC(leg_x1,leg_y1,"|#eta_{#gamma}| < 1.44, |#eta_{jet}| < 2");
+        // leg_y1-= 0.085;
+        // latex.DrawLatexNDC(leg_x1,leg_y1,"|#eta_{jet}| < 2");
         leg_y1-= 0.085;
         latex.DrawLatexNDC(leg_x1,leg_y1,"#Delta#varphi_{#gamma,jet} > 2#pi/3");
     }
     else if(label.Contains("girth") && label.Contains("xJ_gp4")){
-        leg_x1 = 0.39;
+        leg_x1 = 0.49;
         leg_y1 = 0.6;
         leg_x2 = 0.9;
-        leg_y2 = 0.885;
+        leg_y2 = 0.85;
 
-        leg_x1+=0.05;
-        leg_y1-=0.05;
+        leg_x1 = 0.18;
+        leg_y1 = 0.18;
         latex.DrawLatexNDC(leg_x1,leg_y1,"Centrality: 0-30%");
         // leg_y1-= 0.085;
         // latex.DrawLatexNDC(leg_x1,leg_y1,"Soft drop z_{cut} = 0.2, #beta = 0");
 
-        leg_x1 = 0.19;
+        leg_x1 = 0.18;
         leg_y1 = 0.86;
 
         // leg_y1-= 0.085;
@@ -1105,9 +1162,9 @@ TCanvas* overlay_theory(std::vector<TString>theory_list,std::vector<TString>labe
         leg_y1-= 0.085;
         latex.DrawLatexNDC(leg_x1,leg_y1,"p_{T}^{jet}/p_{T}^{#gamma} > 0.4");
         leg_y1-= 0.085;
-        latex.DrawLatexNDC(leg_x1,leg_y1,"|#eta_{#gamma}| < 1.44");
-        leg_y1-= 0.085;
-        latex.DrawLatexNDC(leg_x1,leg_y1," |#eta_{jet}| < 2");
+        latex.DrawLatexNDC(leg_x1,leg_y1,"|#eta_{#gamma}| < 1.44, |#eta_{jet}| < 2");
+        // leg_y1-= 0.085;
+        // latex.DrawLatexNDC(leg_x1,leg_y1,"|#eta_{jet}| < 2");
         leg_y1-= 0.085;
         latex.DrawLatexNDC(leg_x1,leg_y1,"#Delta#varphi_{#gamma,jet} > 2#pi/3");
     }
@@ -1123,8 +1180,8 @@ TCanvas* overlay_theory(std::vector<TString>theory_list,std::vector<TString>labe
       latex.DrawLatexNDC(leg_x1,leg_y1,"p_{T}^{jet}/p_{T}^{#gamma} > 0.4");
       leg_y1-= 0.085;
       latex.DrawLatexNDC(leg_x1,leg_y1,"|#eta_{#gamma}| < 1.44");
-        leg_y1-= 0.085;
-        latex.DrawLatexNDC(leg_x1,leg_y1," |#eta_{jet}| < 2");
+      leg_y1-= 0.085;
+      latex.DrawLatexNDC(leg_x1,leg_y1,"|#eta_{jet}| < 2");
       leg_y1-= 0.085;
       latex.DrawLatexNDC(leg_x1,leg_y1,"#Delta#varphi_{#gamma,jet} > 2#pi/3");
       
@@ -1143,14 +1200,14 @@ TCanvas* overlay_theory(std::vector<TString>theory_list,std::vector<TString>labe
     // canv->GetFrame()->Draw();
 
     canv->SaveAs(output_path+"/"+label+".pdf");
-    // canv->SaveAs(output_path+"/"+label+".svg");
+    // canv->SaveAs(output_path+"/"+label+".png");
     canv->Write(label,TObject::kOverwrite);
 
     fout->Close();
     delete l;
     delete fout;
     delete pad1;
-    delete canv;
+    // delete canv;
 
     return canv;
 
@@ -1164,13 +1221,14 @@ void overlay_theory_ratio(){
     std::vector<TString> theory_case = 
     {
       // "HYBRID_Elastic_Wake_0_","HYBRID_Elastic_Wake_1_","HYBRID_NoElastic_Wake_0_","HYBRID_NoElastic_Wake_1_",
-     "HYBRID_NoElastic_Lres2_Wake_0_","HYBRID_NoElastic_Lres2_Wake_1_","HYBRID_NoElastic_LresInf_Wake_0_","HYBRID_NoElastic_LresInf_Wake_1_",
+      // "HYBRID_NoElastic_Lres2_Wake_0_","HYBRID_NoElastic_Lres2_Wake_1_","HYBRID_NoElastic_LresInf_Wake_0_","HYBRID_NoElastic_LresInf_Wake_1_",
     };
     std::vector<TString> theory_case_label = 
     {
-      // "Elastic L_{res}=0, no wake","Elastic L_{res}=0, wake","No elastic L_{res}=0, no wake","No elastic L_{res}=0, wake",
-     "No elastic L_{res}=2/#piT, no wake","No elastic L_{res}=2/#piT, wake","No elastic L_{res}=#infty, no wake","No elastic L_{res}=#infty, wake",
+      // "Hybrid model, L_{res}= 0", "Elastic, no wake","Elastic, wake","No elastic, no wake","No elastic, wake",
+      // "Hybrid model, no elastic","L_{res}= 2/(#piT), no wake","L_{res}= 2/(#piT), wake","L_{res}= #infty, no wake","L_{res}= #infty, wake",
     };
+    //"No elastic L_{res}= 2/(#piT), no wake","No elastic L_{res}= 2/(#piT), wake","No elastic L_{res}= #infty, no wake","No elastic L_{res}= #infty, wake",
 
     std::vector<TString> plot_cases = {
         "Rg_xJ_gp4",
@@ -1186,27 +1244,29 @@ void overlay_theory_ratio(){
     // TString varname="Rg";
 
     for(auto var:plot_cases){
-        TString file_PbPb = "Uncertainty/OutputCombined_Jul_31_Decorrelate_PF/Data_0_30_Jul_31_PbPb_2018_sys_Decorrelate_PF_";
-        TString label_PbPb = "Data_0_30_Jul_31_PbPb_2018_sys_Decorrelate_PF_"; // xJ_gp8_Data_Rg_unfold_X 
-        TString file_pp = "~/pp_analysis/Analysis/Uncertainty/OutputCombined_Jul_31_Decorrelate_PF/pp_Data_Jul_31_pp_2017_sys_Decorrelate_PF_";
-        TString label_pp="pp_Data_Jul_31_pp_2017_sys_Decorrelate_PF_"; 
+        TString file_PbPb = "Uncertainty/OutputCombined_2024_Apr_HEPDATA/Data_0_30_2024_Apr_PbPb_2018_sys_";
+        TString label_PbPb = "Data_0_30_2024_Apr_PbPb_2018_sys_"; // xJ_gp8_Data_Rg_unfold_X 
+        TString file_pp = "~/pp_analysis/Analysis/Uncertainty/OutputCombined_2024_Apr_HEPDATA/pp_Data_2024_Apr_pp_2017_sys_";
+        TString label_pp="pp_Data_2024_Apr_pp_2017_sys_"; 
         theory_list.clear();
         label_list.clear();
         for(int i=0;i<theory_case.size();i++){
             theory_list.push_back(input_theory_path+theory_case[i]+var+".root");
-            label_list.push_back(theory_case_label[i]);
+        }
+        for(int i=0;i<theory_case_label.size();i++){
+          label_list.push_back(theory_case_label[i]);
         }
         if(var.Contains("xJ_gp4")){
-            file_PbPb+="Data_";
-            label_PbPb+="Data_";
-            file_pp+="Data_";
-            label_pp+="Data_";
+            file_PbPb+="xJ_gp4_HEPDATA_Data_";
+            label_PbPb+="xJ_gp4_HEPDATA_Data_";
+            file_pp+="xJ_gp4_HEPDATA_Data_";
+            label_pp+="xJ_gp4_HEPDATA_Data_";
         }
         else{
-            file_PbPb+="xJ_gp8_Data_";
-            label_PbPb+="xJ_gp8_Data_";
-            file_pp+="xJ_gp8_Data_";
-            label_pp+="xJ_gp8_Data_";
+            file_PbPb+="xJ_gp8_HEPDATA_Data_";
+            label_PbPb+="xJ_gp8_HEPDATA_Data_";
+            file_pp+="xJ_gp8_HEPDATA_Data_";
+            label_pp+="xJ_gp8_HEPDATA_Data_";
         }
 
         if(var.Contains("Rg")){
@@ -1225,9 +1285,9 @@ void overlay_theory_ratio(){
         // std::cout<<file_PbPb<<"\n";
         std::cout<<"\n";
 
-        TCanvas *c_temp = overlay_theory(theory_list,label_list,file_PbPb,label_PbPb,file_pp,label_pp,"PbPb_pp_0_30_Jul_31_Plot_Mar_5_"+var+"_ratio_Lres_const",var);
+        TCanvas *c_temp = overlay_theory(theory_list,label_list,file_PbPb,label_PbPb,file_pp,label_pp,"PbPb_pp_0_30_2024_Apr_Plot_May_2_HEPDATA_"+var+"_ratio_no_theory",var);
         // delete c_temp;
-        std::cout<<"PbPb_pp_0_30_Jul_31_Plot_Mar_5_"+var+"_ratio_Lres_const has been saved\n";
+        std::cout<<"PbPb_pp_0_30_2024_Apr_Plot_May_2_HEPDATA_"+var+"_ratio_no_theory has been saved\n";
         std::cout<<"\n-------------------------------------------\n";
         // break;
     }        

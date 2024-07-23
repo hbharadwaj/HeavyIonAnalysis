@@ -10,8 +10,8 @@
 
 const float min_cent_val = 0;
 const float max_cent_val = 30;
-const float min_xJ = 0.4;
-TString label="Jul_31_PbPb_2018_sys_Decorrelate_PF"+TString("_Data");
+const float min_xJ = 0.8;
+TString label="2024_Apr_PbPb_2018_sys_xJ_gp8_HEPDATA"+TString("_Data");
 TString varname = "girth";
 TString output_path = "OutputCombined/";
 TCanvas c;
@@ -89,7 +89,7 @@ void combine(TString in_varname="",int iter_ref = 6,int iter_prior = 13,TString 
 
     label+="_"+varname;
 
-    std::vector<TString>sel = {Form("p_{T}^{#gamma}>%.0f, x_{J}>%.2f, Anti-#it{k}_{T} #it{R}=0.2",100.0,0.4),"  ","Bayes Unfolded","z_{cut}=0.2"};   
+    std::vector<TString>sel = {Form("p_{T}^{#gamma}>%.0f, x_{J}>%.2f, Anti-#it{k}_{T} #it{R}=0.2",100.0,min_xJ),"  ","Bayes Unfolded","z_{cut}=0.2"};   
     overlay(hist_input,histname_input,"right",sel);
     /*
     std::vector<TH1D*> hist_input_ratio;
@@ -149,23 +149,53 @@ void plot_combine(TString hname,TString file="", TString label_in="", TString ou
     TH1D *herr_total_up = (TH1D*)herr_nom->Clone("herr_total");
     TH1D *herr_total_down = (TH1D*)herr_nom->Clone("herr_total");
 
-    // herr_nom->SetTitle("Nominal");
-    // herr_unfoldm1->SetTitle("Regularization Bias");
-    // herr_unfoldp1->SetTitle("Regularization Bias (sym)");
-    // herr_purity_up->SetTitle("#gamma Purity");
-    // herr_purity_down->SetTitle("#gamma Purity (sym)");
-    // herr_JECup->SetTitle("JEC up");
-    // herr_JECdown->SetTitle("JEC down");
-    // herr_JERup->SetTitle("JER up");
-    // herr_JERdown->SetTitle("JER down");
-    // herr_response_up->SetTitle("Response Matrix stats");
-    // herr_response_down->SetTitle("Response Matrix stats (sym)");
-    // herr_Substructure_up->SetTitle("Substructure up");
-    // herr_Substructure_down->SetTitle("Substructure down");
-    // herr_Centup->SetTitle("Centrality up");
-    // herr_Centdown->SetTitle("Centrality down");
-    // herr_Pythia_prior_up->SetTitle("MC Modeling");
-    // herr_Pythia_prior_down->SetTitle("MC Modeling (sym)");
+    TH1D *h_Nominal = new TH1D("Nominal","Nominal",herr_nom->GetNbinsX()-1,herr_nom->GetXaxis()->GetXbins()->GetArray());   
+
+    TH1D *h_abserr_stat =                (TH1D*)h_Nominal->Clone("Abserr_stat");
+    TH1D *h_abserr_response_up =         (TH1D*)h_Nominal->Clone("Abserr_response_up");
+    TH1D *h_abserr_response_do =         (TH1D*)h_Nominal->Clone("Abserr_response_do");
+
+    TH1D *h_abserr_regularization_up =   (TH1D*)h_Nominal->Clone("Abserr_regularization_up");
+    TH1D *h_abserr_regularization_do =   (TH1D*)h_Nominal->Clone("Abserr_regularization_do");
+    TH1D *h_abserr_purity_up =           (TH1D*)h_Nominal->Clone("Abserr_ABCD_up");
+    TH1D *h_abserr_purity_do =           (TH1D*)h_Nominal->Clone("Abserr_ABCD_do");
+    TH1D *h_abserr_JEC_up =              (TH1D*)h_Nominal->Clone("Abserr_JEC_up");
+    TH1D *h_abserr_JEC_do =              (TH1D*)h_Nominal->Clone("Abserr_JEC_do");
+    TH1D *h_abserr_JER_up =              (TH1D*)h_Nominal->Clone("Abserr_JER_up");
+    TH1D *h_abserr_JER_do =              (TH1D*)h_Nominal->Clone("Abserr_JER_do");
+    TH1D *h_abserr_Photon_up =           (TH1D*)h_Nominal->Clone("Abserr_Photon_up");
+    TH1D *h_abserr_Photon_do =           (TH1D*)h_Nominal->Clone("Abserr_Photon_do");
+    TH1D *h_abserr_Charged_up =          (TH1D*)h_Nominal->Clone("Abserr_Charged_up");
+    TH1D *h_abserr_Charged_do =          (TH1D*)h_Nominal->Clone("Abserr_Charged_do");
+    TH1D *h_abserr_Neutral_up =          (TH1D*)h_Nominal->Clone("Abserr_Neutral_up");
+    TH1D *h_abserr_Neutral_do =          (TH1D*)h_Nominal->Clone("Abserr_Neutral_do");
+    TH1D *h_abserr_Cent_up =             (TH1D*)h_Nominal->Clone("Abserr_Cent_up");
+    TH1D *h_abserr_Cent_do =             (TH1D*)h_Nominal->Clone("Abserr_Cent_do");
+    TH1D *h_abserr_prior_up =            (TH1D*)h_Nominal->Clone("Abserr_AltMC_up");
+    TH1D *h_abserr_prior_do =            (TH1D*)h_Nominal->Clone("Abserr_AltMC_do");
+
+    h_abserr_stat->SetTitle("Statistical (sym)");
+    h_abserr_response_up->SetTitle("Response Matrix stats up (sym)");
+    h_abserr_response_do->SetTitle("Response Matrix stats do (sym)");
+
+    h_abserr_regularization_up->SetTitle("Regularization Bias up (sym)");
+    h_abserr_regularization_do->SetTitle("Regularization Bias do (sym)");
+    h_abserr_purity_up->SetTitle("#gamma Purity up (sym)");
+    h_abserr_purity_do->SetTitle("#gamma Purity do (sym)");
+    h_abserr_JEC_up->SetTitle("JEC up");
+    h_abserr_JEC_do->SetTitle("JEC do");
+    h_abserr_JER_up->SetTitle("JER up");
+    h_abserr_JER_do->SetTitle("JER do");
+    h_abserr_Photon_up->SetTitle("Photon PF scale up 1 percent");
+    h_abserr_Photon_do->SetTitle("Photon PF scale do 1 percent");
+    h_abserr_Charged_up->SetTitle("Charged Hadron PF scale up 1 percent");
+    h_abserr_Charged_do->SetTitle("Charged Hadron PF scale do 1 percent");
+    h_abserr_Neutral_up->SetTitle("Neutral Hadron PF scale up 3 percent");
+    h_abserr_Neutral_do->SetTitle("Neutral Hadron PF scale do 3 percent");
+    h_abserr_Cent_up->SetTitle("Centrality up");
+    h_abserr_Cent_do->SetTitle("Centrality do");
+    h_abserr_prior_up->SetTitle("Fragmentation model up (sym)");
+    h_abserr_prior_do->SetTitle("Fragmentation model do (sym)");
 
     // herr_total_up->SetTitle("Total sys. up");
     // herr_total_down->SetTitle("Total sys. down");
@@ -181,8 +211,8 @@ void plot_combine(TString hname,TString file="", TString label_in="", TString ou
     herr_JERdown->SetTitle("Jet energy resolution");
     herr_response_up->SetTitle("Response matrix stats");
     herr_response_down->SetTitle("Response matrix stats");
-    herr_Photon_up->SetTitle("EGamma PF scale up");
-    herr_Photon_down->SetTitle("EGamma PF scale");
+    herr_Photon_up->SetTitle("Photon PF scale up");
+    herr_Photon_down->SetTitle("Photon PF scale");
     herr_Charged_up->SetTitle("Charged PF scale up");
     herr_Charged_down->SetTitle("Charged PF scale");
     herr_Neutral_up->SetTitle("Neutral PF scale up");
@@ -269,8 +299,8 @@ void plot_combine(TString hname,TString file="", TString label_in="", TString ou
             Double_t erry_stat_b=erry_stat_a;
 
         // Regularization
-            Double_t erryitermenos=-1*hinput[0]->GetBinContent(j)+hinput[1]->GetBinContent(j); 
-            Double_t erryiter=-1*hinput[0]->GetBinContent(j)+hinput[2]->GetBinContent(j); 
+            Double_t erryitermenos= hinput[1]->GetBinContent(j) - hinput[0]->GetBinContent(j); 
+            Double_t erryiter= hinput[2]->GetBinContent(j) - hinput[0]->GetBinContent(j); 
             Double_t erry_reg_a=-1, erry_reg_b=-1;
 
             if(erryiter>0 && erryitermenos>0){ 
@@ -290,42 +320,42 @@ void plot_combine(TString hname,TString file="", TString label_in="", TString ou
                 erry_reg_b=-1*erryiter;
             }
 
-            erry_reg_a = fabs(erryiter);
+            erry_reg_a = (erryiter);
             erry_reg_b = erry_reg_a;
 
         // Photon Purity -> Symmetrized
-            Double_t erry_purity_a = fabs(-1*hinput[0]->GetBinContent(j)+hinput[3]->GetBinContent(j));   
+            Double_t erry_purity_a = (hinput[3]->GetBinContent(j) - hinput[0]->GetBinContent(j));   
             Double_t erry_purity_b = erry_purity_a;
 
         // JEC
-            Double_t erry_JEC_a = fabs(-1*hinput[0]->GetBinContent(j)+hinput[4]->GetBinContent(j));   
-            Double_t erry_JEC_b = fabs(-1*hinput[0]->GetBinContent(j)+hinput[5]->GetBinContent(j));
+            Double_t erry_JEC_a = (hinput[4]->GetBinContent(j) - hinput[0]->GetBinContent(j));   
+            Double_t erry_JEC_b = (hinput[5]->GetBinContent(j) - hinput[0]->GetBinContent(j));
         // JER
-            Double_t erry_JER_a = fabs(-1*hinput[0]->GetBinContent(j)+hinput[6]->GetBinContent(j));   
-            Double_t erry_JER_b = fabs(-1*hinput[0]->GetBinContent(j)+hinput[7]->GetBinContent(j));
+            Double_t erry_JER_a = (hinput[6]->GetBinContent(j) - hinput[0]->GetBinContent(j));   
+            Double_t erry_JER_b = (hinput[7]->GetBinContent(j) - hinput[0]->GetBinContent(j));
         
         // Response Matrix Stats
-            Double_t erry_response_a = fabs(hinput[8]->GetBinError(j));   
+            Double_t erry_response_a = (hinput[8]->GetBinError(j));   
             Double_t erry_response_b = erry_response_a;
 
         // Substructure
-            Double_t erry_photon_a = fabs(-1*hinput[0]->GetBinContent(j)+hinput[9]->GetBinContent(j));   
-            Double_t erry_photon_b = fabs(-1*hinput[0]->GetBinContent(j)+hinput[10]->GetBinContent(j));
-            Double_t erry_charged_a = fabs(-1*hinput[0]->GetBinContent(j)+hinput[11]->GetBinContent(j));   
-            Double_t erry_charged_b = fabs(-1*hinput[0]->GetBinContent(j)+hinput[12]->GetBinContent(j));
-            Double_t erry_neutral_a = fabs(-1*hinput[0]->GetBinContent(j)+hinput[13]->GetBinContent(j));   
-            Double_t erry_neutral_b = fabs(-1*hinput[0]->GetBinContent(j)+hinput[14]->GetBinContent(j));
+            Double_t erry_photon_a =  (hinput[9]->GetBinContent(j)  - hinput[0]->GetBinContent(j));
+            Double_t erry_photon_b =  (hinput[10]->GetBinContent(j) - hinput[0]->GetBinContent(j));
+            Double_t erry_charged_a = (hinput[11]->GetBinContent(j) - hinput[0]->GetBinContent(j));
+            Double_t erry_charged_b = (hinput[12]->GetBinContent(j) - hinput[0]->GetBinContent(j));
+            Double_t erry_neutral_a = (hinput[13]->GetBinContent(j) - hinput[0]->GetBinContent(j));
+            Double_t erry_neutral_b = (hinput[14]->GetBinContent(j) - hinput[0]->GetBinContent(j));
         
         // Centrality
-            Double_t erry_cent_a = fabs(-1*hinput[0]->GetBinContent(j)+hinput[15]->GetBinContent(j));   
-            Double_t erry_cent_b = fabs(-1*hinput[0]->GetBinContent(j)+hinput[16]->GetBinContent(j));
+            Double_t erry_cent_a = (hinput[15]->GetBinContent(j) - hinput[0]->GetBinContent(j));
+            Double_t erry_cent_b = (hinput[16]->GetBinContent(j) - hinput[0]->GetBinContent(j));
 
         // Pythia q/g Prior
 
-            // Double_t erry_Pythia_prior_a = fabs(hinput[9]->GetBinContent(j)-hinput[10]->GetBinContent(j));
+            // Double_t erry_Pythia_prior_a = (hinput[9]->GetBinContent(j)-hinput[10]->GetBinContent(j));
             // Double_t erry_Pythia_prior_b = erry_Pythia_prior_a;
-            Double_t erry_Pythia_prior_a = fabs(hinput[17]->GetBinContent(j)-hinput[0]->GetBinContent(j));   // q/g Modified
-            Double_t erry_Pythia_prior_b = fabs(hinput[18]->GetBinContent(j)-hinput[0]->GetBinContent(j));  // q/g Modified
+            Double_t erry_Pythia_prior_a = (hinput[17]->GetBinContent(j) - hinput[0]->GetBinContent(j));   // q/g Modified
+            Double_t erry_Pythia_prior_b = (hinput[18]->GetBinContent(j) - hinput[0]->GetBinContent(j));  // q/g Modified
 
         Double_t erry_uncorr_up = TMath::Sqrt(
             erry_reg_a*erry_reg_a 
@@ -361,29 +391,53 @@ void plot_combine(TString hname,TString file="", TString label_in="", TString ou
 
         Double_t den_val= hinput[0]->GetBinContent(j);
         if(den_val==0) den_val=999999999;
-        herr_nom->SetBinContent(j,erry_stat_a/(den_val));
-        herr_unfoldm1->SetBinContent(j,erry_reg_a/den_val);
-        herr_unfoldp1->SetBinContent(j,-erry_reg_b/den_val);
-        herr_purity_up->SetBinContent(j,erry_purity_a/den_val);
-        herr_purity_down->SetBinContent(j,-erry_purity_b/den_val);
-        herr_JECup->SetBinContent(j,erry_JEC_a/den_val);
-        herr_JECdown->SetBinContent(j,-erry_JEC_b/den_val);
-        herr_JERup->SetBinContent(j,erry_JER_a/den_val);
-        herr_JERdown->SetBinContent(j,-erry_JER_b/den_val);
-        herr_response_up->SetBinContent(j,erry_response_a/den_val);
-        herr_response_down->SetBinContent(j,-erry_response_b/den_val);
-        herr_Photon_up->SetBinContent(j,erry_photon_a/den_val);
-        herr_Photon_down->SetBinContent(j,-erry_photon_b/den_val);
-        herr_Charged_up->SetBinContent(j,erry_charged_a/den_val);
-        herr_Charged_down->SetBinContent(j,-erry_charged_b/den_val);
-        herr_Neutral_up->SetBinContent(j,erry_neutral_a/den_val);
-        herr_Neutral_down->SetBinContent(j,-erry_neutral_b/den_val);
-        herr_Centup->SetBinContent(j,erry_cent_a/den_val);
-        herr_Centdown->SetBinContent(j,-erry_cent_b/den_val);
-        herr_Pythia_prior_up->SetBinContent(j,erry_Pythia_prior_a/(den_val));
-        herr_Pythia_prior_down->SetBinContent(j,-erry_Pythia_prior_b/(den_val));
-        herr_total_up->SetBinContent(j,erry_uncorr_up/den_val);
-        herr_total_down->SetBinContent(j,-erry_uncorr_do/den_val);
+        herr_nom->SetBinContent(j,fabs(erry_stat_a/den_val));
+        herr_unfoldm1->SetBinContent(j,fabs(erry_reg_a/den_val));
+        herr_unfoldp1->SetBinContent(j,-fabs(erry_reg_b/den_val));
+        herr_purity_up->SetBinContent(j,fabs(erry_purity_a/den_val));
+        herr_purity_down->SetBinContent(j,-fabs(erry_purity_b/den_val));
+        herr_JECup->SetBinContent(j,fabs(erry_JEC_a/den_val));
+        herr_JECdown->SetBinContent(j,-fabs(erry_JEC_b/den_val));
+        herr_JERup->SetBinContent(j,fabs(erry_JER_a/den_val));
+        herr_JERdown->SetBinContent(j,-fabs(erry_JER_b/den_val));
+        herr_response_up->SetBinContent(j,fabs(erry_response_a/den_val));
+        herr_response_down->SetBinContent(j,-fabs(erry_response_b/den_val));
+        herr_Photon_up->SetBinContent(j,fabs(erry_photon_a/den_val));
+        herr_Photon_down->SetBinContent(j,-fabs(erry_photon_b/den_val));
+        herr_Charged_up->SetBinContent(j,fabs(erry_charged_a/den_val));
+        herr_Charged_down->SetBinContent(j,-fabs(erry_charged_b/den_val));
+        herr_Neutral_up->SetBinContent(j,fabs(erry_neutral_a/den_val));
+        herr_Neutral_down->SetBinContent(j,-fabs(erry_neutral_b/den_val));
+        herr_Centup->SetBinContent(j,fabs(erry_cent_a/den_val));
+        herr_Centdown->SetBinContent(j,-fabs(erry_cent_b/den_val));
+        herr_Pythia_prior_up->SetBinContent(j,fabs(erry_Pythia_prior_a/den_val));
+        herr_Pythia_prior_down->SetBinContent(j,-fabs(erry_Pythia_prior_b/den_val));
+        herr_total_up->SetBinContent(j,fabs(erry_uncorr_up/den_val));
+        herr_total_down->SetBinContent(j,-fabs(erry_uncorr_do/den_val));
+
+        h_Nominal->SetBinContent(j,hinput[0]->GetBinContent(j));
+        h_abserr_stat->SetBinContent(j,erry_stat_a);
+        h_abserr_response_up->SetBinContent(j,erry_response_a);
+        h_abserr_response_do->SetBinContent(j,-erry_response_b);
+
+        h_abserr_regularization_up->SetBinContent(j,erry_reg_a);
+        h_abserr_regularization_do->SetBinContent(j,-erry_reg_b);
+        h_abserr_purity_up->SetBinContent(j,erry_purity_a);
+        h_abserr_purity_do->SetBinContent(j,-erry_purity_b);
+        h_abserr_JEC_up->SetBinContent(j,erry_JEC_a);
+        h_abserr_JEC_do->SetBinContent(j,erry_JEC_b);
+        h_abserr_JER_up->SetBinContent(j,erry_JER_a);
+        h_abserr_JER_do->SetBinContent(j,erry_JER_b);
+        h_abserr_Photon_up->SetBinContent(j,erry_photon_a);
+        h_abserr_Photon_do->SetBinContent(j,erry_photon_b);
+        h_abserr_Charged_up->SetBinContent(j,erry_charged_a);
+        h_abserr_Charged_do->SetBinContent(j,erry_charged_b);
+        h_abserr_Neutral_up->SetBinContent(j,erry_neutral_a);
+        h_abserr_Neutral_do->SetBinContent(j,erry_neutral_b);
+        h_abserr_Cent_up->SetBinContent(j,erry_cent_a);
+        h_abserr_Cent_do->SetBinContent(j,erry_cent_b);
+        h_abserr_prior_up->SetBinContent(j,erry_Pythia_prior_a);
+        h_abserr_prior_do->SetBinContent(j,-erry_Pythia_prior_b);
 
         // Error x and vectors
 
@@ -429,6 +483,30 @@ void plot_combine(TString hname,TString file="", TString label_in="", TString ou
     stat_uncert->Write("stat_uncert",TObject::kWriteDelete);
     sys_uncert->Write("sys_uncert",TObject::kWriteDelete);
     tot_uncert->Write("tot_uncert",TObject::kWriteDelete);
+
+    h_Nominal->Write("",TObject::kWriteDelete);
+    h_abserr_stat->Write("",TObject::kWriteDelete);
+    h_abserr_response_up->Write("",TObject::kWriteDelete);
+    h_abserr_response_do->Write("",TObject::kWriteDelete);
+
+    h_abserr_regularization_up->Write("",TObject::kWriteDelete);
+    h_abserr_regularization_do->Write("",TObject::kWriteDelete);
+    h_abserr_purity_up->Write("",TObject::kWriteDelete);
+    h_abserr_purity_do->Write("",TObject::kWriteDelete);
+    h_abserr_JEC_up->Write("",TObject::kWriteDelete);
+    h_abserr_JEC_do->Write("",TObject::kWriteDelete);
+    h_abserr_JER_up->Write("",TObject::kWriteDelete);
+    h_abserr_JER_do->Write("",TObject::kWriteDelete);
+    h_abserr_Photon_up->Write("",TObject::kWriteDelete);
+    h_abserr_Photon_do->Write("",TObject::kWriteDelete);
+    h_abserr_Charged_up->Write("",TObject::kWriteDelete);
+    h_abserr_Charged_do->Write("",TObject::kWriteDelete);
+    h_abserr_Neutral_up->Write("",TObject::kWriteDelete);
+    h_abserr_Neutral_do->Write("",TObject::kWriteDelete);
+    h_abserr_Cent_up->Write("",TObject::kWriteDelete);
+    h_abserr_Cent_do->Write("",TObject::kWriteDelete);
+    h_abserr_prior_up->Write("",TObject::kWriteDelete);
+    h_abserr_prior_do->Write("",TObject::kWriteDelete);
 
     std::vector<TString>sel = {" ","#bf{PbPb 1.7 nb^{-1}(5.02 TeV)}","Cent. 0-30%",Form("p_{T}^{#gamma}>%.0f, x_{J}>%.1f,|#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,min_xJ)}; 
     if(label.Contains("Rg")){
@@ -649,135 +727,183 @@ void plot_combine(TString hname,TString file="", TString label_in="", TString ou
     f->Close();
 }
 
-// void print_sys(TString file){
-//     TFile *f = TFile::Open(file);
+void print_sys(TString file){
+    TFile *f = TFile::Open(file);
 
-//     TH1D *herr_nom = (TH1D*)f->Get("herr_nom_output");
-//     TH1D *herr_unfoldm1 = (TH1D*)f->Get("herr_unfoldm1_output");
-//     TH1D *herr_unfoldp1 = (TH1D*)f->Get("herr_unfoldp1_output");
-//     TH1D *herr_purity_up = (TH1D*)f->Get("herr_purity_output");
-//     TH1D *herr_JECup = (TH1D*)f->Get("herr_JECup_output");
-//     TH1D *herr_JECdown = (TH1D*)f->Get("herr_JECdown_output");
-//     TH1D *herr_JERup = (TH1D*)f->Get("herr_JERup_output");
-//     TH1D *herr_JERdown = (TH1D*)f->Get("herr_JERdown_output");
-//     TH1D *herr_response_up = (TH1D*)f->Get("herr_response_output");
-//     TH1D *herr_Centup = (TH1D*)f->Get("herr_Centup_output");
-//     TH1D *herr_Centdown = (TH1D*)f->Get("herr_Centdown_output");
-//     TH1D *herr_Pythia_prior_up = (TH1D*)f->Get("herr_Pythia_qg_output");
-//     TH1D *herr_total_up = (TH1D*)f->Get("herr_total_up_output");
-//     TH1D *herr_total_down = (TH1D*)f->Get("herr_total_down_output");
+    TH1D *herr_nom = (TH1D*)f->Get("herr_nom_output");
+    TH1D *herr_unfoldm1 = (TH1D*)f->Get("herr_unfoldm1_output");
+    TH1D *herr_unfoldp1 = (TH1D*)f->Get("herr_unfoldp1_output");
+    TH1D *herr_purity_up = (TH1D*)f->Get("herr_purity_output");
+    TH1D *herr_JECup = (TH1D*)f->Get("herr_JECup_output");
+    TH1D *herr_JECdown = (TH1D*)f->Get("herr_JECdown_output");
+    TH1D *herr_JERup = (TH1D*)f->Get("herr_JERup_output");
+    TH1D *herr_JERdown = (TH1D*)f->Get("herr_JERdown_output");
+    TH1D *herr_response_up = (TH1D*)f->Get("herr_response_output");
+    TH1D *herr_Centup = (TH1D*)f->Get("herr_Centup_output");
+    TH1D *herr_Centdown = (TH1D*)f->Get("herr_Centdown_output");
+    TH1D *herr_Photon_up = (TH1D*)f->Get("herr_Photon_up_output");
+    TH1D *herr_Photon_down = (TH1D*)f->Get("herr_Photon_down_output");
+    TH1D *herr_Charged_up = (TH1D*)f->Get("herr_Charged_up_output");
+    TH1D *herr_Charged_down = (TH1D*)f->Get("herr_Charged_down_output");
+    TH1D *herr_Neutral_up = (TH1D*)f->Get("herr_Neutral_up_output");
+    TH1D *herr_Neutral_down = (TH1D*)f->Get("herr_Neutral_down_output");
+    TH1D *herr_Pythia_prior_up = (TH1D*)f->Get("herr_Pythia_qg_output");
+    TH1D *herr_total_up = (TH1D*)f->Get("herr_total_up_output");
+    TH1D *herr_total_down = (TH1D*)f->Get("herr_total_down_output");
     
-//     double herr_nom_val=-999;
-//     double herr_unfoldm1_val=-999;
-//     double herr_unfoldp1_val=-999;
-//     double herr_purity_up_val=-999;
-//     double herr_JECup_val=-999;
-//     double herr_JECdown_val=-999;
-//     double herr_JERup_val=-999;
-//     double herr_JERdown_val=-999;
-//     double herr_response_up_val=-999;
-//     double herr_Centup_val=-999;
-//     double herr_Centdown_val=-999;
-//     double herr_Pythia_prior_up_val=-999;
-//     double herr_total_up_val=-999;
-//     double herr_total_down_val=-999;
+    double herr_nom_val=-999;
+    double herr_unfoldm1_val=-999;
+    double herr_unfoldp1_val=-999;
+    double herr_purity_up_val=-999;
+    double herr_JECup_val=-999;
+    double herr_JECdown_val=-999;
+    double herr_JERup_val=-999;
+    double herr_JERdown_val=-999;
+    double herr_response_up_val=-999;
+    double herr_Centup_val=-999;
+    double herr_Centdown_val=-999;
+    double herr_Photon_up_val=-999;
+    double herr_Photon_down_val=-999;
+    double herr_Charged_up_val=-999;
+    double herr_Charged_down_val=-999;
+    double herr_Neutral_up_val=-999;
+    double herr_Neutral_down_val=-999;
+    double herr_Pythia_prior_up_val=-999;
+    double herr_total_up_val=-999;
+    double herr_total_down_val=-999;
 
-//     double herr_nom_min_max[2]={9999,-9999};
-//     double herr_unfoldm1_min_max[2]={9999,-9999};
-//     double herr_unfoldp1_min_max[2]={9999,-9999};
-//     double herr_purity_up_min_max[2]={9999,-9999};
-//     double herr_JECup_min_max[2]={9999,-9999};
-//     double herr_JECdown_min_max[2]={9999,-9999};
-//     double herr_JERup_min_max[2]={9999,-9999};
-//     double herr_JERdown_min_max[2]={9999,-9999};
-//     double herr_response_up_min_max[2]={9999,-9999};
-//     double herr_Centup_min_max[2]={9999,-9999};
-//     double herr_Centdown_min_max[2]={9999,-9999};
-//     double herr_Pythia_prior_up_min_max[2]={9999,-9999};
-//     double herr_total_up_min_max[2]={9999,-9999};
-//     double herr_total_down_min_max[2]={9999,-9999};
+    double herr_nom_min_max[2]={9999,-9999};
+    double herr_unfoldm1_min_max[2]={9999,-9999};
+    double herr_unfoldp1_min_max[2]={9999,-9999};
+    double herr_purity_up_min_max[2]={9999,-9999};
+    double herr_JECup_min_max[2]={9999,-9999};
+    double herr_JECdown_min_max[2]={9999,-9999};
+    double herr_JERup_min_max[2]={9999,-9999};
+    double herr_JERdown_min_max[2]={9999,-9999};
+    double herr_response_up_min_max[2]={9999,-9999};
+    double herr_Centup_min_max[2]={9999,-9999};
+    double herr_Centdown_min_max[2]={9999,-9999};
+    double herr_Photon_up_min_max[2]={9999,-9999};
+    double herr_Photon_down_min_max[2]={9999,-9999};
+    double herr_Charged_up_min_max[2]={9999,-9999};
+    double herr_Charged_down_min_max[2]={9999,-9999};
+    double herr_Neutral_up_min_max[2]={9999,-9999};
+    double herr_Neutral_down_min_max[2]={9999,-9999};
+    double herr_Pythia_prior_up_min_max[2]={9999,-9999};
+    double herr_total_up_min_max[2]={9999,-9999};
+    double herr_total_down_min_max[2]={9999,-9999};
     
 
-//     std::cout<<"|Bin |Stat| Regularization | Purity | JEC up | JEC down | JER up | JER down | Response | Centrality up | Centrality down | MC Modelling | Total up| Total down|\n";
-//     std::cout<<"|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|\n";
-//     for(int i=1;i<herr_nom->GetNbinsX();i++){
-//         herr_nom_val=fabs(herr_nom->GetBinContent(i)*100.0);
-//         herr_unfoldm1_val=fabs(herr_unfoldm1->GetBinContent(i)*100.0);
-//         herr_unfoldp1_val=fabs(herr_unfoldp1->GetBinContent(i)*100.0);
-//         herr_purity_up_val=fabs(herr_purity_up->GetBinContent(i)*100.0);
-//         herr_JECup_val=fabs(herr_JECup->GetBinContent(i)*100.0);
-//         herr_JECdown_val=fabs(herr_JECdown->GetBinContent(i)*100.0);
-//         herr_JERup_val=fabs(herr_JERup->GetBinContent(i)*100.0);
-//         herr_JERdown_val=fabs(herr_JERdown->GetBinContent(i)*100.0);
-//         herr_response_up_val=fabs(herr_response_up->GetBinContent(i)*100.0);
-//         herr_Centup_val=fabs(herr_Centup->GetBinContent(i)*100.0);
-//         herr_Centdown_val=fabs(herr_Centdown->GetBinContent(i)*100.0);
-//         herr_Pythia_prior_up_val=fabs(herr_Pythia_prior_up->GetBinContent(i)*100.0);
-//         herr_total_up_val=fabs(herr_total_up->GetBinContent(i)*100.0);
-//         herr_total_down_val=fabs(herr_total_down->GetBinContent(i)*100.0);
+    std::cout<<"|Bin |Stat| Regularization | Purity | JEC up | JEC down | JER up | JER down | Response | Centrality up | Centrality down | E/gamma up | E/gamma down | Charged up | Charged down | Neutral up | Neutral down | MC Modelling | Total up| Total down|\n";
+    std::cout<<"|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|\n";
+    for(int i=file.Contains("Rg")?2:1;i<herr_nom->GetNbinsX();i++){
+        herr_nom_val=fabs(herr_nom->GetBinContent(i)*100.0);
+        herr_unfoldm1_val=fabs(herr_unfoldm1->GetBinContent(i)*100.0);
+        herr_unfoldp1_val=fabs(herr_unfoldp1->GetBinContent(i)*100.0);
+        herr_purity_up_val=fabs(herr_purity_up->GetBinContent(i)*100.0);
+        herr_JECup_val=fabs(herr_JECup->GetBinContent(i)*100.0);
+        herr_JECdown_val=fabs(herr_JECdown->GetBinContent(i)*100.0);
+        herr_JERup_val=fabs(herr_JERup->GetBinContent(i)*100.0);
+        herr_JERdown_val=fabs(herr_JERdown->GetBinContent(i)*100.0);
+        herr_response_up_val=fabs(herr_response_up->GetBinContent(i)*100.0);
+        herr_Centup_val=fabs(herr_Centup->GetBinContent(i)*100.0);
+        herr_Centdown_val=fabs(herr_Centdown->GetBinContent(i)*100.0);
+        herr_Photon_up_val=fabs(herr_Photon_up->GetBinContent(i)*100.0);
+        herr_Photon_down_val=fabs(herr_Photon_down->GetBinContent(i)*100.0);
+        herr_Charged_up_val=fabs(herr_Charged_up->GetBinContent(i)*100.0);
+        herr_Charged_down_val=fabs(herr_Charged_down->GetBinContent(i)*100.0);
+        herr_Neutral_up_val=fabs(herr_Neutral_up->GetBinContent(i)*100.0);
+        herr_Neutral_down_val=fabs(herr_Neutral_down->GetBinContent(i)*100.0);
+        herr_Pythia_prior_up_val=fabs(herr_Pythia_prior_up->GetBinContent(i)*100.0);
+        herr_total_up_val=fabs(herr_total_up->GetBinContent(i)*100.0);
+        herr_total_down_val=fabs(herr_total_down->GetBinContent(i)*100.0);
 
-//         printf("|%*d|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|\n",2,i,
-//         herr_nom_val,
-//         herr_unfoldp1_val,
-//         herr_purity_up_val,
-//         herr_JECup_val,
-//         herr_JECdown_val,
-//         herr_JERup_val,
-//         herr_JERdown_val,
-//         herr_response_up_val,
-//         herr_Centup_val,
-//         herr_Centdown_val,
-//         herr_Pythia_prior_up_val,
-//         herr_total_up_val,
-//         herr_total_down_val);
+        printf("|%*d|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|\n",2,i,
+        herr_nom_val,
+        herr_unfoldp1_val,
+        herr_purity_up_val,
+        herr_JECup_val,
+        herr_JECdown_val,
+        herr_JERup_val,
+        herr_JERdown_val,
+        herr_response_up_val,
+        herr_Centup_val,
+        herr_Centdown_val,
+        herr_Photon_up_val,
+        herr_Photon_down_val,
+        herr_Charged_up_val,
+        herr_Charged_down_val,
+        herr_Neutral_up_val,
+        herr_Neutral_down_val,
+        herr_Pythia_prior_up_val,
+        herr_total_up_val,
+        herr_total_down_val);
 
-//         if(herr_nom_val<herr_nom_min_max[0]) herr_nom_min_max[0] = herr_nom_val;
-//         if(herr_unfoldp1_val<herr_unfoldp1_min_max[0]) herr_unfoldp1_min_max[0] = herr_unfoldp1_val;
-//         if(herr_purity_up_val<herr_purity_up_min_max[0]) herr_purity_up_min_max[0] = herr_purity_up_val;
-//         if(herr_JECup_val<herr_JECup_min_max[0]) herr_JECup_min_max[0] = herr_JECup_val;
-//         if(herr_JECdown_val<herr_JECdown_min_max[0]) herr_JECdown_min_max[0] = herr_JECdown_val;
-//         if(herr_JERup_val<herr_JERup_min_max[0]) herr_JERup_min_max[0] = herr_JERup_val;
-//         if(herr_JERdown_val<herr_JERdown_min_max[0]) herr_JERdown_min_max[0] = herr_JERdown_val;
-//         if(herr_response_up_val<herr_response_up_min_max[0]) herr_response_up_min_max[0] = herr_response_up_val;
-//         if(herr_Centup_val<herr_Centup_min_max[0]) herr_Centup_min_max[0] = herr_Centup_val;
-//         if(herr_Centdown_val<herr_Centdown_min_max[0]) herr_Centdown_min_max[0] = herr_Centdown_val;
-//         if(herr_Pythia_prior_up_val<herr_Pythia_prior_up_min_max[0]) herr_Pythia_prior_up_min_max[0] = herr_Pythia_prior_up_val;
-//         if(herr_total_up_val<herr_total_up_min_max[0]) herr_total_up_min_max[0] = herr_total_up_val;
-//         if(herr_total_down_val<herr_total_down_min_max[0]) herr_total_down_min_max[0] = herr_total_down_val;
+        if(herr_nom_val<herr_nom_min_max[0]) herr_nom_min_max[0] = herr_nom_val;
+        if(herr_unfoldp1_val<herr_unfoldp1_min_max[0]) herr_unfoldp1_min_max[0] = herr_unfoldp1_val;
+        if(herr_purity_up_val<herr_purity_up_min_max[0]) herr_purity_up_min_max[0] = herr_purity_up_val;
+        if(herr_JECup_val<herr_JECup_min_max[0]) herr_JECup_min_max[0] = herr_JECup_val;
+        if(herr_JECdown_val<herr_JECdown_min_max[0]) herr_JECdown_min_max[0] = herr_JECdown_val;
+        if(herr_JERup_val<herr_JERup_min_max[0]) herr_JERup_min_max[0] = herr_JERup_val;
+        if(herr_JERdown_val<herr_JERdown_min_max[0]) herr_JERdown_min_max[0] = herr_JERdown_val;
+        if(herr_response_up_val<herr_response_up_min_max[0]) herr_response_up_min_max[0] = herr_response_up_val;
+        if(herr_Centup_val<herr_Centup_min_max[0]) herr_Centup_min_max[0] = herr_Centup_val;
+        if(herr_Centdown_val<herr_Centdown_min_max[0]) herr_Centdown_min_max[0] = herr_Centdown_val;
+        if(herr_Photon_up_val<herr_Photon_up_min_max[0]) herr_Photon_up_min_max[0] = herr_Photon_up_val;
+        if(herr_Photon_down_val<herr_Photon_down_min_max[0]) herr_Photon_down_min_max[0] = herr_Photon_down_val;
+        if(herr_Charged_up_val<herr_Charged_up_min_max[0]) herr_Charged_up_min_max[0] = herr_Charged_up_val;
+        if(herr_Charged_down_val<herr_Charged_down_min_max[0]) herr_Charged_down_min_max[0] = herr_Charged_down_val;
+        if(herr_Neutral_up_val<herr_Neutral_up_min_max[0]) herr_Neutral_up_min_max[0] = herr_Neutral_up_val;
+        if(herr_Neutral_down_val<herr_Neutral_down_min_max[0]) herr_Neutral_down_min_max[0] = herr_Neutral_down_val;
+        if(herr_Pythia_prior_up_val<herr_Pythia_prior_up_min_max[0]) herr_Pythia_prior_up_min_max[0] = herr_Pythia_prior_up_val;
+        if(herr_total_up_val<herr_total_up_min_max[0]) herr_total_up_min_max[0] = herr_total_up_val;
+        if(herr_total_down_val<herr_total_down_min_max[0]) herr_total_down_min_max[0] = herr_total_down_val;
 
-//         if(herr_nom_val>herr_nom_min_max[1]) herr_nom_min_max[1] = herr_nom_val;
-//         if(herr_unfoldp1_val>herr_unfoldp1_min_max[1]) herr_unfoldp1_min_max[1] = herr_unfoldp1_val;
-//         if(herr_purity_up_val>herr_purity_up_min_max[1]) herr_purity_up_min_max[1] = herr_purity_up_val;
-//         if(herr_JECup_val>herr_JECup_min_max[1]) herr_JECup_min_max[1] = herr_JECup_val;
-//         if(herr_JECdown_val>herr_JECdown_min_max[1]) herr_JECdown_min_max[1] = herr_JECdown_val;
-//         if(herr_JERup_val>herr_JERup_min_max[1]) herr_JERup_min_max[1] = herr_JERup_val;
-//         if(herr_JERdown_val>herr_JERdown_min_max[1]) herr_JERdown_min_max[1] = herr_JERdown_val;
-//         if(herr_response_up_val>herr_response_up_min_max[1]) herr_response_up_min_max[1] = herr_response_up_val;
-//         if(herr_Centup_val>herr_Centup_min_max[1]) herr_Centup_min_max[1] = herr_Centup_val;
-//         if(herr_Centdown_val>herr_Centdown_min_max[1]) herr_Centdown_min_max[1] = herr_Centdown_val;
-//         if(herr_Pythia_prior_up_val>herr_Pythia_prior_up_min_max[1]) herr_Pythia_prior_up_min_max[1] = herr_Pythia_prior_up_val;
-//         if(herr_total_up_val>herr_total_up_min_max[1]) herr_total_up_min_max[1] = herr_total_up_val;
-//         if(herr_total_down_val>herr_total_down_min_max[1]) herr_total_down_min_max[1] = herr_total_down_val;
-//     }
+        if(herr_nom_val>herr_nom_min_max[1]) herr_nom_min_max[1] = herr_nom_val;
+        if(herr_unfoldp1_val>herr_unfoldp1_min_max[1]) herr_unfoldp1_min_max[1] = herr_unfoldp1_val;
+        if(herr_purity_up_val>herr_purity_up_min_max[1]) herr_purity_up_min_max[1] = herr_purity_up_val;
+        if(herr_JECup_val>herr_JECup_min_max[1]) herr_JECup_min_max[1] = herr_JECup_val;
+        if(herr_JECdown_val>herr_JECdown_min_max[1]) herr_JECdown_min_max[1] = herr_JECdown_val;
+        if(herr_JERup_val>herr_JERup_min_max[1]) herr_JERup_min_max[1] = herr_JERup_val;
+        if(herr_JERdown_val>herr_JERdown_min_max[1]) herr_JERdown_min_max[1] = herr_JERdown_val;
+        if(herr_response_up_val>herr_response_up_min_max[1]) herr_response_up_min_max[1] = herr_response_up_val;
+        if(herr_Centup_val>herr_Centup_min_max[1]) herr_Centup_min_max[1] = herr_Centup_val;
+        if(herr_Centdown_val>herr_Centdown_min_max[1]) herr_Centdown_min_max[1] = herr_Centdown_val;
+        if(herr_Photon_up_val>herr_Photon_up_min_max[1]) herr_Photon_up_min_max[1] = herr_Photon_up_val;
+        if(herr_Photon_down_val>herr_Photon_down_min_max[1]) herr_Photon_down_min_max[1] = herr_Photon_down_val;
+        if(herr_Charged_up_val>herr_Charged_up_min_max[1]) herr_Charged_up_min_max[1] = herr_Charged_up_val;
+        if(herr_Charged_down_val>herr_Charged_down_min_max[1]) herr_Charged_down_min_max[1] = herr_Charged_down_val;
+        if(herr_Neutral_up_val>herr_Neutral_up_min_max[1]) herr_Neutral_up_min_max[1] = herr_Neutral_up_val;
+        if(herr_Neutral_down_val>herr_Neutral_down_min_max[1]) herr_Neutral_down_min_max[1] = herr_Neutral_down_val;
+        if(herr_Pythia_prior_up_val>herr_Pythia_prior_up_min_max[1]) herr_Pythia_prior_up_min_max[1] = herr_Pythia_prior_up_val;
+        if(herr_total_up_val>herr_total_up_min_max[1]) herr_total_up_min_max[1] = herr_total_up_val;
+        if(herr_total_down_val>herr_total_down_min_max[1]) herr_total_down_min_max[1] = herr_total_down_val;
+    }
 
-//     std::cout<<"\n\n|Stat| Regularization | Purity | JEC up | JEC down | JER up | JER down | Response | Centrality up | Centrality down | MC Modelling | Total up| Total down|\n";
-//     std::cout<<"|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|\n";
-//     printf("|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|\n",
-//     herr_nom_min_max[0],herr_nom_min_max[1],
-//     herr_unfoldp1_min_max[0],herr_unfoldp1_min_max[1],
-//     herr_purity_up_min_max[0],herr_purity_up_min_max[1],
-//     herr_JECup_min_max[0],herr_JECup_min_max[1],
-//     herr_JECdown_min_max[0],herr_JECdown_min_max[1],
-//     herr_JERup_min_max[0],herr_JERup_min_max[1],
-//     herr_JERdown_min_max[0],herr_JERdown_min_max[1],
-//     herr_response_up_min_max[0],herr_response_up_min_max[1],
-//     herr_Centup_min_max[0],herr_Centup_min_max[1],
-//     herr_Centdown_min_max[0],herr_Centdown_min_max[1],
-//     herr_Pythia_prior_up_min_max[0],herr_Pythia_prior_up_min_max[1],
-//     herr_total_up_min_max[0],herr_total_up_min_max[1],
-//     herr_total_down_min_max[0],herr_total_down_min_max[1]);
+    std::cout<<"\n\n|Stat| Regularization | Purity | JEC up | JEC down | JER up | JER down | Response | Centrality up | Centrality down | E/gamma up | E/gamma down | Charged up | Charged down | Neutral up | Neutral down | MC Modelling | Total up| Total down|\n";
+    std::cout<<"|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|\n";
+    printf("|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|\n",
+    herr_nom_min_max[0],herr_nom_min_max[1],
+    herr_unfoldp1_min_max[0],herr_unfoldp1_min_max[1],
+    herr_purity_up_min_max[0],herr_purity_up_min_max[1],
+    herr_JECup_min_max[0],herr_JECup_min_max[1],
+    herr_JECdown_min_max[0],herr_JECdown_min_max[1],
+    herr_JERup_min_max[0],herr_JERup_min_max[1],
+    herr_JERdown_min_max[0],herr_JERdown_min_max[1],
+    herr_response_up_min_max[0],herr_response_up_min_max[1],
+    herr_Centup_min_max[0],herr_Centup_min_max[1],
+    herr_Centdown_min_max[0],herr_Centdown_min_max[1],
+    herr_Photon_up_min_max[0],herr_Photon_up_min_max[1],
+    herr_Photon_down_min_max[0],herr_Photon_down_min_max[1],
+    herr_Charged_up_min_max[0],herr_Charged_up_min_max[1],
+    herr_Charged_down_min_max[0],herr_Charged_down_min_max[1],
+    herr_Neutral_up_min_max[0],herr_Neutral_up_min_max[1],
+    herr_Neutral_down_min_max[0],herr_Neutral_down_min_max[1],
+    herr_Pythia_prior_up_min_max[0],herr_Pythia_prior_up_min_max[1],
+    herr_total_up_min_max[0],herr_total_up_min_max[1],
+    herr_total_down_min_max[0],herr_total_down_min_max[1]);
 
-// }
+}
 
 
 int main(int argc, char* argv[]){
