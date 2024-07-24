@@ -9,8 +9,9 @@
 
 const float min_cent_val = 0;
 const float max_cent_val = 30;
-TString label="May_5_pp_2017_sys_WP_update"+TString("_Data");
-TString varname = "Rg";
+const float min_xJ = 0.4;
+TString label="2024_Apr_pp_2017_sys_xJ_gp4_HEPDATA"+TString("_Data");
+TString varname = "girth";
 TString output_path = "OutputCombined/";
 TCanvas c;
 TLegend *l1;
@@ -24,8 +25,8 @@ void overlay(std::vector<TH1D*>,std::vector<TString> ,TString opt="label",std::v
 TH1* GetHistFromCanvas(TCanvas);  
 
 void combine(TString in_varname="",int iter_ref = 6,int iter_prior = 13,TString out_filename="",TString out_filepath="", TString hname="unfold_X"){
-    std::vector<TString> file_list  = {"Pythia8_nom","ABCD_purity","JER_up","JER_down","JEC_up","JEC_down","PFScale_up","PFScale_down","AltMC","response"};
-    std::vector<TString> label_list = {"nom","ABCD","JERup","JERdown","JECup","JECdown","Substructure_up","Substructure_down","AltMC","response"};
+    std::vector<TString> file_list  = {"Pythia8_nom","ABCD_purity","JER_up","JER_down","JEC_up","JEC_down","PScale_up","PScale_down","ChScale_up","ChScale_down","NScale_up","NScale_down","AltMC","response"};
+    std::vector<TString> label_list = {"nom","ABCD","JERup","JERdown","JECup","JECdown","Photon_up","Photon_down","Charged_up","Charged_down","Neutral_up","Neutral_down","AltMC","response"};
     if(in_varname!="")
         varname=in_varname;
     if(out_filepath!="")
@@ -87,7 +88,7 @@ void combine(TString in_varname="",int iter_ref = 6,int iter_prior = 13,TString 
 
     label+="_"+varname;
 
-    std::vector<TString>sel = {Form("#gamma p_{T}>%.0f, x_{J}>%.2f, Anti-#it{k}_{T} #it{R}=0.2",100.0,0.4),"  ","Bayes Unfolded","z_{cut}=0.2"};   
+    std::vector<TString>sel = {Form("p_{T}^{#gamma}>%.0f, x_{J}>%.2f, Anti-#it{k}_{T} #it{R}=0.2",100.0,min_xJ),"  ","Bayes Unfolded","z_{cut}=0.2"};   
     overlay(hist_input,histname_input,"right",sel); 
     f_out->Close();
 }
@@ -121,29 +122,61 @@ void pp_plot_combine(TString hname,TString file="", TString label_in="", TString
     TH1D *herr_JERdown = (TH1D*)f->Get(hname+"_JERdown");
     TH1D *herr_response_up = (TH1D*)f->Get(hname+"_response");
     TH1D *herr_response_down = (TH1D*)f->Get(hname+"_response");
-    TH1D *herr_Substructure_up = (TH1D*)f->Get(hname+"_Substructure_up");
-    TH1D *herr_Substructure_down = (TH1D*)f->Get(hname+"_Substructure_down");
+    TH1D *herr_Photon_up = (TH1D*)f->Get(hname+"_Photon_up");
+    TH1D *herr_Photon_down = (TH1D*)f->Get(hname+"_Photon_down");
+    TH1D *herr_Charged_up = (TH1D*)f->Get(hname+"_Charged_up");
+    TH1D *herr_Charged_down = (TH1D*)f->Get(hname+"_Charged_down");
+    TH1D *herr_Neutral_up = (TH1D*)f->Get(hname+"_Neutral_up");
+    TH1D *herr_Neutral_down = (TH1D*)f->Get(hname+"_Neutral_down");
     TH1D *herr_herwig_up = (TH1D*)f->Get(hname+"_AltMC");
     TH1D *herr_herwig_down = (TH1D*)f->Get(hname+"_AltMC");
 
     TH1D *herr_total_up = (TH1D*)herr_nom->Clone("herr_total");
     TH1D *herr_total_down = (TH1D*)herr_nom->Clone("herr_total");
 
-    // herr_nom->SetTitle("Nominal");
-    // herr_unfoldm1->SetTitle("Regularization Bias");
-    // herr_unfoldp1->SetTitle("Regularization Bias (sym)");
-    // herr_purity_up->SetTitle("#gamma Purity");
-    // herr_purity_down->SetTitle("#gamma Purity (sym)");
-    // herr_JECup->SetTitle("JEC up");
-    // herr_JECdown->SetTitle("JEC down");
-    // herr_JERup->SetTitle("JER up");
-    // herr_JERdown->SetTitle("JER down");
-    // herr_response_up->SetTitle("Response Matrix stats");
-    // herr_response_down->SetTitle("Response Matrix stats (sym)");
-    // herr_Substructure_up->SetTitle("Substructure up");
-    // herr_Substructure_down->SetTitle("Substructure down");
-    // herr_herwig_up->SetTitle("MC Modeling");
-    // herr_herwig_down->SetTitle("MC Modeling (sym)");
+    TH1D *h_Nominal = new TH1D("Nominal","Nominal",herr_nom->GetNbinsX()-1,herr_nom->GetXaxis()->GetXbins()->GetArray());   
+
+    TH1D *h_abserr_stat =                (TH1D*)h_Nominal->Clone("Abserr_stat");
+    TH1D *h_abserr_response_up =         (TH1D*)h_Nominal->Clone("Abserr_response_up");
+    TH1D *h_abserr_response_do =         (TH1D*)h_Nominal->Clone("Abserr_response_do");
+
+    TH1D *h_abserr_regularization_up =   (TH1D*)h_Nominal->Clone("Abserr_regularization_up");
+    TH1D *h_abserr_regularization_do =   (TH1D*)h_Nominal->Clone("Abserr_regularization_do");
+    TH1D *h_abserr_purity_up =           (TH1D*)h_Nominal->Clone("Abserr_ABCD_up");
+    TH1D *h_abserr_purity_do =           (TH1D*)h_Nominal->Clone("Abserr_ABCD_do");
+    TH1D *h_abserr_JEC_up =              (TH1D*)h_Nominal->Clone("Abserr_JEC_up");
+    TH1D *h_abserr_JEC_do =              (TH1D*)h_Nominal->Clone("Abserr_JEC_do");
+    TH1D *h_abserr_JER_up =              (TH1D*)h_Nominal->Clone("Abserr_JER_up");
+    TH1D *h_abserr_JER_do =              (TH1D*)h_Nominal->Clone("Abserr_JER_do");
+    TH1D *h_abserr_Photon_up =           (TH1D*)h_Nominal->Clone("Abserr_Photon_up");
+    TH1D *h_abserr_Photon_do =           (TH1D*)h_Nominal->Clone("Abserr_Photon_do");
+    TH1D *h_abserr_Charged_up =          (TH1D*)h_Nominal->Clone("Abserr_Charged_up");
+    TH1D *h_abserr_Charged_do =          (TH1D*)h_Nominal->Clone("Abserr_Charged_do");
+    TH1D *h_abserr_Neutral_up =          (TH1D*)h_Nominal->Clone("Abserr_Neutral_up");
+    TH1D *h_abserr_Neutral_do =          (TH1D*)h_Nominal->Clone("Abserr_Neutral_do");
+    TH1D *h_abserr_prior_up =            (TH1D*)h_Nominal->Clone("Abserr_AltMC_up");
+    TH1D *h_abserr_prior_do =            (TH1D*)h_Nominal->Clone("Abserr_AltMC_do");
+    
+    h_abserr_stat->SetTitle("Statistical (sym)");
+    h_abserr_response_up->SetTitle("Response Matrix stats up (sym)");
+    h_abserr_response_do->SetTitle("Response Matrix stats do (sym)");
+    
+    h_abserr_regularization_up->SetTitle("Regularization Bias up (sym)");
+    h_abserr_regularization_do->SetTitle("Regularization Bias do (sym)");
+    h_abserr_purity_up->SetTitle("#gamma Purity up (sym)");
+    h_abserr_purity_do->SetTitle("#gamma Purity do (sym)");
+    h_abserr_JEC_up->SetTitle("JEC up");
+    h_abserr_JEC_do->SetTitle("JEC do");
+    h_abserr_JER_up->SetTitle("JER up");
+    h_abserr_JER_do->SetTitle("JER do");
+    h_abserr_Photon_up->SetTitle("EGamma PF scale up 1 percent");
+    h_abserr_Photon_do->SetTitle("EGamma PF scale do 1 percent");
+    h_abserr_Charged_up->SetTitle("Charged Hadron PF scale up 1 percent");
+    h_abserr_Charged_do->SetTitle("Charged Hadron PF scale do 1 percent");
+    h_abserr_Neutral_up->SetTitle("Neutral Hadron PF scale up 3 percent");
+    h_abserr_Neutral_do->SetTitle("Neutral Hadron PF scale do 3 percent");
+    h_abserr_prior_up->SetTitle("Fragmentation model up (sym)");
+    h_abserr_prior_do->SetTitle("Fragmentation model do (sym)");
 
     // herr_total_up->SetTitle("Total sys. up");
     // herr_total_down->SetTitle("Total sys. down");
@@ -159,13 +192,17 @@ void pp_plot_combine(TString hname,TString file="", TString label_in="", TString
     herr_JERdown->SetTitle("Jet energy resolution");
     herr_response_up->SetTitle("Response matrix stats");
     herr_response_down->SetTitle("Response matrix stats");
-    herr_Substructure_up->SetTitle("PF energy scale up");
-    herr_Substructure_down->SetTitle("PF energy scale");
-    herr_herwig_up->SetTitle("Fragmentation model");
+    herr_Photon_up->SetTitle("EGamma PF scale up");
+    herr_Photon_down->SetTitle("EGamma PF scale");
+    herr_Charged_up->SetTitle("Charged PF scale up");
+    herr_Charged_down->SetTitle("Charged PF scale");
+    herr_Neutral_up->SetTitle("Neutral PF scale up");
+    herr_Neutral_down->SetTitle("Neutral PF scale");
+    herr_herwig_up->SetTitle("Fragmentation model ");
     herr_herwig_down->SetTitle("Fragmentation model (sym)");
 
-    herr_total_up->SetTitle("Total syst. up");
-    herr_total_down->SetTitle("Total syst.");
+    herr_total_up->SetTitle("Total sys. up");
+    herr_total_down->SetTitle("Total sys uncert. ");
 
  
     // Input Histograms 
@@ -178,8 +215,12 @@ void pp_plot_combine(TString hname,TString file="", TString label_in="", TString
         TH1D *hJERup = (TH1D*)f->Get(hname+"_JERup");
         TH1D *hJERdown = (TH1D*)f->Get(hname+"_JERdown");
         TH1D *hresponse = (TH1D*)f->Get(hname+"_response");
-        TH1D *hSubstructure_up = (TH1D*)f->Get(hname+"_Substructure_up");
-        TH1D *hSubstructure_down = (TH1D*)f->Get(hname+"_Substructure_down");
+        TH1D *hPhoton_up = (TH1D*)f->Get(hname+"_Photon_up");
+        TH1D *hPhoton_down = (TH1D*)f->Get(hname+"_Photon_down");
+        TH1D *hCharged_up = (TH1D*)f->Get(hname+"_Charged_up");
+        TH1D *hCharged_down = (TH1D*)f->Get(hname+"_Charged_down");
+        TH1D *hNeutral_up = (TH1D*)f->Get(hname+"_Neutral_up");
+        TH1D *hNeutral_down = (TH1D*)f->Get(hname+"_Neutral_down");
         TH1D *hHerwig = (TH1D*)f->Get(hname+"_AltMC");
 
         std::vector<TH1D*> hinput;  
@@ -193,9 +234,13 @@ void pp_plot_combine(TString hname,TString file="", TString label_in="", TString
         // 6 -> JER up
         // 7 -> JER down
         // 8 -> Response matrix Stats
-        // 9 -> Substructure up
-        //10 -> Substructure down
-        //11 -> MC Modelling - Herwig
+        // 9 -> Photon up
+        //10 -> Photon down
+        //11 -> Charged up
+        //12 -> Charged down
+        //13 -> Neutral up
+        //14 -> Neutral down
+        //15 -> MC Modelling - Herwig
 
         hinput.push_back((TH1D*)hnom->Clone("Nominal"));
         hinput.push_back((TH1D*)hunfoldm1->Clone("Unfoldm1"));
@@ -206,8 +251,12 @@ void pp_plot_combine(TString hname,TString file="", TString label_in="", TString
         hinput.push_back((TH1D*)hJERup->Clone("JERup"));
         hinput.push_back((TH1D*)hJERdown->Clone("JERdown"));
         hinput.push_back((TH1D*)hresponse->Clone("response"));
-        hinput.push_back((TH1D*)hSubstructure_up->Clone("Substructure_up"));
-        hinput.push_back((TH1D*)hSubstructure_down->Clone("Substructure_down"));
+        hinput.push_back((TH1D*)hPhoton_up->Clone("Photon_up"));
+        hinput.push_back((TH1D*)hPhoton_down->Clone("Photon_down"));
+        hinput.push_back((TH1D*)hCharged_up->Clone("Charged_up"));
+        hinput.push_back((TH1D*)hCharged_down->Clone("Charged_down"));
+        hinput.push_back((TH1D*)hNeutral_up->Clone("Neutral_up"));
+        hinput.push_back((TH1D*)hNeutral_down->Clone("Neutral_down"));
         hinput.push_back((TH1D*)hHerwig->Clone("Herwig"));
 
     Double_t vec_x[20],vec_y[20],vec_y_one[20],errx_do[20],errx_up[20],erry_do[20],erry_up[20],errstat_do[20],errstat_up[20],errtot_do[20],errtot_up[20];
@@ -219,8 +268,8 @@ void pp_plot_combine(TString hname,TString file="", TString label_in="", TString
             Double_t erry_stat_b=erry_stat_a;
 
         // Regularization
-            Double_t erryitermenos=-1*hinput[0]->GetBinContent(j)+hinput[1]->GetBinContent(j); 
-            Double_t erryiter=-1*hinput[0]->GetBinContent(j)+hinput[2]->GetBinContent(j); 
+            Double_t erryitermenos= hinput[1]->GetBinContent(j) - hinput[0]->GetBinContent(j); 
+            Double_t erryiter= hinput[2]->GetBinContent(j) - hinput[0]->GetBinContent(j); 
             Double_t erry_reg_a=-1, erry_reg_b=-1;
 
             if(erryiter>0 && erryitermenos>0){ 
@@ -240,57 +289,110 @@ void pp_plot_combine(TString hname,TString file="", TString label_in="", TString
                 erry_reg_b=-1*erryiter;
             }
 
-            erry_reg_a = fabs(erryiter);
+            erry_reg_a = (erryiter);
             erry_reg_b = erry_reg_a;
 
         // Photon Purity -> Symmetrized
-            Double_t erry_purity_a = fabs(-1*hinput[0]->GetBinContent(j)+hinput[3]->GetBinContent(j));   
+            Double_t erry_purity_a = (hinput[3]->GetBinContent(j) - hinput[0]->GetBinContent(j));   
             Double_t erry_purity_b = erry_purity_a;
 
         // JEC
-            Double_t erry_JEC_a = fabs(-1*hinput[0]->GetBinContent(j)+hinput[4]->GetBinContent(j));   
-            Double_t erry_JEC_b = fabs(-1*hinput[0]->GetBinContent(j)+hinput[5]->GetBinContent(j));
+            Double_t erry_JEC_a = (hinput[4]->GetBinContent(j) - hinput[0]->GetBinContent(j));   
+            Double_t erry_JEC_b = (hinput[5]->GetBinContent(j) - hinput[0]->GetBinContent(j));
         // JER
-            Double_t erry_JER_a = fabs(-1*hinput[0]->GetBinContent(j)+hinput[6]->GetBinContent(j));   
-            Double_t erry_JER_b = fabs(-1*hinput[0]->GetBinContent(j)+hinput[7]->GetBinContent(j));
+            Double_t erry_JER_a = (hinput[6]->GetBinContent(j) - hinput[0]->GetBinContent(j));   
+            Double_t erry_JER_b = (hinput[7]->GetBinContent(j) - hinput[0]->GetBinContent(j));
         
         // Response Matrix Stats
-            Double_t erry_response_a = fabs(hinput[8]->GetBinError(j));   
+            Double_t erry_response_a = (hinput[8]->GetBinError(j));   
             Double_t erry_response_b = erry_response_a;
         
         // Substructure
-            Double_t erry_substructure_a = fabs(-1*hinput[0]->GetBinContent(j)+hinput[9]->GetBinContent(j));   
-            Double_t erry_substructure_b = fabs(-1*hinput[0]->GetBinContent(j)+hinput[10]->GetBinContent(j));
+            Double_t erry_photon_a =  (hinput[9]->GetBinContent(j)  - hinput[0]->GetBinContent(j));
+            Double_t erry_photon_b =  (hinput[10]->GetBinContent(j) - hinput[0]->GetBinContent(j));
+            Double_t erry_charged_a = (hinput[11]->GetBinContent(j) - hinput[0]->GetBinContent(j));
+            Double_t erry_charged_b = (hinput[12]->GetBinContent(j) - hinput[0]->GetBinContent(j));
+            Double_t erry_neutral_a = (hinput[13]->GetBinContent(j) - hinput[0]->GetBinContent(j));
+            Double_t erry_neutral_b = (hinput[14]->GetBinContent(j) - hinput[0]->GetBinContent(j));
 
         // Herwig Prior
-            Double_t erry_herwig_a = fabs(-1*hinput[0]->GetBinContent(j)+hinput[11]->GetBinContent(j));   
+            Double_t erry_herwig_a = (hinput[15]->GetBinContent(j) - hinput[0]->GetBinContent(j));   
             Double_t erry_herwig_b = erry_herwig_a;
 
-        Double_t erry_uncorr_up = TMath::Sqrt(erry_reg_a*erry_reg_a + erry_purity_a*erry_purity_a + erry_JEC_a*erry_JEC_a + erry_JER_a*erry_JER_a + erry_response_a*erry_response_a + erry_substructure_a*erry_substructure_a + erry_herwig_a*erry_herwig_a);
-        Double_t erry_uncorr_do = TMath::Sqrt(erry_reg_b*erry_reg_b + erry_purity_b*erry_purity_b + erry_JEC_b*erry_JEC_b + erry_JER_b*erry_JER_b + erry_response_b*erry_response_b + erry_substructure_b*erry_substructure_b + erry_herwig_b*erry_herwig_b);
+        // Double_t erry_uncorr_up = TMath::Sqrt(erry_photon_a*erry_photon_a + erry_charged_a*erry_charged_a + erry_neutral_a*erry_neutral_a);//TMath::Sqrt(erry_reg_a*erry_reg_a + erry_purity_a*erry_purity_a + erry_JEC_a*erry_JEC_a + erry_JER_a*erry_JER_a + erry_response_a*erry_response_a + erry_photon_a*erry_photon_a + erry_charged_a*erry_charged_a + erry_neutral_a*erry_neutral_a + erry_herwig_a*erry_herwig_a);
+        // Double_t erry_uncorr_do = TMath::Sqrt(erry_photon_b*erry_photon_b + erry_charged_b*erry_charged_b + erry_neutral_b*erry_neutral_b);//TMath::Sqrt(erry_reg_b*erry_reg_b + erry_purity_b*erry_purity_b + erry_JEC_b*erry_JEC_b + erry_JER_b*erry_JER_b + erry_response_b*erry_response_b + erry_photon_b*erry_photon_b + erry_charged_b*erry_charged_b + erry_neutral_b*erry_neutral_b + erry_herwig_b*erry_herwig_b);
+        
+        Double_t erry_uncorr_up = TMath::Sqrt(
+            erry_reg_a*erry_reg_a 
+            + erry_purity_a*erry_purity_a 
+            + erry_JEC_a*erry_JEC_a 
+            + erry_JER_a*erry_JER_a 
+            + erry_response_a*erry_response_a 
+            + erry_photon_a*erry_photon_a 
+            + erry_charged_a*erry_charged_a 
+            + erry_neutral_a*erry_neutral_a 
+            + erry_herwig_a*erry_herwig_a
+        );
+        Double_t erry_uncorr_do = TMath::Sqrt(
+            erry_reg_b*erry_reg_b 
+            + erry_purity_b*erry_purity_b 
+            + erry_JEC_b*erry_JEC_b 
+            + erry_JER_b*erry_JER_b 
+            + erry_response_b*erry_response_b 
+            + erry_photon_b*erry_photon_b 
+            + erry_charged_b*erry_charged_b 
+            + erry_neutral_b*erry_neutral_b 
+            + erry_herwig_b*erry_herwig_b
+        );
         
         Double_t toterr_up = TMath::Sqrt(erry_stat_a*erry_stat_a + erry_uncorr_up*erry_uncorr_up);
         Double_t toterr_do = TMath::Sqrt(erry_stat_b*erry_stat_b + erry_uncorr_do*erry_uncorr_do);
 
         float den_val= hinput[0]->GetBinContent(j);
         if(den_val==0) den_val=999999999;
-        herr_nom->SetBinContent(j,erry_stat_a/(den_val));
-        herr_unfoldm1->SetBinContent(j,erry_reg_a/den_val);
-        herr_unfoldp1->SetBinContent(j,-erry_reg_b/den_val);
-        herr_purity_up->SetBinContent(j,erry_purity_a/den_val);
-        herr_purity_down->SetBinContent(j,-erry_purity_b/den_val);
-        herr_JECup->SetBinContent(j,erry_JEC_a/den_val);
-        herr_JECdown->SetBinContent(j,-erry_JEC_b/den_val);
-        herr_JERup->SetBinContent(j,erry_JER_a/den_val);
-        herr_JERdown->SetBinContent(j,-erry_JER_b/den_val);
-        herr_response_up->SetBinContent(j,erry_response_a/den_val);
-        herr_response_down->SetBinContent(j,-erry_response_b/den_val);
-        herr_Substructure_up->SetBinContent(j,erry_substructure_a/den_val);
-        herr_Substructure_down->SetBinContent(j,-erry_substructure_b/den_val);
-        herr_herwig_up->SetBinContent(j,erry_herwig_a/(den_val));
-        herr_herwig_down->SetBinContent(j,-erry_herwig_b/(den_val));
-        herr_total_up->SetBinContent(j,erry_uncorr_up/den_val);
-        herr_total_down->SetBinContent(j,-erry_uncorr_do/den_val);
+        herr_nom->SetBinContent(j,fabs(erry_stat_a/den_val));
+        herr_unfoldm1->SetBinContent(j,fabs(erry_reg_a/den_val));
+        herr_unfoldp1->SetBinContent(j,-fabs(erry_reg_b/den_val));
+        herr_purity_up->SetBinContent(j,fabs(erry_purity_a/den_val));
+        herr_purity_down->SetBinContent(j,-fabs(erry_purity_b/den_val));
+        herr_JECup->SetBinContent(j,fabs(erry_JEC_a/den_val));
+        herr_JECdown->SetBinContent(j,-fabs(erry_JEC_b/den_val));
+        herr_JERup->SetBinContent(j,fabs(erry_JER_a/den_val));
+        herr_JERdown->SetBinContent(j,-fabs(erry_JER_b/den_val));
+        herr_response_up->SetBinContent(j,fabs(erry_response_a/den_val));
+        herr_response_down->SetBinContent(j,-fabs(erry_response_b/den_val));
+        herr_Photon_up->SetBinContent(j,fabs(erry_photon_a/den_val));
+        herr_Photon_down->SetBinContent(j,-fabs(erry_photon_b/den_val));
+        herr_Charged_up->SetBinContent(j,fabs(erry_charged_a/den_val));
+        herr_Charged_down->SetBinContent(j,-fabs(erry_charged_b/den_val));
+        herr_Neutral_up->SetBinContent(j,fabs(erry_neutral_a/den_val));
+        herr_Neutral_down->SetBinContent(j,-fabs(erry_neutral_b/den_val));
+        herr_herwig_up->SetBinContent(j,fabs(erry_herwig_a/den_val));
+        herr_herwig_down->SetBinContent(j,-fabs(erry_herwig_b/den_val));
+        herr_total_up->SetBinContent(j,fabs(erry_uncorr_up/den_val));
+        herr_total_down->SetBinContent(j,-fabs(erry_uncorr_do/den_val));
+
+        h_Nominal->SetBinContent(j,hinput[0]->GetBinContent(j));
+        h_abserr_stat->SetBinContent(j,erry_stat_a);
+        h_abserr_response_up->SetBinContent(j,erry_response_a);
+        h_abserr_response_do->SetBinContent(j,-erry_response_b);
+
+        h_abserr_regularization_up->SetBinContent(j,erry_reg_a);
+        h_abserr_regularization_do->SetBinContent(j,-erry_reg_b);
+        h_abserr_purity_up->SetBinContent(j,erry_purity_a);
+        h_abserr_purity_do->SetBinContent(j,-erry_purity_b);
+        h_abserr_JEC_up->SetBinContent(j,erry_JEC_a);
+        h_abserr_JEC_do->SetBinContent(j,erry_JEC_b);
+        h_abserr_JER_up->SetBinContent(j,erry_JER_a);
+        h_abserr_JER_do->SetBinContent(j,erry_JER_b);
+        h_abserr_Photon_up->SetBinContent(j,erry_photon_a);
+        h_abserr_Photon_do->SetBinContent(j,erry_photon_b);
+        h_abserr_Charged_up->SetBinContent(j,erry_charged_a);
+        h_abserr_Charged_do->SetBinContent(j,erry_charged_b);
+        h_abserr_Neutral_up->SetBinContent(j,erry_neutral_a);
+        h_abserr_Neutral_do->SetBinContent(j,erry_neutral_b);
+        h_abserr_prior_up->SetBinContent(j,erry_herwig_a);
+        h_abserr_prior_do->SetBinContent(j,-erry_herwig_b);
 
         // Error x and vectors
 
@@ -308,9 +410,9 @@ void pp_plot_combine(TString hname,TString file="", TString label_in="", TString
         errtot_do[j] = toterr_do;
     }
 
-    auto stat_uncert = new TGraphAsymmErrors(hinput[0]->GetNbinsX()+2,vec_x,vec_y,errx_up,errx_do,errstat_up,errstat_do);
-    auto sys_uncert = new TGraphAsymmErrors(hinput[0]->GetNbinsX()+2,vec_x,vec_y,errx_up,errx_do,erry_up,erry_do);
-    auto tot_uncert = new TGraphAsymmErrors(hinput[0]->GetNbinsX()+2,vec_x,vec_y,errx_up,errx_do,errtot_up,errtot_do);
+    auto stat_uncert = new TGraphAsymmErrors(hinput[0]->GetNbinsX()+2,vec_x,vec_y,errx_do,errx_up,errstat_do,errstat_up);
+    auto sys_uncert = new TGraphAsymmErrors(hinput[0]->GetNbinsX()+2,vec_x,vec_y,errx_do,errx_up,erry_do,erry_up);
+    auto tot_uncert = new TGraphAsymmErrors(hinput[0]->GetNbinsX()+2,vec_x,vec_y,errx_do,errx_up,errtot_do,errtot_up);
 
     herr_nom->Write("herr_nom_output",TObject::kWriteDelete);
     herr_unfoldm1->Write("herr_unfoldm1_output",TObject::kWriteDelete);
@@ -321,8 +423,13 @@ void pp_plot_combine(TString hname,TString file="", TString label_in="", TString
     herr_JERup->Write("herr_JERup_output",TObject::kWriteDelete);
     herr_JERdown->Write("herr_JERdown_output",TObject::kWriteDelete);
     herr_response_up->Write("herr_response_output",TObject::kWriteDelete);
-    herr_Substructure_up->Write("herr_Substructure_up_output",TObject::kWriteDelete);
-    herr_Substructure_down->Write("herr_Substructure_down_output",TObject::kWriteDelete);
+    herr_Photon_up->Write("herr_Photon_up_output",TObject::kWriteDelete);
+    herr_Photon_down->Write("herr_Photon_down_output",TObject::kWriteDelete);
+    herr_Charged_up->Write("herr_Charged_up_output",TObject::kWriteDelete);
+    herr_Charged_down->Write("herr_Charged_down_output",TObject::kWriteDelete);
+    herr_Neutral_up->Write("herr_Neutral_up_output",TObject::kWriteDelete);
+    herr_Neutral_down->Write("herr_Neutral_down_output",TObject::kWriteDelete);
+
     herr_herwig_up->Write("herr_herwig_output",TObject::kWriteDelete);
     herr_total_up->Write("herr_total_up_output",TObject::kWriteDelete);
     herr_total_down->Write("herr_total_down_output",TObject::kWriteDelete);
@@ -330,7 +437,29 @@ void pp_plot_combine(TString hname,TString file="", TString label_in="", TString
     sys_uncert->Write("sys_uncert",TObject::kWriteDelete);
     tot_uncert->Write("tot_uncert",TObject::kWriteDelete);
 
-    std::vector<TString>sel = {" ","#bf{pp 300.6 pb^{-1}(5.02 TeV)}",Form("#gamma p_{T}>%.0f, x_{J}>%.1f,|#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4),"D'Agostini"}; 
+    h_Nominal->Write("",TObject::kWriteDelete);
+    h_abserr_stat->Write("",TObject::kWriteDelete);
+    h_abserr_response_up->Write("",TObject::kWriteDelete);
+    h_abserr_response_do->Write("",TObject::kWriteDelete);
+
+    h_abserr_regularization_up->Write("",TObject::kWriteDelete);
+    h_abserr_regularization_do->Write("",TObject::kWriteDelete);
+    h_abserr_purity_up->Write("",TObject::kWriteDelete);
+    h_abserr_purity_do->Write("",TObject::kWriteDelete);
+    h_abserr_JEC_up->Write("",TObject::kWriteDelete);
+    h_abserr_JEC_do->Write("",TObject::kWriteDelete);
+    h_abserr_JER_up->Write("",TObject::kWriteDelete);
+    h_abserr_JER_do->Write("",TObject::kWriteDelete);
+    h_abserr_Photon_up->Write("",TObject::kWriteDelete);
+    h_abserr_Photon_do->Write("",TObject::kWriteDelete);
+    h_abserr_Charged_up->Write("",TObject::kWriteDelete);
+    h_abserr_Charged_do->Write("",TObject::kWriteDelete);
+    h_abserr_Neutral_up->Write("",TObject::kWriteDelete);
+    h_abserr_Neutral_do->Write("",TObject::kWriteDelete);
+    h_abserr_prior_up->Write("",TObject::kWriteDelete);
+    h_abserr_prior_do->Write("",TObject::kWriteDelete);
+
+    std::vector<TString>sel = {" ","#bf{pp 301 pb^{-1}(5.02 TeV)}",Form("#gamma p_{T}>%.0f, x_{J}>%.1f,|#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,min_xJ)};  
     if(label.Contains("Rg")){
         hinput[0]->SetMinimum(0.0);
         hinput[0]->SetMaximum(12.0);
@@ -430,8 +559,12 @@ void pp_plot_combine(TString hname,TString file="", TString label_in="", TString
         // hist_input_ratio_up.push_back((TH1D*)herr_JERdown->Clone());
         hist_input_ratio_up.push_back((TH1D*)herr_response_up->Clone());
         // hist_input_ratio_up.push_back((TH1D*)herr_response_down->Clone());
-        hist_input_ratio_up.push_back((TH1D*)herr_Substructure_up->Clone());
-        // hist_input_ratio_up.push_back((TH1D*)herr_Substructure_down->Clone());
+        hist_input_ratio_up.push_back((TH1D*)herr_Photon_up->Clone());
+        // hist_input_ratio_up.push_back((TH1D*)herr_Photon_down->Clone());
+        hist_input_ratio_up.push_back((TH1D*)herr_Charged_up->Clone());
+        // hist_input_ratio_up.push_back((TH1D*)herr_Charged_down->Clone());
+        hist_input_ratio_up.push_back((TH1D*)herr_Neutral_up->Clone());
+        // hist_input_ratio_up.push_back((TH1D*)herr_Neutral_down->Clone());
         hist_input_ratio_up.push_back((TH1D*)herr_herwig_up->Clone());
         // hist_input_ratio_up.push_back((TH1D*)herr_herwig_down->Clone());
         hist_input_ratio_up.push_back((TH1D*)herr_total_up->Clone());
@@ -449,8 +582,12 @@ void pp_plot_combine(TString hname,TString file="", TString label_in="", TString
         // histname_input_ratio_up.push_back(herr_JERdown->GetTitle());
         histname_input_ratio_up.push_back(herr_response_up->GetTitle());
         // histname_input_ratio_up.push_back(herr_response_down->GetTitle());
-        histname_input_ratio_up.push_back(herr_Substructure_up->GetTitle());
-        // histname_input_ratio_up.push_back(herr_Substructure_down->GetTitle());
+        histname_input_ratio_up.push_back(herr_Photon_up->GetTitle());
+        // histname_input_ratio_up.push_back(herr_Photon_down->GetTitle());
+        histname_input_ratio_up.push_back(herr_Charged_up->GetTitle());
+        // histname_input_ratio_up.push_back(herr_Charged_down->GetTitle());
+        histname_input_ratio_up.push_back(herr_Neutral_up->GetTitle());
+        // histname_input_ratio_up.push_back(herr_Neutral_down->GetTitle());
         histname_input_ratio_up.push_back(herr_herwig_up->GetTitle());
         // histname_input_ratio_up.push_back(herr_herwig_down->GetTitle());
         histname_input_ratio_up.push_back(herr_total_up->GetTitle());
@@ -473,8 +610,12 @@ void pp_plot_combine(TString hname,TString file="", TString label_in="", TString
         hist_input_ratio_down.push_back((TH1D*)herr_JERdown->Clone());
         // hist_input_ratio_down.push_back((TH1D*)herr_response_up->Clone());
         hist_input_ratio_down.push_back((TH1D*)herr_response_down->Clone());
-        // hist_input_ratio_down.push_back((TH1D*)herr_Substructure_up->Clone());
-        hist_input_ratio_down.push_back((TH1D*)herr_Substructure_down->Clone());
+        // hist_input_ratio_down.push_back((TH1D*)herr_Photon_up->Clone());
+        hist_input_ratio_down.push_back((TH1D*)herr_Photon_down->Clone());
+        // hist_input_ratio_down.push_back((TH1D*)herr_Charged_up->Clone());
+        hist_input_ratio_down.push_back((TH1D*)herr_Charged_down->Clone());
+        // hist_input_ratio_down.push_back((TH1D*)herr_Neutral_up->Clone());
+        hist_input_ratio_down.push_back((TH1D*)herr_Neutral_down->Clone());
         // hist_input_ratio_down.push_back((TH1D*)herr_herwig_up->Clone());
         hist_input_ratio_down.push_back((TH1D*)herr_herwig_down->Clone());
         // hist_input_ratio_down.push_back((TH1D*)herr_total_up->Clone());
@@ -492,13 +633,121 @@ void pp_plot_combine(TString hname,TString file="", TString label_in="", TString
         histname_input_ratio_down.push_back(herr_JERdown->GetTitle());
         // histname_input_ratio_down.push_back(herr_response_up->GetTitle());
         histname_input_ratio_down.push_back(herr_response_down->GetTitle());
-        // histname_input_ratio_down.push_back(herr_Substructure_up->GetTitle());
-        histname_input_ratio_down.push_back(herr_Substructure_down->GetTitle());
+        // histname_input_ratio_down.push_back(herr_Photon_up->GetTitle());
+        histname_input_ratio_down.push_back(herr_Photon_down->GetTitle());
+        // histname_input_ratio_down.push_back(herr_Charged_up->GetTitle());
+        histname_input_ratio_down.push_back(herr_Charged_down->GetTitle());
+        // histname_input_ratio_down.push_back(herr_Neutral_up->GetTitle());
+        histname_input_ratio_down.push_back(herr_Neutral_down->GetTitle());
         // histname_input_ratio_down.push_back(herr_herwig_up->GetTitle());
         histname_input_ratio_down.push_back(herr_herwig_down->GetTitle());
         // histname_input_ratio_down.push_back(herr_total_up->GetTitle());
         histname_input_ratio_down.push_back(herr_total_down->GetTitle());
 
+    
+    //* Splitting Up and Down Variations 
+
+        // std::vector<TH1D*> hist_input_ratio_up;
+        // std::vector<TString> histname_input_ratio_up;
+        // // hist_input_ratio_up.push_back((TH1D*)herr_nom->Clone());
+        // // herr_nom->Scale(-1.0);
+        // // hist_input_ratio_up.push_back((TH1D*)herr_nom->Clone());
+        // // hist_input_ratio_up.push_back((TH1D*)herr_unfoldm1->Clone());
+        // // hist_input_ratio_up.push_back((TH1D*)herr_unfoldp1->Clone());
+        // // hist_input_ratio_up.push_back((TH1D*)herr_purity_up->Clone());
+        // // hist_input_ratio_up.push_back((TH1D*)herr_purity_down->Clone());
+        // // hist_input_ratio_up.push_back((TH1D*)herr_JECup->Clone());
+        // // hist_input_ratio_up.push_back((TH1D*)herr_JECdown->Clone());
+        // // hist_input_ratio_up.push_back((TH1D*)herr_JERup->Clone());
+        // // hist_input_ratio_up.push_back((TH1D*)herr_JERdown->Clone());
+        // // hist_input_ratio_up.push_back((TH1D*)herr_response_up->Clone());
+        // // hist_input_ratio_up.push_back((TH1D*)herr_response_down->Clone());
+        // hist_input_ratio_up.push_back((TH1D*)herr_Photon_up->Clone());
+        // // hist_input_ratio_up.push_back((TH1D*)herr_Photon_down->Clone());
+        // hist_input_ratio_up.push_back((TH1D*)herr_Charged_up->Clone());
+        // // hist_input_ratio_up.push_back((TH1D*)herr_Charged_down->Clone());
+        // hist_input_ratio_up.push_back((TH1D*)herr_Neutral_up->Clone());
+        // // hist_input_ratio_up.push_back((TH1D*)herr_Neutral_down->Clone());
+        // // hist_input_ratio_up.push_back((TH1D*)herr_herwig_up->Clone());
+        // // hist_input_ratio_up.push_back((TH1D*)herr_herwig_down->Clone());
+        // hist_input_ratio_up.push_back((TH1D*)herr_total_up->Clone());
+        // // hist_input_ratio_up.push_back((TH1D*)herr_total_down->Clone());
+
+        // // histname_input_ratio_up.push_back("Stat. unc");
+        // // histname_input_ratio_up.push_back("Stat. Unc (sym)");
+        // // histname_input_ratio_up.push_back(herr_unfoldm1->GetTitle());
+        // // histname_input_ratio_up.push_back(herr_unfoldp1->GetTitle());
+        // // histname_input_ratio_up.push_back(herr_purity_up->GetTitle());
+        // // histname_input_ratio_up.push_back(herr_purity_down->GetTitle());
+        // // histname_input_ratio_up.push_back(herr_JECup->GetTitle());
+        // // histname_input_ratio_up.push_back(herr_JECdown->GetTitle());
+        // // histname_input_ratio_up.push_back(herr_JERup->GetTitle());
+        // // histname_input_ratio_up.push_back(herr_JERdown->GetTitle());
+        // // histname_input_ratio_up.push_back(herr_response_up->GetTitle());
+        // // histname_input_ratio_up.push_back(herr_response_down->GetTitle());
+        // histname_input_ratio_up.push_back(herr_Photon_up->GetTitle());
+        // // histname_input_ratio_up.push_back(herr_Photon_down->GetTitle());
+        // histname_input_ratio_up.push_back(herr_Charged_up->GetTitle());
+        // // histname_input_ratio_up.push_back(herr_Charged_down->GetTitle());
+        // histname_input_ratio_up.push_back(herr_Neutral_up->GetTitle());
+        // // histname_input_ratio_up.push_back(herr_Neutral_down->GetTitle());
+        // // histname_input_ratio_up.push_back(herr_herwig_up->GetTitle());
+        // // histname_input_ratio_up.push_back(herr_herwig_down->GetTitle());
+        // histname_input_ratio_up.push_back(herr_total_up->GetTitle());
+        // // histname_input_ratio_up.push_back(herr_total_down->GetTitle());
+
+        // //* DOWN ------------------------------------------------
+
+        // std::vector<TH1D*> hist_input_ratio_down;
+        // std::vector<TString> histname_input_ratio_down;
+        // // hist_input_ratio_down.push_back((TH1D*)herr_nom->Clone());
+        // // herr_nom->Scale(-1.0);
+        // // hist_input_ratio_down.push_back((TH1D*)herr_nom->Clone());
+        // // hist_input_ratio_down.push_back((TH1D*)herr_unfoldm1->Clone());
+        // // hist_input_ratio_down.push_back((TH1D*)herr_unfoldp1->Clone());
+        // // hist_input_ratio_down.push_back((TH1D*)herr_purity_up->Clone());
+        // // hist_input_ratio_down.push_back((TH1D*)herr_purity_down->Clone());
+        // // hist_input_ratio_down.push_back((TH1D*)herr_JECup->Clone());
+        // // hist_input_ratio_down.push_back((TH1D*)herr_JECdown->Clone());
+        // // hist_input_ratio_down.push_back((TH1D*)herr_JERup->Clone());
+        // // hist_input_ratio_down.push_back((TH1D*)herr_JERdown->Clone());
+        // // hist_input_ratio_down.push_back((TH1D*)herr_response_up->Clone());
+        // // hist_input_ratio_down.push_back((TH1D*)herr_response_down->Clone());
+        // // hist_input_ratio_down.push_back((TH1D*)herr_Photon_up->Clone());
+        // hist_input_ratio_down.push_back((TH1D*)herr_Photon_down->Clone());
+        // // hist_input_ratio_down.push_back((TH1D*)herr_Charged_up->Clone());
+        // hist_input_ratio_down.push_back((TH1D*)herr_Charged_down->Clone());
+        // // hist_input_ratio_down.push_back((TH1D*)herr_Neutral_up->Clone());
+        // hist_input_ratio_down.push_back((TH1D*)herr_Neutral_down->Clone());
+        // // hist_input_ratio_down.push_back((TH1D*)herr_herwig_up->Clone());
+        // // hist_input_ratio_down.push_back((TH1D*)herr_herwig_down->Clone());
+        // // hist_input_ratio_down.push_back((TH1D*)herr_total_up->Clone());
+        // hist_input_ratio_down.push_back((TH1D*)herr_total_down->Clone());
+
+        // // histname_input_ratio_down.push_back("Stat. Unc");
+        // // histname_input_ratio_down.push_back("Stat. unc");
+        // // histname_input_ratio_down.push_back(herr_unfoldm1->GetTitle());
+        // // histname_input_ratio_down.push_back(herr_unfoldp1->GetTitle());
+        // // histname_input_ratio_down.push_back(herr_purity_up->GetTitle());
+        // // histname_input_ratio_down.push_back(herr_purity_down->GetTitle());
+        // // histname_input_ratio_down.push_back(herr_JECup->GetTitle());
+        // // histname_input_ratio_down.push_back(herr_JECdown->GetTitle());
+        // // histname_input_ratio_down.push_back(herr_JERup->GetTitle());
+        // // histname_input_ratio_down.push_back(herr_JERdown->GetTitle());
+        // // histname_input_ratio_down.push_back(herr_response_up->GetTitle());
+        // // histname_input_ratio_down.push_back(herr_response_down->GetTitle());
+        // // histname_input_ratio_down.push_back(herr_Photon_up->GetTitle());
+        // histname_input_ratio_down.push_back(herr_Photon_down->GetTitle());
+        // // histname_input_ratio_down.push_back(herr_Charged_up->GetTitle());
+        // histname_input_ratio_down.push_back(herr_Charged_down->GetTitle());
+        // // histname_input_ratio_down.push_back(herr_Neutral_up->GetTitle());
+        // histname_input_ratio_down.push_back(herr_Neutral_down->GetTitle());
+        // // histname_input_ratio_down.push_back(herr_herwig_up->GetTitle());
+        // // histname_input_ratio_down.push_back(herr_herwig_down->GetTitle());
+        // // histname_input_ratio_down.push_back(herr_total_up->GetTitle());
+        // histname_input_ratio_down.push_back(herr_total_down->GetTitle());
+
+    
     if(label.Contains("Rg")){
         histname_input_ratio_up.push_back("R_{g}");
         histname_input_ratio_down.push_back("R_{g}");
@@ -531,7 +780,7 @@ void pp_plot_combine(TString hname,TString file="", TString label_in="", TString
 
     f->Close();
 }
-/*
+
 void print_sys(TString file){
     TFile *f = TFile::Open(file);
 
@@ -544,6 +793,12 @@ void print_sys(TString file){
     TH1D *herr_JERup = (TH1D*)f->Get("herr_JERup_output");
     TH1D *herr_JERdown = (TH1D*)f->Get("herr_JERdown_output");
     TH1D *herr_response_up = (TH1D*)f->Get("herr_response_output");
+    TH1D *herr_Photon_up = (TH1D*)f->Get("herr_Photon_up_output");
+    TH1D *herr_Photon_down = (TH1D*)f->Get("herr_Photon_down_output");
+    TH1D *herr_Charged_up = (TH1D*)f->Get("herr_Charged_up_output");
+    TH1D *herr_Charged_down = (TH1D*)f->Get("herr_Charged_down_output");
+    TH1D *herr_Neutral_up = (TH1D*)f->Get("herr_Neutral_up_output");
+    TH1D *herr_Neutral_down = (TH1D*)f->Get("herr_Neutral_down_output");
     TH1D *herr_herwig_up = (TH1D*)f->Get("herr_herwig_output");
     TH1D *herr_total_up = (TH1D*)f->Get("herr_total_up_output");
     TH1D *herr_total_down = (TH1D*)f->Get("herr_total_down_output");
@@ -557,6 +812,12 @@ void print_sys(TString file){
     double herr_JERup_val=-999;
     double herr_JERdown_val=-999;
     double herr_response_up_val=-999;
+    double herr_Photon_up_val=-999;
+    double herr_Photon_down_val=-999;
+    double herr_Charged_up_val=-999;
+    double herr_Charged_down_val=-999;
+    double herr_Neutral_up_val=-999;
+    double herr_Neutral_down_val=-999;
     double herr_herwig_up_val=-999;
     double herr_total_up_val=-999;
     double herr_total_down_val=-999;
@@ -570,14 +831,20 @@ void print_sys(TString file){
     double herr_JERup_min_max[2]={9999,-9999};
     double herr_JERdown_min_max[2]={9999,-9999};
     double herr_response_up_min_max[2]={9999,-9999};
+    double herr_Photon_up_min_max[2]={9999,-9999};
+    double herr_Photon_down_min_max[2]={9999,-9999};
+    double herr_Charged_up_min_max[2]={9999,-9999};
+    double herr_Charged_down_min_max[2]={9999,-9999};
+    double herr_Neutral_up_min_max[2]={9999,-9999};
+    double herr_Neutral_down_min_max[2]={9999,-9999};
     double herr_herwig_up_min_max[2]={9999,-9999};
     double herr_total_up_min_max[2]={9999,-9999};
     double herr_total_down_min_max[2]={9999,-9999};
     
 
-    std::cout<<"|Bin |Stat| Regularization | Purity | JEC up | JEC down | JER up | JER down | Response MC Modelling | Total up| Total down|\n";
-    std::cout<<"|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|\n";
-    for(int i=1;i<herr_nom->GetNbinsX();i++){
+    std::cout<<"|Bin |Stat| Regularization | Purity | JEC up | JEC down | JER up | JER down | Response | E/gamma up | E/gamma down | Charged up | Charged down | Neutral up | Neutral down | MC Modelling | Total up| Total down|\n";
+    std::cout<<"|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|\n";
+    for(int i=file.Contains("Rg")?2:1;i<herr_nom->GetNbinsX();i++){
         herr_nom_val=fabs(herr_nom->GetBinContent(i)*100.0);
         herr_unfoldm1_val=fabs(herr_unfoldm1->GetBinContent(i)*100.0);
         herr_unfoldp1_val=fabs(herr_unfoldp1->GetBinContent(i)*100.0);
@@ -587,11 +854,17 @@ void print_sys(TString file){
         herr_JERup_val=fabs(herr_JERup->GetBinContent(i)*100.0);
         herr_JERdown_val=fabs(herr_JERdown->GetBinContent(i)*100.0);
         herr_response_up_val=fabs(herr_response_up->GetBinContent(i)*100.0);
+        herr_Photon_up_val=fabs(herr_Photon_up->GetBinContent(i)*100.0);
+        herr_Photon_down_val=fabs(herr_Photon_down->GetBinContent(i)*100.0);
+        herr_Charged_up_val=fabs(herr_Charged_up->GetBinContent(i)*100.0);
+        herr_Charged_down_val=fabs(herr_Charged_down->GetBinContent(i)*100.0);
+        herr_Neutral_up_val=fabs(herr_Neutral_up->GetBinContent(i)*100.0);
+        herr_Neutral_down_val=fabs(herr_Neutral_down->GetBinContent(i)*100.0);
         herr_herwig_up_val=fabs(herr_herwig_up->GetBinContent(i)*100.0);
         herr_total_up_val=fabs(herr_total_up->GetBinContent(i)*100.0);
         herr_total_down_val=fabs(herr_total_down->GetBinContent(i)*100.0);
 
-        printf("|%*d|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|\n",2,i,
+        printf("|%*d|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|\n",2,i,
         herr_nom_val,
         herr_unfoldp1_val,
         herr_purity_up_val,
@@ -600,6 +873,12 @@ void print_sys(TString file){
         herr_JERup_val,
         herr_JERdown_val,
         herr_response_up_val,
+        herr_Photon_up_val,
+        herr_Photon_down_val,
+        herr_Charged_up_val,
+        herr_Charged_down_val,
+        herr_Neutral_up_val,
+        herr_Neutral_down_val,
         herr_herwig_up_val,
         herr_total_up_val,
         herr_total_down_val);
@@ -612,6 +891,12 @@ void print_sys(TString file){
         if(herr_JERup_val<herr_JERup_min_max[0]) herr_JERup_min_max[0] = herr_JERup_val;
         if(herr_JERdown_val<herr_JERdown_min_max[0]) herr_JERdown_min_max[0] = herr_JERdown_val;
         if(herr_response_up_val<herr_response_up_min_max[0]) herr_response_up_min_max[0] = herr_response_up_val;
+        if(herr_Photon_up_val<herr_Photon_up_min_max[0]) herr_Photon_up_min_max[0] = herr_Photon_up_val;
+        if(herr_Photon_down_val<herr_Photon_down_min_max[0]) herr_Photon_down_min_max[0] = herr_Photon_down_val;
+        if(herr_Charged_up_val<herr_Charged_up_min_max[0]) herr_Charged_up_min_max[0] = herr_Charged_up_val;
+        if(herr_Charged_down_val<herr_Charged_down_min_max[0]) herr_Charged_down_min_max[0] = herr_Charged_down_val;
+        if(herr_Neutral_up_val<herr_Neutral_up_min_max[0]) herr_Neutral_up_min_max[0] = herr_Neutral_up_val;
+        if(herr_Neutral_down_val<herr_Neutral_down_min_max[0]) herr_Neutral_down_min_max[0] = herr_Neutral_down_val;
         if(herr_herwig_up_val<herr_herwig_up_min_max[0]) herr_herwig_up_min_max[0] = herr_herwig_up_val;
         if(herr_total_up_val<herr_total_up_min_max[0]) herr_total_up_min_max[0] = herr_total_up_val;
         if(herr_total_down_val<herr_total_down_min_max[0]) herr_total_down_min_max[0] = herr_total_down_val;
@@ -624,14 +909,20 @@ void print_sys(TString file){
         if(herr_JERup_val>herr_JERup_min_max[1]) herr_JERup_min_max[1] = herr_JERup_val;
         if(herr_JERdown_val>herr_JERdown_min_max[1]) herr_JERdown_min_max[1] = herr_JERdown_val;
         if(herr_response_up_val>herr_response_up_min_max[1]) herr_response_up_min_max[1] = herr_response_up_val;
+        if(herr_Photon_up_val>herr_Photon_up_min_max[1]) herr_Photon_up_min_max[1] = herr_Photon_up_val;
+        if(herr_Photon_down_val>herr_Photon_down_min_max[1]) herr_Photon_down_min_max[1] = herr_Photon_down_val;
+        if(herr_Charged_up_val>herr_Charged_up_min_max[1]) herr_Charged_up_min_max[1] = herr_Charged_up_val;
+        if(herr_Charged_down_val>herr_Charged_down_min_max[1]) herr_Charged_down_min_max[1] = herr_Charged_down_val;
+        if(herr_Neutral_up_val>herr_Neutral_up_min_max[1]) herr_Neutral_up_min_max[1] = herr_Neutral_up_val;
+        if(herr_Neutral_down_val>herr_Neutral_down_min_max[1]) herr_Neutral_down_min_max[1] = herr_Neutral_down_val;
         if(herr_herwig_up_val>herr_herwig_up_min_max[1]) herr_herwig_up_min_max[1] = herr_herwig_up_val;
         if(herr_total_up_val>herr_total_up_min_max[1]) herr_total_up_min_max[1] = herr_total_up_val;
         if(herr_total_down_val>herr_total_down_min_max[1]) herr_total_down_min_max[1] = herr_total_down_val;
     }
 
-    std::cout<<"\n\n|Stat| Regularization | Purity | JEC up | JEC down | JER up | JER down | Response | MC Modelling | Total up| Total down|\n";
-    std::cout<<"|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|\n";
-    printf("|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|\n",
+    std::cout<<"\n\n|Stat| Regularization | Purity | JEC up | JEC down | JER up | JER down | Response |  E/gamma up | E/gamma down | Charged up | Charged down | Neutral up | Neutral down | MC Modelling | Total up| Total down|\n";
+    std::cout<<"|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|\n";
+    printf("|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|%.1f - %.1f|\n",
     herr_nom_min_max[0],herr_nom_min_max[1],
     herr_unfoldp1_min_max[0],herr_unfoldp1_min_max[1],
     herr_purity_up_min_max[0],herr_purity_up_min_max[1],
@@ -640,12 +931,18 @@ void print_sys(TString file){
     herr_JERup_min_max[0],herr_JERup_min_max[1],
     herr_JERdown_min_max[0],herr_JERdown_min_max[1],
     herr_response_up_min_max[0],herr_response_up_min_max[1],
+    herr_Photon_up_min_max[0],herr_Photon_up_min_max[1],
+    herr_Photon_down_min_max[0],herr_Photon_down_min_max[1],
+    herr_Charged_up_min_max[0],herr_Charged_up_min_max[1],
+    herr_Charged_down_min_max[0],herr_Charged_down_min_max[1],
+    herr_Neutral_up_min_max[0],herr_Neutral_up_min_max[1],
+    herr_Neutral_down_min_max[0],herr_Neutral_down_min_max[1],
     herr_herwig_up_min_max[0],herr_herwig_up_min_max[1],
     herr_total_up_min_max[0],herr_total_up_min_max[1],
     herr_total_down_min_max[0],herr_total_down_min_max[1]);
 
 }
-*/
+
 int main(int argc, char* argv[]){
     if(argc==2){ //! Correct this
         pp_plot_combine(argv[1],argv[2]);
@@ -769,6 +1066,8 @@ void Plot_hist(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt
                                          kgrass,kgrass,                             // JER
                                          kpink,kpink,                               // Response 
                                          klblue, klblue,                            // Substructure
+                                         kOrange-6, kOrange-6,                            // Substructure
+                                         kPink+10, kPink+10,                            // Substructure
                                          // kpurple, kpurple,                          // Centrality
                                          kredish, kredish,                          // MC
                                          kblack,kblack                              // Total
@@ -784,6 +1083,8 @@ void Plot_hist(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt
                                          // kOpenStar, kFullStar,                      // Centrality
                                          kOpenThreeTriangles, kFullThreeTriangles,  // MC
                                          kOpenSquare, kFullSquare,                  // Total
+                                         kOpenCrossX, kFullCrossX,
+                                         kOpenCrossX, kFullCrossX,
                                          kOpenCrossX, kFullCrossX
     };
 
@@ -847,8 +1148,8 @@ void Plot_hist(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt
     hs.Draw(drawopt);
     hs.GetHistogram()->GetXaxis()->SetTickLength(0);
     // hs.Draw("NOSTACKB_HIST");
-    double uncert_min = -0.2;
-    double uncert_max =  0.4;
+    double uncert_min = -0.1; // -0.2;
+    double uncert_max =  0.2; //  0.4;
 
     hs.SetMinimum(uncert_min);
     hs.SetMaximum(uncert_max);
@@ -1025,7 +1326,9 @@ void Plot_hist_up(std::vector<TH1D*> hist,std::vector<TString> histname,TString 
                                          kskyblue,                     // JEC
                                          kgrass,                       // JER
                                          kpink,                        // Response 
-                                         klblue,                       // Substructure
+                                         klblue,                        // Substructure
+                                         kOrange-6,                            // Substructure
+                                         kPink+10,                         // Substructure
                                         //  kpurple,                      // Centrality
                                          kredish,                      // MC
                                          kblack                        // Total
@@ -1284,7 +1587,9 @@ void Plot_hist_down(std::vector<TH1D*> hist,std::vector<TString> histname,TStrin
                                          kskyblue,                     // JEC
                                          kgrass,                       // JER
                                          kpink,                        // Response 
-                                         klblue,                       // Substructure
+                                         klblue,                           // Substructure
+                                         kOrange-6,                          // Substructure
+                                         kPink+10,                          // Substructure
                                         //  kpurple,                      // Centrality
                                          kredish,                      // MC
                                          kblack                        // Total
@@ -1712,7 +2017,7 @@ void overlay(std::vector<TH1D*> hist,std::vector<TString> histname,TString opt,s
 
     
     gPad->Update();
-    c.SaveAs(output_path +histname.back()+".png");
+    // c.SaveAs(output_path +histname.back()+".png");
     // c.SaveAs(output_path +histname.back()+".C");
     c.Write(histname.back(),TObject::kOverwrite);
     std::cout<<histname.back()<<" has been saved"<<std::endl;

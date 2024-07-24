@@ -14,51 +14,63 @@
 
 #include <iostream>         // needed for I/O
 
-TString label="May_3_pp_2017_WP_update"; // "Substructure_up_jets";//"QCDPhoton_jets"; // "Data_2018_jets";//
+TString label="2024_Apr_pp_2017_sys_xJ_gp8_HEPDATA"; // "Substructure_up_jets";//"QCDPhoton_jets"; // "Data_2018_jets";//
 TString output_path = "Uncertainty";//"./OutputPlots/Skimsys/"; // Uncertainty/ OutputPlots
 TString in_file="QCDPhoton_jets";
 TFile *fout;
 
 // namespace MyEnum{
-    enum SystematicsTreatment_pp {       // Systematics treatment
-        kData       =0,               //* Nominal PbPb 2018 Data 
-        kNominal    =1,               //* Nominal Pythia8 (centrality +4.5%)  
-        kPhoPurity  =2,               //* ABCD Photon Purity Data 
-        kJERup      =3,               //* Pythia8 with JER up 
-        kJERdown    =4,               //* Pythia8 with JER down 
-        kJECup      =5,               //* Pythia8 with JEC up 
-        kJECdown    =6,               //* Pythia8 with JEC down 
-        kPFScaleup  =7,               //* Pythia8 with +1% PF scale substructure 
-        kPFScaledown=8,               //* Pythia8 with -1% PF scale substructure 
-        kAltMC      =9                //* HERWIG7 
-    };
-    
-    static const SystematicsTreatment_pp sys_list[] =  
-    {
-        kData       ,
-        kNominal    ,
-        kPhoPurity  ,
-        kJERup      ,
-        kJERdown    ,
-        kJECup      ,
-        kJECdown    ,
-        kPFScaleup  ,
-        kPFScaledown,
-        kAltMC      
-    };
-    static const TString sys_label[] = 
-    {
-        "Data"          ,
-        "Pythia8_nom"   ,
-        "ABCD_purity"   ,
-        "JER_up"        ,
-        "JER_down"      ,
-        "JEC_up"        ,
-        "JEC_down"      ,
-        "PFScale_up"    ,
-        "PFScale_down"  ,
-        "AltMC"      
-    };
+enum SystematicsTreatment_pp {       // Systematics treatment
+    kData           =0,               //* Nominal PbPb 2018 Data 
+    kNominal        =1,               //* Nominal Pythia8 (centrality +4.5%)  
+    kPhoPurity      =2,               //* ABCD Photon Purity Data 
+    kJERup          =3,               //* Pythia8 with JER up 
+    kJERdown        =4,               //* Pythia8 with JER down 
+    kJECup          =5,               //* Pythia8 with JEC up 
+    kJECdown        =6,               //* Pythia8 with JEC down 
+    kPScaleup       =7,               //* Pythia8 with +1% Photon scale substructure 
+    kPScaledown     =8,               //* Pythia8 with -1% Photon scale substructure 
+    kChScaleup      =9,               //* Pythia8 with +1% Charged Hadron scale substructure 
+    kChScaledown    =10,              //* Pythia8 with -1% Charged Hadron scale substructure 
+    kNScaleup       =11,              //* Pythia8 with +3% Neutral Hadron scale substructure 
+    kNScaledown     =12,              //* Pythia8 with -3% Neutral Hadron scale substructure 
+    kAltMC          =13               //* HERWIG7 
+};
+
+static const SystematicsTreatment_pp sys_list[] =  
+{
+    kData          ,
+    kNominal       ,
+    kPhoPurity     ,
+    kJERup         ,
+    kJERdown       ,
+    kJECup         ,
+    kJECdown       ,
+    kPScaleup      ,
+    kPScaledown    ,
+    kChScaleup     ,
+    kChScaledown   ,
+    kNScaleup      ,
+    kNScaledown    ,
+    kAltMC      
+};
+static const TString sys_label[] = 
+{
+    "Data"          ,
+    "Pythia8_nom"   ,
+    "ABCD_purity"   ,
+    "JER_up"        ,
+    "JER_down"      ,
+    "JEC_up"        ,
+    "JEC_down"      ,
+    "PScale_up"     ,
+    "PScale_down"   ,
+    "ChScale_up"    ,
+    "ChScale_down"  ,
+    "NScale_up"     ,
+    "NScale_down"   ,
+    "AltMC"      
+};
 // }
 
 void loop_sys(SystematicsTreatment_pp sys_index){
@@ -283,10 +295,11 @@ void loop_sys(SystematicsTreatment_pp sys_index){
     // ----------------------------------------------------------------------------------------------------------------
     // Constants
         const float min_pho_et = 100;
+        const float max_pho_et = 500;
         const float cut_HoverE = 0.009732;    
         const float cut_SIEIE  = 0.009905;    
         const float cut_SumIso = -0.014755;   
-        const float min_xJ = 0.4;         
+        const float min_xJ = 0.8;         
         float purity_value = 1.0;   // Photon Purity 
         
         JetCorrectionUncertainty *jecUnc ;   
@@ -320,6 +333,7 @@ void loop_sys(SystematicsTreatment_pp sys_index){
             if(phoSCEta<-1.39 && phoPhi<-0.9 && phoPhi>-1.6) continue;         
             if(!(fabs(phoSCEta)<1.442)) continue;
             if(!(phoEtCorrected>min_pho_et)) continue;
+            if(!(phoEtCorrected<max_pho_et)) continue;
             if(!HLT_HIPhoton40_HoverELoose_v1) continue;
 
             // Final signal and background region flags
@@ -344,6 +358,8 @@ void loop_sys(SystematicsTreatment_pp sys_index){
                                 if(!flagsig) continue; 
                                 if(pho_genMatchedIndex<0) continue;
                                 if(abs(mcPID)!=22) continue;
+                                if(!(abs(mcMomPID) <= 22 || mcMomPID == -999) ) continue;
+                                if(!(mcCalIsoDR04 < 5)) continue;
         }
         
         //* Jet Loop----------------------------------------------------------------------------------
@@ -520,11 +536,11 @@ void loop_sys(SystematicsTreatment_pp sys_index){
             var_gen_girth_true  = allgenangu[jet_true_index_gen];
             sys_tree->Fill();
 
-        if(flagsig) ++count;
+        if(flagsig && jet_xJ_max>min_xJ) ++count;
 
         
     }
-    std::cout<<"Number of Selected Events in "<<sys_label[sys_index]<<"  = "<<count<<std::endl;
+    std::cout<<"Number of Signal Events in xJ > "<<min_xJ<<" in "<<sys_label[sys_index]<<" \t = "<<count<<std::endl;
     fout->cd();
     sys_tree->Write("",TObject::kWriteDelete);
 }
@@ -535,20 +551,33 @@ void skim_sys_pp(){
 
     in_file="pp_Data_2017_jets";
     loop_sys(kData);
-    in_file = "pp_QCDPhoton_jets";
+    in_file = "pp_NOMINAL_jets";//"pp_QCDPhoton_jets";
     loop_sys(kNominal);
     
     in_file = "pp_Data_2017_jets";
     loop_sys(kPhoPurity);
-    in_file = "pp_QCDPhoton_jets";
+    in_file = "pp_NOMINAL_jets";//"pp_QCDPhoton_jets";
     loop_sys(kJERup);
     loop_sys(kJERdown);
     loop_sys(kJECup);
     loop_sys(kJECdown);
-    in_file = "pp_Substructure_up_jets";
-    loop_sys(kPFScaleup);
-    in_file = "pp_Substructure_down_jets";
-    loop_sys(kPFScaledown);
+    // in_file = "pp_Substructure_up_jets";
+    // loop_sys(kPFScaleup);
+    // in_file = "pp_Substructure_down_jets";
+    // loop_sys(kPFScaledown);
+
+    in_file = "pp_Photon_up_jets";
+    loop_sys(kPScaleup);
+    in_file = "pp_Photon_down_jets";
+    loop_sys(kPScaledown);
+    in_file = "pp_Charged_up_jets";
+    loop_sys(kChScaleup);
+    in_file = "pp_Charged_down_jets";
+    loop_sys(kChScaledown);
+    in_file = "pp_Neutral_up_jets";
+    loop_sys(kNScaleup);
+    in_file = "pp_Neutral_down_jets";
+    loop_sys(kNScaledown);
     in_file = "pp_Herwig7_jets";
     loop_sys(kAltMC);
 

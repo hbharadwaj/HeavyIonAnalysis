@@ -149,6 +149,9 @@ void HiInclusiveJetSubstructure::beginJob() {
   t->Branch("jtdynkt",jets_.jtdynkt,"jtdynkt[nref]/F");
   t->Branch("jtangu",jets_.jtangu,"jtangu[nref]/F");
 
+  t->Branch("jtpt_CA_nom",jets_.jtpt_CA_nom,"jtpt_CA_nom[nref]/F");
+  t->Branch("jtpt_CA_shift",jets_.jtpt_CA_shift,"jtpt_CA_shift[nref]/F");
+
   if(isMC_){
     if (useHepMC_) {
       t->Branch("beamId1",&jets_.beamId1,"beamId1/I");
@@ -280,11 +283,14 @@ void HiInclusiveJetSubstructure::analyze(const Event& iEvent,const EventSetup& i
 
     jets_.jtpt[jets_.nref] = jet.pt();
     jets_.jteta[jets_.nref] = jet.eta();
-			   jets_.jtphi[jets_.nref]=jet.phi();
+    jets_.jtphi[jets_.nref]=jet.phi();
     jets_.jtsym[jets_.nref] = 0;
     jets_.jtrg[jets_.nref] = 0;
     jets_.jtdynkt[jets_.nref] = 0;
     jets_.jtangu[jets_.nref]=0;
+
+    jets_.jtpt_CA_nom[jets_.nref]=0;
+    jets_.jtpt_CA_shift[jets_.nref]=0;
 
     //cout<<"jet daughters "<<jet.numberOfDaughters()<<endl;
     fastjet::PseudoJet *sub1Gen = new fastjet::PseudoJet();
@@ -408,6 +414,7 @@ void HiInclusiveJetSubstructure::IterativeDeclusteringRec(double groom_type, dou
   try
   {
     std::vector<fastjet::PseudoJet> particles;
+    std::vector<fastjet::PseudoJet> particles_nom;
 
     auto daughters = jet.getJetConstituents();
 
@@ -449,17 +456,19 @@ void HiInclusiveJetSubstructure::IterativeDeclusteringRec(double groom_type, dou
       //     std::cout<<"\t Type = Neutral Hadron"<<"\n";
       // if(vec_jet_consituent_type[i_jetconst]== reco::PFCandidate::gamma)
       //     std::cout<<"\t Type = Photon"<<"\n";
-      float Charged_Scale = 1.00; // 1.01; // 0.99;
+      
+      float Charged_Scale = 1.01; // 1.01; // 0.99;
+      float Photon_Scale  = 1.00;
       float Neutral_Scale = 1.00; // 1.03; // 0.97;
       float PFEnergy_Scale = 1.00;
       if(vec_jet_consituent_type[i_jetconst]==reco::PFCandidate::h0){
         PFEnergy_Scale = Neutral_Scale;
       }
-      else if(
-        vec_jet_consituent_type[i_jetconst]==reco::PFCandidate::h
-        || vec_jet_consituent_type[i_jetconst]==reco::PFCandidate::gamma
-      ){
+      else if(vec_jet_consituent_type[i_jetconst]==reco::PFCandidate::h){
         PFEnergy_Scale = Charged_Scale;
+      }
+      else if(vec_jet_consituent_type[i_jetconst]==reco::PFCandidate::gamma){
+        PFEnergy_Scale = Photon_Scale;
       }
 
       float temp_px =    (**it).px()*PFEnergy_Scale;
@@ -467,6 +476,7 @@ void HiInclusiveJetSubstructure::IterativeDeclusteringRec(double groom_type, dou
       float temp_pz =    (**it).pz()*PFEnergy_Scale;
       float temp_E = (**it).energy()*PFEnergy_Scale;
       particles.push_back(fastjet::PseudoJet(temp_px, temp_py, temp_pz, temp_E));
+      particles_nom.push_back(fastjet::PseudoJet((**it).px(), (**it).py(), (**it).pz(), (**it).energy()));
       mypart.reset(temp_px, temp_py, temp_pz, temp_E);
       angu=angu+mypart.perp()*mypart.delta_R(myjet);
     }
@@ -474,7 +484,10 @@ void HiInclusiveJetSubstructure::IterativeDeclusteringRec(double groom_type, dou
     fastjet::ClusterSequence csiter(particles, jet_def);
     std::vector<fastjet::PseudoJet> output_jets = csiter.inclusive_jets(0);
     output_jets = sorted_by_pt(output_jets);
-
+    
+    fastjet::ClusterSequence csiter_nom(particles_nom, jet_def);
+    std::vector<fastjet::PseudoJet> output_jets_nom = csiter_nom.inclusive_jets(0);
+    output_jets_nom = sorted_by_pt(output_jets_nom);
                                                                                                     
     fastjet::PseudoJet jj = output_jets[0];
     fastjet::PseudoJet j1;
@@ -535,6 +548,9 @@ void HiInclusiveJetSubstructure::IterativeDeclusteringRec(double groom_type, dou
       rg=0;
       }
     }
+
+    jets_.jtpt_CA_nom[jets_.nref] = output_jets_nom[0].perp();
+    jets_.jtpt_CA_shift[jets_.nref] = output_jets[0].perp();
 
     jets_.jtsym[jets_.nref] = zg;
     jets_.jtrg[jets_.nref] = rg; 

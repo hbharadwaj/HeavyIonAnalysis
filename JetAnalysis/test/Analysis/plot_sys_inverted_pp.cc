@@ -16,11 +16,13 @@
 
 const int bin_det_xj=1;
 const int bin_true_xj=2;//2;
+const float xjmin_det = 0.8;
+const float min_pho_et = 100.0;
 bool flag_invert = false;
 
 const float min_cent_val = 0;
 const float max_cent_val = 30;
-TString label="May_5_pp_2017_sys_WP_update";
+TString label="2024_Apr_pp_2017_sys_xJ_gp8_HEPDATA";
 TString output_path = "./Unfolded_Plots/";
 TString centstring = ""; //Form("Cent. %.0f-%.0f%%",min_cent_val,max_cent_val);
 TString dir_cent_string = "";//Form("%.0f_%.0f_",min_cent_val,max_cent_val);
@@ -33,7 +35,7 @@ enum TestsTreatment {       // Unfolding tests -> Bottomline, Trivial, Split, Cr
     kNoTest        =0,      // Loop Over All Systematic Uncertainties 
     kTrivial       =1,      // Trivial Test -> Full Nominal MC as Both Data and Response
     kSplitNominal  =2,      // Split Nominal Test -> Split Nominal MC into independent samples
-    kBottomline    =3,      // TODO: Bottomline Test -> Data with Nominal MC, //? Check adding covariance matrix
+    kBottomline    =3,      // Bottomline Test -> Data with Nominal MC
     kCrossfold     =4,      // CrossFolding Test -> Nominal with Alt and vice-versa
     kSplitAltMC    =5       // Split Alt Test -> Split Alt MC into independent samples
 };
@@ -59,18 +61,23 @@ static const TString test_label[] =
 
 
 enum SystematicsTreatment_pp {       // Systematics treatment
-    kData       =0,               //* Nominal pp 2017 Data 
-    kNominal    =1,               //* Nominal Pythia8 (centrality +4.5%)  
-    kPhoPurity  =2,               //* ABCD Photon Purity Data 
-    kJERup      =3,               //* Pythia8 with JER up 
-    kJERdown    =4,               //* Pythia8 with JER down 
-    kJECup      =5,               //* Pythia8 with JEC up 
-    kJECdown    =6,               //* Pythia8 with JEC down 
-    kPFScaleup  =7,               //* Pythia8 with +1% PF scale substructure 
-    kPFScaledown=8,               //* Pythia8 with -1% PF scale substructure 
-    kAltMC      =9,               //* HERWIG7 
-    kResponse   =10               //* Propagating Pythia8 Response stats while unfolding
+    kData           =0,               //* Nominal PbPb 2018 Data 
+    kNominal        =1,               //* Nominal Pythia8 (centrality +4.5%)  
+    kPhoPurity      =2,               //* ABCD Photon Purity Data 
+    kJERup          =3,               //* Pythia8 with JER up 
+    kJERdown        =4,               //* Pythia8 with JER down 
+    kJECup          =5,               //* Pythia8 with JEC up 
+    kJECdown        =6,               //* Pythia8 with JEC down 
+    kPScaleup       =7,               //* Pythia8 with +1% Photon scale substructure 
+    kPScaledown     =8,               //* Pythia8 with -1% Photon scale substructure 
+    kChScaleup      =9,               //* Pythia8 with +1% Charged Hadron scale substructure 
+    kChScaledown    =10,              //* Pythia8 with -1% Charged Hadron scale substructure 
+    kNScaleup       =11,              //* Pythia8 with +3% Neutral Hadron scale substructure 
+    kNScaledown     =12,              //* Pythia8 with -3% Neutral Hadron scale substructure 
+    kAltMC          =13,              //* HERWIG7 
+    kResponse       =14               //* Propagating Pythia8 Response stats while unfolding
 }sys_index;
+
 static const SystematicsTreatment_pp sys_list[] =  
 {
     kData       ,
@@ -80,10 +87,14 @@ static const SystematicsTreatment_pp sys_list[] =
     kJERdown    ,
     kJECup      ,
     kJECdown    ,
-    kPFScaleup  ,
-    kPFScaledown,
-    kAltMC      ,
-    kResponse 
+    kPScaleup  ,
+    kPScaledown,
+    kChScaleup  ,
+    kChScaledown,
+    kNScaleup  ,
+    kNScaledown,
+    kAltMC,
+    kResponse      
 };
 static const TString sys_label[] = 
 {
@@ -94,10 +105,14 @@ static const TString sys_label[] =
     "JER_down"      ,
     "JEC_up"        ,
     "JEC_down"      ,
-    "PFScale_up"    ,
-    "PFScale_down"  ,
-    "AltMC"         ,
-    "response"
+    "PScale_up"    ,
+    "PScale_down"  ,
+    "ChScale_up"    ,
+    "ChScale_down"  ,
+    "NScale_up"    ,
+    "NScale_down"  ,
+    "AltMC",
+    "response",      
 };
 
 void Plot_hist_ratio(std::vector<TH1D*>,std::vector<TString> ,TString opt="label",std::vector<TString> eopt={"end"});
@@ -280,6 +295,22 @@ void plot_sys(TString in_file,TString in_test_label){
 
         }
 
+        // Bayesian Covariance matrix sliced
+        int nbins_det = h_Bayesian_Refolded_X[iter_ref]->GetNbinsX();
+        int nbins_true= h_Bayesian_Unfolded_X[iter_ref]->GetNbinsX();
+        TH2D *h_Bayesian_Covariance_in;
+        TH2D *h_Bayesian_Covariance_out = new TH2D("h_Bayesian_Covariance_out","h_Bayesian_Covariance_out;Bin Number;Bin Number",nbins_det,0,nbins_det,nbins_det,0,nbins_det);
+        if(test_index==kNoTest){
+            h_Bayesian_Covariance_in = (TH2D*)input_file->Get(Form("%s/%s/%s_CovarianceMatrix_%s_xJ_%d",test_label[test_index].Data(),"DAgostini",test_label[test_index].Data(),var_arr[ivar].Data(),iter_ref));
+            for (Int_t k = nbins_true*(bin_true_xj-1)+1; k < (h_Bayesian_Covariance_in->GetNbinsX()); k++){         // +1 to include the overflow bin
+                for (Int_t l = nbins_true*(bin_true_xj-1)+1; l < (h_Bayesian_Covariance_in->GetNbinsY()); l++){     // +1 to include the overflow bin
+                    h_Bayesian_Covariance_out->SetBinContent(k-(nbins_true*(bin_true_xj-1)+1)+1,l-(nbins_true*(bin_true_xj-1)+1)+1,h_Bayesian_Covariance_in->GetBinContent(k,l));
+                    h_Bayesian_Covariance_out->SetBinError(k-(nbins_true*(bin_true_xj-1)+1)+1,l-(nbins_true*(bin_true_xj-1)+1)+1,h_Bayesian_Covariance_in->GetBinError(k,l));
+                }
+            }
+        }
+
+
         TFile *fout;
         fout = new TFile(output_path + "OutputUnfolded_"+dir_cent_string+label+"/OutputUnfolded_"+dir_cent_string+label+file_string+"_"+var_arr[ivar]+".root", "recreate");
 
@@ -296,6 +327,7 @@ void plot_sys(TString in_file,TString in_test_label){
         h_Unfolded_True_X->Write("",TObject::kWriteDelete);
         h_Bayesian_Unfolded_X[iter_ref]->Write("unfold_X",TObject::kWriteDelete);
         h_Bayesian_Refolded_X[iter_ref]->Write("",TObject::kWriteDelete);
+        h_Bayesian_Covariance_out->Write("h_Bayesian_Covariance_out"+file_string,TObject::kWriteDelete);
 
         fout->cd();
         gDirectory->mkdir("Unfolding_Tests");
@@ -320,12 +352,12 @@ void plot_sys(TString in_file,TString in_test_label){
         std::vector<TH1D*> hist_input;
         std::vector<TString> histname_input;
         if(test_index==kBottomline){
-            sel = {centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4)};  
+            sel = {centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,xjmin_det)};  
             if(flag_invert){ sel.insert(sel.begin(), {"Purity","Matrix Inversion"});}
             else{            sel.insert(sel.begin(), {"Purity","D'Agostini"});}
             gStyle->SetPaintTextFormat("4.2f");
             Plot_hist2D({h2_pur},{"Purity"+file_string+"_"+var_arr[ivar]},"text_E_colz",sel);
-            sel = {centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4)};  
+            sel = {centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,xjmin_det)};  
             if(flag_invert){ sel.insert(sel.begin(), {"Efficiency","Matrix Inversion"});}
             else{            sel.insert(sel.begin(), {"Efficiency","D'Agostini"});}
             Plot_hist2D({h2_eff},{"Efficiency"+file_string+"_"+var_arr[ivar]},"text_E_colz",sel);
@@ -336,18 +368,19 @@ void plot_sys(TString in_file,TString in_test_label){
         }
         if(test_index==kNoTest){
             sel = {"","Corrected Data Counts "+var_nam[ivar]};
+            gStyle->SetPaintTextFormat("6.1f");
             Plot_hist2D({h2_Raw},{test_label[test_index]+"_Raw_X_Y"+file_string+"_"+var_arr[ivar]},"text_E_colz",sel);
             sel = {"","Covariance Matrix "+var_nam[ivar]};
             gStyle->SetPaintTextFormat("4.1f");
-            Plot_hist2D({h2_Covariance},{test_label[test_index]+"_MatCovariance"+file_string+"_"+var_arr[ivar]},"text_colz",sel);
+            Plot_hist2D({h_Bayesian_Covariance_out},{test_label[test_index]+"_BayesianCovariance"+file_string+"_"+var_arr[ivar]},"text_colz",sel);
         }
         switch(test_index){
-            case kTrivial:  sel = {" ","Trivial Test"      ,centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4)};  break;
+            case kTrivial:  sel = {" ","Trivial Test"      ,centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,xjmin_det)};  break;
             case kSplitNominal:
-                            sel = {" ","Split Test - 30/70"        ,centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4)};  break;  
+                            sel = {" ","Split Test - 50/50"        ,centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,xjmin_det)};  break;  
             case kSplitAltMC:
-                            sel = {" ","Split Test - 15/85"        ,centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4)};  break;  
-            default:        sel = {centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4)};  
+                            sel = {" ","Split Test - 10/90"        ,centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,0.4)};  break;  
+            default:        sel = {centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,xjmin_det)};  
                             if(flag_invert){ sel.insert(sel.begin(), {" ","Matrix Inversion"});}
                             else{            sel.insert(sel.begin(), {" ","D'Agostini"});}
                             break;  
@@ -385,14 +418,14 @@ void plot_sys(TString in_file,TString in_test_label){
             h_Unfolded_True_Bayesian_X_niter_2->Divide(h_True_X);
             h_Unfolded_True_Bayesian_X_niter_2->Write("",TObject::kWriteDelete);
 
-            Plot_hist_ratio({h_Folded_Raw_Bayesian_X,h_Folded_Raw_Bayesian_X_niter_2,h_Folded_Raw_Bayesian_X_niter},{Form("Iter %d (p val>0.95)",iter_ref),Form("Iter %d",(niter/2)+1),Form("Iter %d",niter),var_nam[ivar],"Refolded/Raw","PbPb_"+dir_cent_string+test_label[test_index]+"_Refolded_BayesianVs"+var_arr[ivar]+file_string},"bcenter_label",sel);
+            Plot_hist_ratio({h_Folded_Raw_Bayesian_X,h_Folded_Raw_Bayesian_X_niter_2,h_Folded_Raw_Bayesian_X_niter},{Form("Iter %d (p val>0.95)",iter_ref),Form("Iter %d",(niter/2)+1),Form("Iter %d",niter),var_nam[ivar],"Refolded/Raw","pp_"+dir_cent_string+test_label[test_index]+"_Refolded_BayesianVs"+var_arr[ivar]+file_string},"bcenter_label",sel);
             if(test_index!=kNoTest || test_index!=kBottomline)
-                Plot_hist_ratio({h_Unfolded_True_Bayesian_X,h_Unfolded_True_Bayesian_X_niter_2,h_Unfolded_True_Bayesian_X_niter},{Form("Iter %d (p val>0.95)",iter_ref),Form("Iter %d",(niter/2)),Form("Iter %d",niter),var_nam[ivar],"Unfolded/True","PbPb_"+dir_cent_string+test_label[test_index]+"_Unfolded_BayesianVs"+var_arr[ivar]+file_string},"bcenter_label",sel);
+                Plot_hist_ratio({h_Unfolded_True_Bayesian_X,h_Unfolded_True_Bayesian_X_niter_2,h_Unfolded_True_Bayesian_X_niter},{Form("Iter %d (p val>0.95)",iter_ref),Form("Iter %d",(niter/2)),Form("Iter %d",niter),var_nam[ivar],"Unfolded/True","pp_"+dir_cent_string+test_label[test_index]+"_Unfolded_BayesianVs"+var_arr[ivar]+file_string},"bcenter_label",sel);
 
-            Plot_hist({h_True_X,h_Bayesian_Unfolded_X[iter_ref]},{"True MC","D'Agostini",var_nam[ivar],"1/N_{jet} dN/d"+var_nam[ivar],"PbPb_"+dir_cent_string+test_label[test_index]+"_True_Unfolded_Bayesian_"+var_arr[ivar]+file_string},"rightlabel",sel);
+            Plot_hist({h_True_X,h_Bayesian_Unfolded_X[iter_ref]},{"True MC","D'Agostini",var_nam[ivar],"1/N_{jet} dN/d"+var_nam[ivar],"pp_"+dir_cent_string+test_label[test_index]+"_True_Unfolded_Bayesian_"+var_arr[ivar]+file_string},"rightlabel",sel);
         }
         
-        sel = {var_nam[ivar],centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",100.0,0.4),"end","noStackHIST"};
+        sel = {var_nam[ivar],centstring,Form("#gamma p_{T}>%.0f, x_{J}>%.1f, |#Delta #phi_{#gamma,jet}|>#frac{2}{3}#pi",min_pho_et,xjmin_det),"end","noStackHIST"};
         if(flag_invert){ sel.insert(sel.begin(), "Matrix Inversion");}
         else{            sel.insert(sel.begin(), "D'Agostini");}
         if(test_index==kBottomline){
